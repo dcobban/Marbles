@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual C++ Express 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Marbles", "Marbles\Marbles.vcproj", "{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MarblesTest", "MarblesTest\MarblesTest.vcproj", "{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0} = {B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Debug|Win32.Build.0 = Debug|Win32
+		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Release|Win32.ActiveCfg = Release|Win32
+		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Release|Win32.Build.0 = Release|Win32
+		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Debug|Win32.ActiveCfg = Debug|Win32
+		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Debug|Win32.Build.0 = Debug|Win32
+		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Release|Win32.ActiveCfg = Release|Win32
+		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
