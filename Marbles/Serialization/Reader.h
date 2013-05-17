@@ -21,79 +21,117 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Application\Service.h>
+#pragma once
+#include <Common/Hash.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
+namespace Serialization
+{
+// --------------------------------------------------------------------------------------------------------------------
+template<typename F> class Reader
+{
+public:
+					Reader(bool endianSwap = false);
+
+	const Path&		Context() const;
+	bool			Read(std::istream& is, Object& obj);
+
+private:
+	template <typename T> bool Translate(std::istream& is, Object& obj);
+	bool			ReadReference(std::istream& is, Object& obj);
+	bool			ReadEnumerable(std::istream& is, Object& obj);
+	bool			ReadMembers(std::istream& is, Object& obj);
+	static hash_t	Hash(const Path& route);
+
+	F				mFormat;
+	Path			mPath;
+	std::map<hash_t, std::string> mReferenceMap;
+};
 
 // --------------------------------------------------------------------------------------------------------------------
-Service::Service()
-: mState(Service::Uninitialized)
+template<typename F> 
+Reader<F>::Reader(bool endianSwap = false)
+: mFormat(Object(), endianSwap)
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Service::ExecutionState Service::State() const
+template<typename F>
+bool Reader<F>::Read(std::istream& is, Object& value)
 {
-	return mState.get();
+	mFormat.TypeInfo(is, value);
+	
+	bool canRead = value.IsValid();
+	if (canRead)
+	{
+		if (ReadReference(is, value))
+		{
+		}
+		else if (mFormat.OpenEnumeration(is))
+		{
+			do {
+				Object element = value.Append();
+				Read(is, element);
+			} while(!mFormat.CloseEnumeration(is));
+		}
+		else if (mFormat.OpenMap(is))
+		{	// Read map
+			do {
+				const std::string& label = mFormat.Label(is);
+				Object member = value.At(label.c_str());
+				if (member.IsValid()) 
+				{	// Read this element
+					Read(is, member);
+				}
+				else
+				{	// Ignore the current object
+					mFormat.Consume(is);
+				}
+			} while (!mFormat.CloseMap(is));
+		}
+		else 
+		{
+			mFormat.Read(is, value);
+		}
+	}
+	return canRead;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Service::Stop(bool /*block*/)
+template<typename F> template <typename T> 
+bool Reader<F>::Translate(std::istream& is, Object& obj)
 {
-	Post(std::bind<void>(&Application::Unregister, Application::Get(), mSelf.lock()));
-	//if (block)
-	//{
-	//	Wait(Stopped);
-	//}
+	bool canWrite = TypeOf<T>() == obj.TypeInfo();
+	if (canWrite)
+	{
+		mFormat.Read(os, obj.As<T>());
+	}
+	return canWrite;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-//bool Service::Wait(ExecutionState state)
-//{
-//	const bool isSelf = Active().get() == this;
-//	ASSERT(!isSelf); // We cannot wait for ourself!
-//	if (!isSelf)
-//	{
-//		MutexLock lock(mStateMutex);
-//		while (state > mState.get())
-//		{
-//			mStateChanged.wait(lock);
-//		}
-//	}
-//	return !isSelf;
-//}
-
-// --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(Task::Fn& fn)
-{	
-	shared_service service = mSelf.lock();
-	shared_task task(new Task(fn, service));
-	return Post(task);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(shared_task task)
+template<typename F>
+bool Reader<F>::ReadReference(std::istream& is, Object& value)
 {
-	return mTaskQueue.try_push(task);
+	return mFormat.ReadReference(is, value);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Active()
+template<typename F>
+hash_t Reader<F>::Hash(const Path& route)
 {
-	return Application::Get()->ActiveService();
+	hash_t hash = 0;
+	for(Path::const_iterator i = path.begin(); i != path.end(); ++i)
+	{
+		hash += i->MemberInfo()->HashName();
+	}
+	return hash;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Create()
-{
-	shared_service service(new Service());
-	service->mSelf = service;
-	return service;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
+} // namespace Serialization
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

@@ -21,79 +21,74 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Application\Service.h>
+#pragma once
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
+namespace Reflection
+{
 
 // --------------------------------------------------------------------------------------------------------------------
-Service::Service()
-: mState(Service::Uninitialized)
+template<typename T> 
+class MemberT : public Member
 {
-}
+public:
+	MemberT(const std::string& name, const shared_type& type, const char* usage)
+	: Member(name, type, usage) {}
+	MemberT(const std::string& name, const Declaration& declaration, const char* usage)
+	: Member(name, declaration, usage) {}
+
+	virtual shared_type	DeclaredType() const { return TypeOf<T>(); }
+	virtual Object		Assign(Object self, const Object& rhs) const;
+	virtual Object		Dereference(const Object& /*self*/) const;
+	virtual Object		Append(Object& self) const;
+private:
+};
 
 // --------------------------------------------------------------------------------------------------------------------
-Service::ExecutionState Service::State() const
+template<typename T> 
+Object MemberT<T>::Assign(Object self, const Object& rhs) const
 {
-	return mState.get();
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-void Service::Stop(bool /*block*/)
-{
-	Post(std::bind<void>(&Application::Unregister, Application::Get(), mSelf.lock()));
-	//if (block)
+	ASSERT(self.IsValid());
+	ASSERT(self.TypeInfo()->Implements(rhs.TypeInfo()));
+	if (self.IsValue())
+	{
+		self.As<T>() = rhs.As<T>();
+	}
+	//else if (self.IsShared())
 	//{
-	//	Wait(Stopped);
+	//	self.As< std::shared_ptr<T> >() = rhs.As<T>();
 	//}
+	//else if (self.IsWeak())
+	//{
+	//	self.As< std::weak_ptr<T> >() = rhs.As<T>();
+	//}
+	else if (self.IsReference())
+	{
+		self.As<T*>() = rhs.As<T*>();
+	}
+	return self;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-//bool Service::Wait(ExecutionState state)
-//{
-//	const bool isSelf = Active().get() == this;
-//	ASSERT(!isSelf); // We cannot wait for ourself!
-//	if (!isSelf)
-//	{
-//		MutexLock lock(mStateMutex);
-//		while (state > mState.get())
-//		{
-//			mStateChanged.wait(lock);
-//		}
-//	}
-//	return !isSelf;
-//}
-
-// --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(Task::Fn& fn)
-{	
-	shared_service service = mSelf.lock();
-	shared_task task(new Task(fn, service));
-	return Post(task);
+template<typename T> 
+Object MemberT<T>::Dereference(const Object& /*self*/) const
+{ 
+	ASSERT(!"Not implemented");
+	return Object(); 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(shared_task task)
+template<typename T> 
+Object MemberT<T>::Append(Object& /*self*/) const
 {
-	return mTaskQueue.try_push(task);
+	ASSERT(!"Not implemented");
+	return Object();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Active()
-{
-	return Application::Get()->ActiveService();
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Create()
-{
-	shared_service service(new Service());
-	service->mSelf = service;
-	return service;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
+} // namespace Reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

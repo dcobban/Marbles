@@ -21,79 +21,66 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Application\Service.h>
+#include <Reflection.h>
+#include <Common/Common.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-
-// --------------------------------------------------------------------------------------------------------------------
-Service::Service()
-: mState(Service::Uninitialized)
+namespace Reflection
 {
+// --------------------------------------------------------------------------------------------------------------------
+shared_type	Declaration::TypeInfo() const 
+{ 
+	return member->TypeInfo(); 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Service::ExecutionState Service::State() const
+Member::Member(const std::string& name, const Declaration& declaration, const char* usage)
+: mName(name)
+, mType(declaration.TypeInfo())
+, mUsage(usage)
+, mDeclaration(declaration)
 {
-	return mState.get();
+	mHashName = Type::Hash(mName.c_str());
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Service::Stop(bool /*block*/)
+Member::Member(const std::string& name, const shared_type& type, const char* usage)
+: mName(name)
+, mType(type)
+, mUsage(usage)
 {
-	Post(std::bind<void>(&Application::Unregister, Application::Get(), mSelf.lock()));
-	//if (block)
-	//{
-	//	Wait(Stopped);
-	//}
+	mHashName = Type::Hash(mName.c_str());
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-//bool Service::Wait(ExecutionState state)
-//{
-//	const bool isSelf = Active().get() == this;
-//	ASSERT(!isSelf); // We cannot wait for ourself!
-//	if (!isSelf)
-//	{
-//		MutexLock lock(mStateMutex);
-//		while (state > mState.get())
-//		{
-//			mStateChanged.wait(lock);
-//		}
-//	}
-//	return !isSelf;
-//}
-
-// --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(Task::Fn& fn)
-{	
-	shared_service service = mSelf.lock();
-	shared_task task(new Task(fn, service));
-	return Post(task);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(shared_task task)
+Object Member::Assign(Object self, const Object& rhs) const
 {
-	return mTaskQueue.try_push(task);
+	ASSERT(self.IsValid());
+	ASSERT(rhs.TypeInfo()->Implements(self.TypeInfo()));
+	const Type::MemberList& members = self.TypeInfo()->Members();
+	for(Type::MemberList::const_iterator i = members.begin(); i < members.end(); ++i)
+	{
+		self.At(*i) = rhs.At(*i);
+	}
+	return self;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Active()
+Object Member::Dereference(const Object& /*self*/) const
 {
-	return Application::Get()->ActiveService();
+	return Object();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Create()
+Object Member::Append(Object& /*self*/) const
 {
-	shared_service service(new Service());
-	service->mSelf = service;
-	return service;
+	return Object();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+} // namespace Reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

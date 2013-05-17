@@ -21,79 +21,65 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Application\Service.h>
+#pragma once
+
+#include <iosfwd>
+#include <reflection.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-
-// --------------------------------------------------------------------------------------------------------------------
-Service::Service()
-: mState(Service::Uninitialized)
+namespace Serialization
 {
-}
+using namespace Reflection;
 
 // --------------------------------------------------------------------------------------------------------------------
-Service::ExecutionState Service::State() const
+class Serializer
 {
-	return mState.get();
-}
+public:
+	static bool Text(std::ostream& os, const Object& root);
+	static bool Text(std::ostream& os, const Object& root, const Object& sub);
+	//static bool Binary(std::ostream& os, const Object& root, const bool big_endian = PLATFORM_BIG_ENDIAN);
+	//static bool Binary(std::ostream& os, const Object& root, const Object& sub, const bool big_endian = PLATFORM_BIG_ENDIAN);
+	static bool From(std::istream& is, Object& root);
+
+	template<typename T>				static bool Text(std::ostream& os, const T& root);
+	template<typename T, typename S>	static bool Text(std::ostream& os, const T& root, const S& sub);
+	//template<typename T>				static bool Binary(std::ostream& os, const T& root, const bool big_endian = PLATFORM_BIG_ENDIAN);
+	//template<typename T, typename S>	static bool Binary(std::ostream& os, const T& root, const S& sub, const bool big_endian = PLATFORM_BIG_ENDIAN);
+	template<typename T>				static bool From(std::istream& is, T& root);
+};
 
 // --------------------------------------------------------------------------------------------------------------------
-void Service::Stop(bool /*block*/)
+inline bool Serializer::Text(std::ostream& os, const Object& root)
 {
-	Post(std::bind<void>(&Application::Unregister, Application::Get(), mSelf.lock()));
-	//if (block)
-	//{
-	//	Wait(Stopped);
-	//}
+	return Text(os, root, root);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-//bool Service::Wait(ExecutionState state)
-//{
-//	const bool isSelf = Active().get() == this;
-//	ASSERT(!isSelf); // We cannot wait for ourself!
-//	if (!isSelf)
-//	{
-//		MutexLock lock(mStateMutex);
-//		while (state > mState.get())
-//		{
-//			mStateChanged.wait(lock);
-//		}
-//	}
-//	return !isSelf;
-//}
-
-// --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(Task::Fn& fn)
-{	
-	shared_service service = mSelf.lock();
-	shared_task task(new Task(fn, service));
-	return Post(task);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(shared_task task)
+template<typename T> inline bool Serializer::Text(std::ostream& os, const T& root)
 {
-	return mTaskQueue.try_push(task);
+	Object rootobj(root);
+	return Text(os, rootobj, rootobj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Active()
+template<typename T, typename S> inline bool Serializer::Text(std::ostream& os, const T& root, const S& sub)
 {
-	return Application::Get()->ActiveService();
+	Object rootobj(root);
+	Object subobj(sub);
+	return Text(os, rootobj, subobj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Create()
+template<typename T> inline bool Serializer::From(std::istream& is, T& root)
 {
-	shared_service service(new Service());
-	service->mSelf = service;
-	return service;
+	Object rootobj(root);
+	return From(is, rootobj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+} // namespace Serialization
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

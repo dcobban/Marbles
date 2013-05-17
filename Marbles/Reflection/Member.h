@@ -22,78 +22,44 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 #pragma once
-#pragma warning(disable:4706)
+
+#include <type_traits>
+
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-typedef size_t hash_t;
+namespace Reflection
+{
+class Object;
+template<typename T> class MemberT;
 
 // --------------------------------------------------------------------------------------------------------------------
-class Hash
+class Member : public std::enable_shared_from_this<const Member>
 {
 public:
-	// http://www.cse.yorku.ca/~oz/hash.html
-	static inline hash_t sdbm(const char* string)
-	{
-        hash_t hash = 0;
-        int c;
+	Member(const std::string& name, const Declaration& declaration, const char* usage);
+	Member(const std::string& name, const shared_type& type, const char* usage);
 
-        while (c = *string++)
-		{
-            hash = c + (hash << 6) + (hash << 16) - hash;
-		}
+	const std::string&	Name() const		{ return mName; }
+	hash_t				HashName() const	{ return mHashName; }
+	Declaration			DeclareInfo() const	{ return Declaration(shared_from_this(), mDeclaration); }
+	const char*			Usage() const		{ return mUsage; }
 
-        return hash;
-	}
+	virtual shared_type TypeInfo() const	{ return mType.lock(); }
+	virtual Object		Assign(Object self, const Object& rhs) const;
+	virtual Object		Dereference(const Object& self) const;
+	virtual Object		Append(Object& self) const;
 
-	static inline hash_t sdbm(const void* data, size_t size)
-	{
-		const unsigned char* pos = static_cast<const unsigned char*>(data);
-		const unsigned char* end = pos + size;
-        hash_t hash = 0;
-        int c;
-
-        while (pos != end && (c = *pos++))
-		{
-            hash = c + (hash << 6) + (hash << 16) - hash;
-		}
-
-        return hash;
-	}
-
-	// http://www.cse.yorku.ca/~oz/hash.html
-    static inline hash_t djb2(const char *string)
-    {
-        hash_t hash = 5381;
-        int c;
-
-        while (c = *string++)
-		{
-            hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-		}
-
-        return hash;
-    }
-
-	static inline hash_t djb2(const void *data, size_t size)
-    {
-		const unsigned char* pos = static_cast<const unsigned char*>(data);
-		const unsigned char* end = pos + size;
-        hash_t hash = 5381;
-
-        while (pos != end)
-		{
-			int c = *pos++;
-			hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-		}
-
-        return hash;
-    }
+private:
+	std::string			mName;
+	hash_t				mHashName;
+	Declaration			mDeclaration;
+	weak_type			mType;
+	const char*			mUsage;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+} // namespace Reflection
 } // namespace Marbles
-
-#pragma warning(default:4706)
 
 // End of file --------------------------------------------------------------------------------------------------------

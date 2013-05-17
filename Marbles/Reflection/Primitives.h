@@ -21,79 +21,34 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Application\Service.h>
+#pragma once
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
-{
+REFLECT_TYPE(Marbles::Reflection::Type, REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
-Service::Service()
-: mState(Service::Uninitialized)
-{
-}
+REFLECT_TYPE(bool,				REFLECT_CREATOR())
+REFLECT_TYPE(Marbles::uint8_t,	REFLECT_CREATOR())
+REFLECT_TYPE(Marbles::uint16_t,	REFLECT_CREATOR())
+REFLECT_TYPE(Marbles::uint32_t,	REFLECT_CREATOR())
+REFLECT_TYPE(Marbles::uint64_t,	REFLECT_CREATOR())
+REFLECT_TYPE(Marbles::int8_t,	REFLECT_CREATOR())
+REFLECT_TYPE(Marbles::int16_t,	REFLECT_CREATOR())
+REFLECT_TYPE(Marbles::int32_t,	REFLECT_CREATOR())
+REFLECT_TYPE(Marbles::int64_t,	REFLECT_CREATOR())
+REFLECT_TYPE(float,				REFLECT_CREATOR())
+REFLECT_TYPE(double,			REFLECT_CREATOR())
+REFLECT_TYPE(std::string,		REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
-Service::ExecutionState Service::State() const
-{
-	return mState.get();
-}
+REFLECT_TEMPLATE_TYPE(template<typename T>, std::char_traits<T>,)
+REFLECT_TEMPLATE_TYPE(template<typename T>, std::allocator<T>,	REFLECT_CREATOR())
+REFLECT_TEMPLATE_TYPE(template<typename T>, std::shared_ptr<T>,	REFLECT_CREATOR())
+REFLECT_TEMPLATE_TYPE(template<typename T>, std::weak_ptr<T>,	REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
-void Service::Stop(bool /*block*/)
-{
-	Post(std::bind<void>(&Application::Unregister, Application::Get(), mSelf.lock()));
-	//if (block)
-	//{
-	//	Wait(Stopped);
-	//}
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-//bool Service::Wait(ExecutionState state)
-//{
-//	const bool isSelf = Active().get() == this;
-//	ASSERT(!isSelf); // We cannot wait for ourself!
-//	if (!isSelf)
-//	{
-//		MutexLock lock(mStateMutex);
-//		while (state > mState.get())
-//		{
-//			mStateChanged.wait(lock);
-//		}
-//	}
-//	return !isSelf;
-//}
-
-// --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(Task::Fn& fn)
-{	
-	shared_service service = mSelf.lock();
-	shared_task task(new Task(fn, service));
-	return Post(task);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(shared_task task)
-{
-	return mTaskQueue.try_push(task);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Active()
-{
-	return Application::Get()->ActiveService();
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Create()
-{
-	shared_service service(new Service());
-	service->mSelf = service;
-	return service;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-} // namespace Marbles
+REFLECT_TEMPLATE_TYPE(template<typename T RFFLECT_COMMA typename A>, 
+					  std::vector<T RFFLECT_COMMA A>, 
+					  REFLECT_CREATOR())
 
 // End of file --------------------------------------------------------------------------------------------------------
