@@ -24,7 +24,7 @@
 #pragma once
 
 #include <Common/Function_traits.h> 
-#include <Common/Hash.h> 
+#include <Common/hash.h> 
 
 #include <sstream>
 #include <map>
@@ -32,54 +32,54 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
-class Object;
+class object;
 
 // --------------------------------------------------------------------------------------------------------------------
-class Type
+class type_info
 {
 public:
-	typedef std::vector<shared_type>	TypeList;
-	typedef std::vector<shared_member>	MemberList;
-	typedef std::vector<Declaration>	DeclarationList;
-	class Builder;
+	typedef std::vector<shared_type>	type_list;
+	typedef std::vector<shared_member>	member_list;
+	typedef std::vector<declaration>	declaration_list;
+	class builder;
 
-	Type();
-	~Type();
+	type_info();
+	~type_info();
 
-	const std::string&		Name() const;
-	hash_t					HashName() const;
-	size_t					Size() const						{ return mSize; }
-	size_t					Alignment() const					{ return static_cast<size_t>(1) << mAlignment; }
-	const Declaration&		ValueDeclaration() const			{ return mByValue; }
-	const DeclarationList&	Parameters() const					{ return mParameters; }
-	const MemberList&		Members() const						{ return mMembers; }
-	MemberList::size_type	MemberIndex(const char* name) const	{ return MemberIndex(Hash(name)); }
-	MemberList::size_type	MemberIndex(hash_t hashName) const;
+	const std::string&		name() const;
+	hash_t					hashname() const;
+	size_t					size() const						{ return mSize; }
+	size_t					alignment() const					{ return static_cast<size_t>(1) << mAlignment; }
+	const declaration&		valueDeclaration() const			{ return mByValue; }
+	const declaration_list&	parameters() const					{ return mParameters; }
+	const member_list&		members() const						{ return mMembers; }
+	member_list::size_type	memberIndex(const char* name) const	{ return memberIndex(hash(name)); }
+	member_list::size_type	memberIndex(hash_t hashname) const;
 
-	const bool				Implements(const shared_type& type) const;
-	Object					Create(const char* name = NULL) const;
+	const bool				implements(const shared_type& type) const;
+	object					create(const char* name = NULL) const;
 
-	const bool				operator==(const Type& type) const;
+	const bool				operator==(const type_info& type) const;
 
-	static hash_t			Hash(const char* str);
-	static hash_t			Hash(const void* obj, size_t size);
-	static shared_type		Find(const char* name);
-	static shared_type		Find(hash_t hashName);
-	static void				Clear();
+	static hash_t			hash(const char* str);
+	static hash_t			hash(const void* obj, size_t size);
+	static shared_type		find(const char* name);
+	static shared_type		find(hash_t hashname);
+	static void				clear();
 
 private:
-	static bool				Register(shared_type type);
+	static bool				_register(shared_type type);
 
-	Declaration				mByValue;
-	MemberList				mMembers;
-	DeclarationList			mParameters;
-	TypeList				mImplements;
+	declaration				mByValue;
+	member_list				mMembers;
+	declaration_list		mParameters;
+	type_list				mImplements;
 	size_t					mSize;
 	unsigned char			mAlignment; // Stored as an exponent to a power of two
 
-	typedef void (*CreateFn)(Object& );
+	typedef void (*CreateFn)(object& );
 
 	// AssignFn
 	// DestoryFn
@@ -94,60 +94,60 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-class Type::Builder
+class type_info::builder
 {
 public:
-	Builder();
-	shared_type TypeInfo() const { return mBuild; }
-	shared_type Create(const char* name);
+	builder();
+	shared_type typeInfo() const { return mBuild; }
+	shared_type create(const char* name);
 	
-	void SetCreator(Type::CreateFn fn);
-	// void SetAppend(Type::AppendFn fn);
-	// void SetEnumerator();
+	void setCreator(type_info::CreateFn fn);
+	// void setAppend(type_info::AppendFn fn);
+	// void setEnumerator();
 
-	template<typename T> shared_type Create(const char* name);
-	template<typename T> void AddMember(const char* name, const char* description = NULL);
-	template<typename T> void AddMember(const char* name, T member, const char* description = NULL);
-	void AddMember(const char* name, shared_type type, const char* description = NULL);
+	template<typename T> shared_type create(const char* name);
+	template<typename T> void addMember(const char* name, const char* description = NULL);
+	template<typename T> void addMember(const char* name, T member, const char* description = NULL);
+	void addMember(const char* name, shared_type type_info, const char* description = NULL);
 
 private:
-	void SetAlignment(size_t alignment);
-	void SetSize(size_t size);
+	void setAlignment(size_t alignment);
+	void setSize(size_t size);
 
 	template<typename T> struct template_traits;
-	template<typename T> friend struct TypeOfT;
+	template<typename T> friend struct type_of_t;
 
-	std::shared_ptr<Type> mBuild;
+	std::shared_ptr<type_info> mBuild;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> struct Type::Builder::template_traits
+template<typename T> struct type_info::builder::template_traits
 {
 	static unsigned NumberOfParameters()				{ return 0; }
-	static Declaration ParameterAt(unsigned /*index*/)	{ return Declaration(); }
-	static std::string TypeName(const char* name)		{ return std::string(name); }
+	static declaration ParameterAt(unsigned /*index*/)	{ return declaration(); }
+	static std::string Typename(const char* name)		{ return std::string(name); }
 };
 
-// Review(danc): This only works for type parameters not numeric template parameters
-#define BUILD_TEMPLATE_TRAITS_PREFIX ::Marbles::Reflection::TypeOf<A
+// Review(danc): This only works for type_info parameters not numeric template parameters
+#define BUILD_TEMPLATE_TRAITS_PREFIX ::Marbles::reflection::type_of<A
 #define BUILD_TEMPLATE_TRAITS_POSTFIX >()
-#define BUILD_TEMPLATE_TRAITS_TYPENAME ->Name()
+#define BUILD_TEMPLATE_TRAITS_TYPENAME ->name()
 #define BUILD_TEMPLATE_TRAITS_SEP << ',' <<
 #define BUILD_TEMPLATE_TRAITS_LIST(N) FN_LIST(N,BUILD_TEMPLATE_TRAITS_PREFIX,BUILD_TEMPLATE_TRAITS_POSTFIX BUILD_TEMPLATE_TRAITS_TYPENAME,BUILD_TEMPLATE_TRAITS_SEP)
-#define BUILD_TEMPLATE_PARAMETERS_PREFIX ::Marbles::Reflection::DeclarationT<A
+#define BUILD_TEMPLATE_PARAMETERS_PREFIX ::Marbles::reflection::declarationT<A
 #define BUILD_TEMPLATE_PARAMETERS_POSTFIX >()
 #define BUILD_PARAMETER_TYPE_LIST(N) FN_LIST(N,BUILD_TEMPLATE_PARAMETERS_PREFIX,BUILD_TEMPLATE_PARAMETERS_POSTFIX,FN_COMMA)
 #define BUILD_TEMPLATE_TRAITS(N) \
 	template<template<FN_LIST(N,typename B,,FN_COMMA)> class T, FN_TYPENAME(N)> \
-	struct Type::Builder::template_traits< T<FN_TYPES(N)> > \
+	struct type_info::builder::template_traits< T<FN_TYPES(N)> > \
 	{ \
 		static unsigned NumberOfParameters() { return N; } \
-		static Declaration ParameterAt(unsigned index) \
+		static declaration ParameterAt(unsigned index) \
 		{ \
-			Declaration parameters[] = { BUILD_PARAMETER_TYPE_LIST(N) }; \
-			return (0 <= index && index < N) ? parameters[index] : Declaration(); \
+			declaration parameters[] = { BUILD_PARAMETER_TYPE_LIST(N) }; \
+			return (0 <= index && index < N) ? parameters[index] : declaration(); \
 		} \
-		static std::string TypeName(const char* name) \
+		static std::string Typename(const char* name) \
 		{ \
 			std::stringstream ss; \
 			int max_chars = 256; \
@@ -183,10 +183,10 @@ BUILD_TEMPLATE_TRAITS(12);
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> 
-shared_type Type::Builder::Create(const char* name)
+shared_type type_info::builder::create(const char* name)
 {	
-	std::shared_ptr<Type> candidate = std::shared_ptr<Type>(new Type());
-	shared_type type = std::const_pointer_cast<const Type>(candidate);
+	std::shared_ptr<type_info> candidate = std::shared_ptr<type_info>(new type_info());
+	shared_type type = std::const_pointer_cast<const type_info>(candidate);
 
 	unsigned numberOfParameters = template_traits<typename by_value<T>::type>::NumberOfParameters(); 
 	candidate->mParameters.reserve(numberOfParameters);
@@ -194,11 +194,11 @@ shared_type Type::Builder::Create(const char* name)
 	{
 		candidate->mParameters.push_back(template_traits<typename by_value<T>::type>::ParameterAt(i)); 
 	}
-	std::string fullName = template_traits<typename by_value<T>::type>::TypeName(name);
-	std::shared_ptr< MemberT<T> > member = std::make_shared< MemberT<T> >(fullName, type, "Default value type member.");
-	candidate->mByValue = Declaration(std::static_pointer_cast<Member>(member)); 
+	std::string fullname = template_traits<typename by_value<T>::type>::Typename(name);
+	std::shared_ptr< memberT<T> > mem = std::make_shared< memberT<T> >(fullname, type, "Default value type_info member.");
+	candidate->mByValue = declaration(std::static_pointer_cast<member>(mem)); 
 
-	if (Type::Register(type))
+	if (type_info::_register(type))
 	{
 		mBuild.swap(candidate);
 	}
@@ -209,24 +209,24 @@ shared_type Type::Builder::Create(const char* name)
 
 	if (mBuild)
 	{
-		SetCreator(&Object::Create<void>);
-		SetAlignment(std::alignment_of<T>::value);
-		SetSize(sizeof(T));
+		setCreator(&object::create<void>);
+		setAlignment(std::alignment_of<T>::value);
+		setSize(sizeof(T));
 	}
 
 	return type;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> void Type::Builder::AddMember(const char* name, const char* description)
+template<typename T> void type_info::builder::addMember(const char* name, const char* description)
 {
-	AddMember(name, TypeOf<T>(), description);
+	addMember(name, type_of<T>(), description);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> void Type::Builder::AddMember(const char* name, T member, const char* description)
+template<typename T> void type_info::builder::addMember(const char* name, T member, const char* description)
 {
-	shared_member memberInfo = std::make_shared< MemberT<T> >(name, member, description);
+	shared_member memberInfo = std::make_shared< memberT<T> >(name, member, description);
 	if (memberInfo)
 	{
 		mBuild->mMembers.push_back(memberInfo);
@@ -234,7 +234,7 @@ template<typename T> void Type::Builder::AddMember(const char* name, T member, c
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

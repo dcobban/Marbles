@@ -21,75 +21,75 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Application\Service.h>
+#include <application\service.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
 
 // --------------------------------------------------------------------------------------------------------------------
-Service::Service()
-: mState(Service::Uninitialized)
+service::service()
+: _state(service::uninitialized)
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Service::ExecutionState Service::State() const
+service::execution_state service::state() const
 {
-	return mState.get();
+	return _state.get();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Service::Stop(bool /*block*/)
+void service::stop(bool /*block*/)
 {
-	Post(std::bind<void>(&Application::Unregister, Application::Get(), mSelf.lock()));
+	post(std::bind<void>(&application::unregister, application::get(), _self.lock()));
 	//if (block)
 	//{
-	//	Wait(Stopped);
+	//	wait(stopped);
 	//}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-//bool Service::Wait(ExecutionState state)
+//bool service::wait(execution_state state)
 //{
-//	const bool isSelf = Active().get() == this;
+//	const bool isSelf = active().get() == this;
 //	ASSERT(!isSelf); // We cannot wait for ourself!
 //	if (!isSelf)
 //	{
-//		MutexLock lock(mStateMutex);
-//		while (state > mState.get())
+//		mutex_lock lock(_stateMutex);
+//		while (state > _state.get())
 //		{
-//			mStateChanged.wait(lock);
+//			_stateChanged.wait(lock);
 //		}
 //	}
 //	return !isSelf;
 //}
 
 // --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(Task::Fn& fn)
+bool service::post(task::fn& fn)
 {	
-	shared_service service = mSelf.lock();
-	shared_task task(new Task(fn, service));
-	return Post(task);
+	shared_service service = _self.lock();
+	shared_task task(new task(fn, service));
+	return post(task);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-bool Service::Post(shared_task task)
+bool service::post(shared_task task)
 {
-	return mTaskQueue.try_push(task);
+	return _taskQueue.try_push(task);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Active()
+shared_service service::active()
 {
-	return Application::Get()->ActiveService();
+	return application::get()->activeService();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Service::Create()
+shared_service service::create()
 {
-	shared_service service(new Service());
-	service->mSelf = service;
+	shared_service service(new service());
+	service->_self = service;
 	return service;
 }
 

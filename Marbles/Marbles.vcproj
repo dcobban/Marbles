@@ -223,6 +223,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Application\Event.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Application\Platform.h"
 				>
 			</File>

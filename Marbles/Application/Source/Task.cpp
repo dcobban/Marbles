@@ -21,28 +21,26 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Application/Task.h>
+#include <application/task.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
 namespace 
 {
-	void EmptyFn() {}
+	void no_action() {}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Task::Task()
-: task(&EmptyFn)
-, next(NULL)
+task::task()
+: task_fn(&no_action)
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Task::Task(Fn task, shared_service& service)
-: task(task)
+task::task(const fn& task_fn, shared_service& service)
+: task_fn(task_fn)
 , service(service)
-, next(NULL)
 {
 }
 

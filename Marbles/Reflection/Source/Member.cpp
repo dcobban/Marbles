@@ -21,66 +21,66 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Reflection.h>
+#include <reflection.h>
 #include <Common/Common.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
 // --------------------------------------------------------------------------------------------------------------------
-shared_type	Declaration::TypeInfo() const 
+shared_type	declaration::typeInfo() const 
 { 
-	return member->TypeInfo(); 
+	return member->typeInfo(); 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Member::Member(const std::string& name, const Declaration& declaration, const char* usage)
+member::member(const std::string& name, const declaration& declaration, const char* usage)
 : mName(name)
-, mType(declaration.TypeInfo())
+, mType(declaration.typeInfo())
 , mUsage(usage)
 , mDeclaration(declaration)
 {
-	mHashName = Type::Hash(mName.c_str());
+	mHashName = type_info::hash(mName.c_str());
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Member::Member(const std::string& name, const shared_type& type, const char* usage)
+member::member(const std::string& name, const shared_type& type_info, const char* usage)
 : mName(name)
-, mType(type)
+, mType(type_info)
 , mUsage(usage)
 {
-	mHashName = Type::Hash(mName.c_str());
+	mHashName = type_info::hash(mName.c_str());
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object Member::Assign(Object self, const Object& rhs) const
+object member::Assign(object self, const object& rhs) const
 {
-	ASSERT(self.IsValid());
-	ASSERT(rhs.TypeInfo()->Implements(self.TypeInfo()));
-	const Type::MemberList& members = self.TypeInfo()->Members();
-	for(Type::MemberList::const_iterator i = members.begin(); i < members.end(); ++i)
+	ASSERT(self.isValid());
+	ASSERT(rhs.typeInfo()->implements(self.typeInfo()));
+	const type_info::member_list& members = self.typeInfo()->members();
+	for(type_info::member_list::const_iterator i = members.begin(); i < members.end(); ++i)
 	{
-		self.At(*i) = rhs.At(*i);
+		self.at(*i) = rhs.at(*i);
 	}
 	return self;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object Member::Dereference(const Object& /*self*/) const
+object member::dereference(const object& /*self*/) const
 {
-	return Object();
+	return object();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object Member::Append(Object& /*self*/) const
+object member::Append(object& /*self*/) const
 {
-	return Object();
+	return object();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

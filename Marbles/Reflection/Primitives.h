@@ -24,7 +24,19 @@
 #pragma once
 
 // --------------------------------------------------------------------------------------------------------------------
-REFLECT_TYPE(Marbles::Reflection::Type, REFLECT_CREATOR())
+// REFLECT_TYPE(void,)
+template<> struct ::Marbles::reflection::type_of_t<void> 
+: public ::Marbles::reflection::instance_t< ::Marbles::reflection::type_of_t<void> > 
+{
+	typedef void type_info; 
+	static ::Marbles::reflection::shared_type typeInfo() 
+	{ 
+		return ::Marbles::reflection::shared_type(); 
+	} 
+}; 
+
+// --------------------------------------------------------------------------------------------------------------------
+REFLECT_TYPE(Marbles::reflection::type_info, REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
 REFLECT_TYPE(bool,				REFLECT_CREATOR())
@@ -39,6 +51,7 @@ REFLECT_TYPE(Marbles::int64_t,	REFLECT_CREATOR())
 REFLECT_TYPE(float,				REFLECT_CREATOR())
 REFLECT_TYPE(double,			REFLECT_CREATOR())
 REFLECT_TYPE(std::string,		REFLECT_CREATOR())
+REFLECT_TYPE(Marbles::reflection::object,REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
 REFLECT_TEMPLATE_TYPE(template<typename T>, std::char_traits<T>,)

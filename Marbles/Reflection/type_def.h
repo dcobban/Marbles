@@ -29,7 +29,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -52,9 +52,9 @@ struct type_def_base
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_def : public type_def_base
 {
-	std::ostream&	signature(std::ostream& name) const { return name << type_info()->Name(); }
+	std::ostream&	signature(std::ostream& name) const { return name << type_info()->name(); }
 
-	shared_type		type_info() const	{ return TypeOf<T>(); }
+	shared_type		type_info() const	{ return type_of<T>(); }
 	const size_t	alignment() const	{ return std::alignment_of<std::remove_reference<T>::value>::value; }
 	const size_t	size() const		{ return sizeof(T); }
 
@@ -66,9 +66,9 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_def<T*> : public type_def_base
 {
-	std::ostream&	signature(std::ostream& os) const { return os << type_info()->Name() << "*"; }
+	std::ostream&	signature(std::ostream& os) const { return os << type_info()->name() << "*"; }
 
-	shared_type		type_info() const	{ return TypeOf<T>(); }
+	shared_type		type_info() const	{ return type_of<T>(); }
 	const size_t	alignment() const	{ return std::alignment_of<T*>::value; }
 	const size_t	size() const		{ return sizeof(T*); }
 	const size_t	rank() const		{ return rank_value; }
@@ -80,9 +80,9 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_def<T* const> : public type_def_base
 {
-	std::ostream&	signature(std::ostream& os) const { return os << type_info()->Name() << "* const"; }
+	std::ostream&	signature(std::ostream& os) const { return os << type_info()->name() << "* const"; }
 
-	shared_type		type_info() const	{ return TypeOf<T>(); }
+	shared_type		type_info() const	{ return type_of<T>(); }
 	const size_t	alignment() const	{ return std::alignment_of<T* const>::value; }
 	const size_t	size() const		{ return sizeof(T* const); }
 	const size_t	rank() const		{ return rank_value; }
@@ -95,9 +95,9 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_def<T* volatile> : public type_def_base
 {
-	std::ostream&	signature(std::ostream& os) const { return os << type_info()->Name() << "* volatile"; }
+	std::ostream&	signature(std::ostream& os) const { return os << type_info()->name() << "* volatile"; }
 
-	shared_type		type_info() const	{ return TypeOf<T>(); }
+	shared_type		type_info() const	{ return type_of<T>(); }
 	const size_t	alignment() const	{ return std::alignment_of<T* volatile>::value; }
 	const size_t	size() const		{ return sizeof(T* volatile); }
 	const size_t	rank() const		{ return rank_value; }
@@ -110,9 +110,9 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_def<T* const volatile> : public type_def_base
 {
-	std::ostream&	signature(std::ostream& os) const { return os << type_info()->Name() << "* const volatile"; }
+	std::ostream&	signature(std::ostream& os) const { return os << type_info()->name() << "* const volatile"; }
 
-	shared_type		type_info() const	{ return TypeOf<T>(); }
+	shared_type		type_info() const	{ return type_of<T>(); }
 	const size_t	alignment() const	{ return std::alignment_of<T* const volatile>::value; }
 	const size_t	size() const		{ return sizeof(T* const volatile); }
 	const size_t	rank() const		{ return rank_value; }
@@ -124,13 +124,13 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-// Review(danc): This only works for type parameters not numeric template parameters
-#define BUILD_TYPE_DEF_PREFIX ::Marbles::Reflection::TypeOf<A
+// Review(danc): This only works for type_info parameters not numeric template parameters
+#define BUILD_TYPE_DEF_PREFIX ::Marbles::reflection::type_of<A
 #define BUILD_TYPE_DEF_POSTFIX >()
-#define BUILD_TYPE_DEF_TYPENAME ->Name()
+#define BUILD_TYPE_DEF_TYPENAME ->name()
 #define BUILD_TYPE_DEF_SEP << ',' <<
 #define BUILD_TYPE_DEF_LIST(N) FN_LIST(N,BUILD_TYPE_DEF_PREFIX,BUILD_TYPE_DEF_POSTFIX BUILD_TYPE_DEF_TYPENAME,BUILD_TYPE_DEF_SEP)
-#define BUILD_PARAMETERS_PREFIX ::Marbles::Reflection::type_def<A
+#define BUILD_PARAMETERS_PREFIX ::Marbles::reflection::type_def<A
 #define BUILD_PARAMETERS_POSTFIX >()
 #define BUILD_PARAMETER_LIST(N) FN_LIST(N,BUILD_PARAMETERS_PREFIX,BUILD_PARAMETERS_POSTFIX,FN_COMMA)
 #define BUILD_TYPE_DEF(N) \
@@ -180,7 +180,7 @@ BUILD_TYPE_DEF(12);
 #undef BUILD_TYPE_DEF
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

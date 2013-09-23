@@ -26,69 +26,70 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> 
-class MemberT : public Member
+class memberT : public member
 {
 public:
-	MemberT(const std::string& name, const shared_type& type, const char* usage)
-	: Member(name, type, usage) {}
-	MemberT(const std::string& name, const Declaration& declaration, const char* usage)
-	: Member(name, declaration, usage) {}
+	memberT(const std::string& name, const shared_type& type_info, const char* usage)
+	: member(name, type_info, usage) {}
+	memberT(const std::string& name, const declaration& declaration, const char* usage)
+	: member(name, declaration, usage) {}
 
-	virtual shared_type	DeclaredType() const { return TypeOf<T>(); }
-	virtual Object		Assign(Object self, const Object& rhs) const;
-	virtual Object		Dereference(const Object& /*self*/) const;
-	virtual Object		Append(Object& self) const;
+	virtual shared_type	DeclaredType() const { return type_of<T>(); }
+	virtual object		Assign(object self, const object& rhs) const;
+	virtual object		dereference(const object& /*self*/) const;
+	virtual object		Append(object& self) const;
 private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> 
-Object MemberT<T>::Assign(Object self, const Object& rhs) const
+object memberT<T>::Assign(object self, const object& rhs) const
 {
-	ASSERT(self.IsValid());
-	ASSERT(self.TypeInfo()->Implements(rhs.TypeInfo()));
-	if (self.IsValue())
+	ASSERT(self.isValid());
+	ASSERT(self.typeInfo()->implements(rhs.typeInfo()));
+	if (self.isValue())
 	{
-		self.As<T>() = rhs.As<T>();
+		self.as<T>() = rhs.as<T>();
 	}
-	//else if (self.IsShared())
+	//else if (self.isShared())
 	//{
-	//	self.As< std::shared_ptr<T> >() = rhs.As<T>();
+	//	self.as< std::shared_ptr<T> >() = rhs.as<T>();
 	//}
-	//else if (self.IsWeak())
+	//else if (self.isWeak())
 	//{
-	//	self.As< std::weak_ptr<T> >() = rhs.As<T>();
+	//	self.as< std::weak_ptr<T> >() = rhs.as<T>();
 	//}
-	else if (self.IsReference())
+	else if (self.isReference())
 	{
-		self.As<T*>() = rhs.As<T*>();
+		self.as<T*>() = rhs.as<T*>();
 	}
 	return self;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> 
-Object MemberT<T>::Dereference(const Object& /*self*/) const
+object memberT<T>::dereference(const object& self) const
 { 
-	ASSERT(!"Not implemented");
-	return Object(); 
+	declaration info(typeInfo()->valueDeclaration(), self.isConstant());
+	object value(info, *reinterpret_cast<void**>(self.Address()));
+	return value; 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> 
-Object MemberT<T>::Append(Object& /*self*/) const
+object memberT<T>::Append(object& /*self*/) const
 {
 	ASSERT(!"Not implemented");
-	return Object();
+	return object();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

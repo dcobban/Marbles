@@ -26,16 +26,16 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Serialization
+namespace serialization
 {
 
 // --------------------------------------------------------------------------------------------------------------------
-class Format
+class format
 {
 	bool mEndianSwap;
-	Reflection::Object mRoot;
+	reflection::object mRoot;
 public:
-	Format(Object root, bool endianSwap) : mEndianSwap(endianSwap), mRoot(root) {}
+	format(object root, bool endianSwap) : mEndianSwap(endianSwap), mRoot(root) {}
 
 	bool					EndianSwap() const { return mEndianSwap; }
 
@@ -53,8 +53,8 @@ public:
 	virtual std::ostream&	Write(std::ostream& os, const double& value) const = 0;
 	virtual std::ostream&	Write(std::ostream& os, const float& value) const = 0;
 
-	virtual std::ostream&	TypeInfo(std::ostream& os, const Object& root) const = 0;
-	virtual std::ostream&	Label(std::ostream& os, const Object& root) const = 0;
+	virtual std::ostream&	typeInfo(std::ostream& os, const object& root) const = 0;
+	virtual std::ostream&	Label(std::ostream& os, const object& root) const = 0;
 	virtual std::ostream&	OpenEnumeration(std::ostream& os) const = 0;
 	virtual std::ostream&	CloseEnumeration(std::ostream& os) const = 0;
 	virtual std::ostream&	OpenMap(std::ostream& os) const = 0;
@@ -65,9 +65,9 @@ public:
 	virtual std::ostream&	NewLine(std::ostream& os) const = 0;
 
 	// Read Interface
-	virtual bool			Read(std::istream& is, Object& value) const = 0;
+	virtual bool			Read(std::istream& is, object& value) const = 0;
 
-	virtual bool			TypeInfo(std::istream& is, Object& value) const = 0;
+	virtual bool			typeInfo(std::istream& is, object& value) const = 0;
 	virtual std::string		Label(std::istream& is) const = 0;
 	virtual bool			OpenEnumeration(std::istream& is) const = 0;
 	virtual bool			CloseEnumeration(std::istream& is) const = 0;
@@ -79,7 +79,7 @@ public:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Serialization
+} // namespace serialization
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

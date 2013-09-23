@@ -30,17 +30,17 @@ template<typename T, size_t N> class CircularBuffer
 {
 public:
 	CircularBuffer()
-	: mStart(0)
-	, mEnd(0)
-	, mInit(0)
-	, mClean(0)
+	: _start(0)
+	, _end(0)
+	, _init(0)
+	, _clean(0)
 	{
 	}
 	~CircularBuffer(){}
 	inline unsigned size() const
 	{
-		const unsigned start = mStart.get();
-		const unsigned end = mEnd.get();
+		const unsigned start = _start.get();
+		const unsigned end = _end.get();
 		return start <= end ? end - start : end + N + 1 - start;
 	}
 	inline bool empty() const
@@ -64,20 +64,20 @@ public:
 		unsigned next;
 		do
 		{	// Reserve an element to be created
-			reserved = mInit.get();
+			reserved = _init.get();
 			next = (reserved + 1) % (N + 1);
-			if (next == mClean.get())
+			if (next == _clean.get())
 				return false;
-			// Try again if another thread has modified the mInit value before me.
-		} while(reserved != mInit.compare_exchange(next, reserved));
+			// Try again if another thread has modified the _init value before me.
+		} while(reserved != _init.compare_exchange(next, reserved));
 		
 		// Element reserved, assign the value
-		mItems[reserved] = value;
+		_items[reserved] = value;
 
 		// Syncronize the end position with the updated reserved position
-		while (reserved != mEnd.compare_exchange(next, reserved))
-		{	// Wait for the other element to be completed.
-			Application::Sleep(1); 
+		while (reserved != _end.compare_exchange(next, reserved))
+		{	// wait for the other element to be completed.
+			application::sleep(1); 
 		}
 
 		return true;
@@ -87,7 +87,7 @@ public:
 	{
 		while (!try_push(value))
 		{
-			Application::Sleep(1);
+			application::sleep(1);
 		}
 	}
 
@@ -97,19 +97,19 @@ public:
 		unsigned next;
 		do 
 		{
-			start = mStart.get();
-			if (start == mEnd.get())
+			start = _start.get();
+			if (start == _end.get())
 				return false;
 			next = (start + 1) % (N + 1);
-		} while(start != mStart.compare_exchange(next, start));
+		} while(start != _start.compare_exchange(next, start));
 		
 		out = T();
-		std::swap(mItems[start], out);
+		std::swap(_items[start], out);
 
 		// Syncronize the clean position with the updated start position
-		while (start != mClean.compare_exchange(next, start))
-		{	// Wait for the other element to be cleaned first
-			Application::Sleep(1); 
+		while (start != _clean.compare_exchange(next, start))
+		{	// wait for the other element to be cleaned first
+			application::sleep(1); 
 		}
 		
 		return true;
@@ -120,17 +120,17 @@ public:
 		T tmp;
 		while (!try_pop(tmp))
 		{
-			Application::Sleep(1);
+			application::sleep(1);
 		}
 		return tmp;
 	}
 private:
 	// Todo: We really should control construction and destruction
-	T						mItems[N + 1]; 
-	atomic<unsigned>		mStart;
-	atomic<unsigned>		mEnd;
-	atomic<unsigned>		mInit;
-	atomic<unsigned>		mClean;
+	T						_items[N + 1]; 
+	atomic<unsigned>		_start;
+	atomic<unsigned>		_end;
+	atomic<unsigned>		_init;
+	atomic<unsigned>		_clean;
 };
 
 } // namespace Marbles

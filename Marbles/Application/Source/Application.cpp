@@ -21,8 +21,8 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Application\Application.h>
-#include <Application\Service.h>
+#include <application\application.h>
+#include <application\service.h>
 #include <boost\any.hpp>
 #include <boost\thread.hpp>
 
@@ -31,66 +31,66 @@ namespace Marbles
 {
 
 // --------------------------------------------------------------------------------------------------------------------
-struct Application::Implementation
+struct application::implementation
 {
 	typedef boost::shared_mutex					SharedMutex;
 	typedef boost::unique_lock<SharedMutex>		UniqueLock;
-	typedef boost::shared_lock<SharedMutex>		SharedLock;
+	typedef boost::shared_lock<SharedMutex>		shared_lock;
 	typedef boost::thread_specific_ptr<shared_service> ActiveService;
-	typedef boost::thread_specific_ptr<Application> ActiveApplication;
-	typedef std::vector<weak_service>			ServiceList;
+	typedef boost::thread_specific_ptr<application> ActiveApplication;
+	typedef std::vector<weak_service>			service_list;
 	typedef std::vector<shared_service>			KernelList;
 
-	Implementation()
+	implementation()
 	: activeService(&Empty<shared_service>)
-	, nextService(0)
-	, runResult(0)
+	, next_service(0)
+	, run_result(0)
 	{}
 
 	SharedMutex				kernelMutex;
 	KernelList				kernels;
 
-	SharedMutex				serviceMutex;
-	ServiceList				services;
+	SharedMutex				service_mutex;
+	service_list				services;
 
 	ActiveService			activeService;
-	atomic<unsigned int>	nextService;
-	int						runResult;
+	atomic<unsigned int>	next_service;
+	int						run_result;
 
 	static ActiveApplication sApplication;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-struct Application::Kernel
+struct application::kernel
 {
 	boost::thread	mThread;
 	shared_service	mActive;
 	shared_service	mNext;
 	size_t			mId;
 
-	Task::Fn		mChooseService;
+	task::fn		mChooseService;
 
-	Kernel();
-	~Kernel();
+	kernel();
+	~kernel();
 
-	inline bool Running() const { return mActive; }
+	inline bool running() const { return mActive; }
 
-	void Main(Application* application);
-	void StartThread();
+	void Main(application* application);
+	void startThread();
 	void StopThread();
-	void ChooseService();
-	shared_service SelectService();
+	void chooseService();
+	shared_service selectService();
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-Application::Kernel::Kernel()
+application::kernel::kernel()
 {
-	mChooseService = std::bind<void>(&Application::Kernel::ChooseService, this);
+	mChooseService = std::bind<void>(&application::kernel::chooseService, this);
 	mActive.reset();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Application::Kernel::~Kernel()
+application::kernel::~kernel()
 {
 	StopThread();
 	if (mThread.joinable())
@@ -100,73 +100,73 @@ Application::Kernel::~Kernel()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Application::Kernel::Main(Application* application)
+void application::kernel::Main(application* application)
 {
-	Application::Implementation::sApplication.reset(application);
-	application->mImplementation->activeService.reset(&mActive);
+	application::implementation::sApplication.reset(application);
+	application->_implementation->activeService.reset(&mActive);
 	ASSERT(!mActive);
-	ChooseService();
-	while(mActive && !mActive->mTaskQueue.empty()) 
+	chooseService();
+	while(mActive && !mActive->_taskQueue.empty()) 
 	{
-		ASSERT(Service::Queued != mActive->State());
-		shared_task task = mActive->mTaskQueue.pop();
-		task->task();
+		ASSERT(service::queued != mActive->state());
+		shared_task task = mActive->_taskQueue.pop();
+		task->task_fn();
 	}
 	mActive.reset();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Application::Kernel::StartThread()
+void application::kernel::startThread()
 {	// What if we are already running?
-	Application* application = Application::Get();
-	boost::thread kernel(std::bind(&Application::Kernel::Main, this, application));
+	application* application = application::get();
+	boost::thread kernel(std::bind(&application::kernel::Main, this, application));
 	mThread.swap(kernel);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Application::Kernel::StopThread()
+void application::kernel::StopThread()
 {	// Without an active service the thread will exit
 	mActive.reset();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Application::Kernel::ChooseService()
+void application::kernel::chooseService()
 {
 	shared_service selected;
 	if (mActive)
 	{	// Queue current service
-		mActive->mState = Service::Queued;
+		mActive->_state = service::queued;
 		mActive.reset();
 	}
 
 	// Select the next service
 	if (mNext)
 	{
-		mNext->mState = Service::Running;
+		mNext->_state = service::running;
 		mActive = mNext;
 		mNext.reset();
 	}
 	else
 	{
-		mActive = SelectService();
+		mActive = selectService();
 	}
 
 	if (mActive)
 	{
-		mActive->Post(mChooseService); // Schedule the next attempt to switch services
+		mActive->post(mChooseService); // Schedule the next attempt to switch services
 	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Application::Kernel::SelectService()
+shared_service application::kernel::selectService()
 {	
 	shared_service candidate;
-	Application::Implementation* const application = Application::Get()->mImplementation;
-	unsigned int start = application->nextService.get();
+	application::implementation* const application = application::get()->_implementation;
+	unsigned int start = application->next_service.get();
 	bool isSelectionPossible = false;
 	bool selected = false;
 
-	Implementation::SharedLock lock(application->serviceMutex);
+	implementation::shared_lock lock(application->service_mutex);
 	const size_t size = application->services.size();
 	if (0 != size)
 	{
@@ -176,14 +176,14 @@ shared_service Application::Kernel::SelectService()
 			unsigned int index = 0;
 			do 
 			{	
-				index = application->nextService.get();
+				index = application->next_service.get();
 				next = (index + 1) % size;
 				ASSERT(index != next); // Ensures that 2 <= mServiceList.size()
 				// try again if another thread has changed the value before me 
-			} while(index != application->nextService.compare_exchange(next, index));
+			} while(index != application->next_service.compare_exchange(next, index));
 
 			candidate = application->services[index].lock();
-			if (!candidate || Service::Queued != candidate->mState.compare_exchange(Service::Running, Service::Queued))
+			if (!candidate || service::queued != candidate->_state.compare_exchange(service::running, service::queued))
 			{
 				candidate.reset();
 			}
@@ -197,60 +197,60 @@ shared_service Application::Kernel::SelectService()
 			selected = accepted | exit;
 			if (sleep)
 			{
-				Application::Sleep(1);
+				application::sleep(1);
 			}
 			// If the service is valid and is being processed then pick another.
 		} while(!selected);
 	}
-	ASSERT(!candidate || Service::Queued != candidate->mState.get());
+	ASSERT(!candidate || service::queued != candidate->_state.get());
 	return candidate;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Application::Implementation::ActiveApplication Application::Implementation::sApplication(&Empty<Application>);
+application::implementation::ActiveApplication application::implementation::sApplication(&Empty<application>);
 
 // --------------------------------------------------------------------------------------------------------------------
-Application::Application()
+application::application()
 {
-	mImplementation = new Implementation();
+	_implementation = new implementation();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Application::~Application()
+application::~application()
 {
-	delete mImplementation;
+	delete _implementation;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Application::Stop(int runResult)
+void application::stop(int run_result)
 {
-	mImplementation->runResult = runResult;
+	_implementation->run_result = run_result;
 
 	{
-		Implementation::SharedLock lock(mImplementation->serviceMutex);
-		for(Implementation::ServiceList::iterator i = mImplementation->services.begin(); 
-			i != mImplementation->services.end(); 
+		implementation::shared_lock lock(_implementation->service_mutex);
+		for(implementation::service_list::iterator i = _implementation->services.begin(); 
+			i != _implementation->services.end(); 
 			++i)
 		{
 			shared_service service = (*i).lock();
 			if (service)
 			{
-				service->Stop();
+				service->stop();
 			}
 		}
 	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-int Application::Run(unsigned numThreads)
+int application::run(unsigned numThreads)
 {
-	bool isRunning = NULL != Implementation::sApplication.get();
+	bool isRunning = NULL != implementation::sApplication.get();
 	if (isRunning)
 	{
 		return -1;
 	}
 
-	Implementation::sApplication.reset(this);
+	implementation::sApplication.reset(this);
 
 	if (0 >= numThreads)
 	{
@@ -258,80 +258,80 @@ int Application::Run(unsigned numThreads)
 	}
 
 	// The services to initialize first are the kernels.
-	mImplementation->nextService = mImplementation->services.size();
+	_implementation->next_service = _implementation->services.size();
 
-	{	// Create the requested kernel
-		Application::Implementation::UniqueLock lock(mImplementation->kernelMutex);
-		mImplementation->kernels.reserve(numThreads);
+	{	// create the requested kernel
+		application::implementation::UniqueLock lock(_implementation->kernelMutex);
+		_implementation->kernels.reserve(numThreads);
 		for(int i = numThreads; i--; )
 		{
-			shared_service service = Service::Create();
-			Register(service);
-			service->MakeProvider<Kernel>();
-			Application::Kernel* provider = service->Provider<Kernel>();
-			if (!mImplementation->kernels.empty())
+			shared_service service = service::create();
+			_register(service);
+			service->make_provider<kernel>();
+			application::kernel* provider = service->provider<kernel>();
+			if (!_implementation->kernels.empty())
 			{	// Launch a thread for all kernels except the current thread.
-				service->Post(std::bind<void>(&Application::Kernel::StartThread, provider));
+				service->post(std::bind<void>(&application::kernel::startThread, provider));
 			}
-			provider->mId = mImplementation->kernels.size();
-			mImplementation->kernels.push_back(service);
+			provider->mId = _implementation->kernels.size();
+			_implementation->kernels.push_back(service);
 		}
 	}
 
-	shared_service primary = mImplementation->services[mImplementation->nextService.get()].lock();
-	primary->Provider<Kernel>()->Main(this);
+	shared_service primary = _implementation->services[_implementation->next_service.get()].lock();
+	primary->provider<kernel>()->Main(this);
 
-	for(Implementation::KernelList::iterator service = mImplementation->kernels.begin(); 
-		service != mImplementation->kernels.end(); 
+	for(implementation::KernelList::iterator service = _implementation->kernels.begin(); 
+		service != _implementation->kernels.end(); 
 		++service)
 	{
 		if (primary != (*service))
 		{
-			Kernel* kernel = (*service)->Provider<Kernel>();
-			if (kernel->mThread.joinable())
+			kernel* provider = (*service)->provider<kernel>();
+			if (provider->mThread.joinable())
 			{
-				kernel->mThread.join();
+				provider->mThread.join();
 			}
 		}
 	}
-	mImplementation->kernels.clear();
-	mImplementation->services.clear();
+	_implementation->kernels.clear();
+	_implementation->services.clear();
 	
-	Implementation::sApplication.reset();
-	return mImplementation->runResult;
+	implementation::sApplication.reset();
+	return _implementation->run_result;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-unsigned Application::NumHardwareThreads()
+unsigned application::num_hardware_threads()
 {
 	return boost::thread::hardware_concurrency();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Application::Sleep(int milliseconds)
+void application::sleep(int milliseconds)
 {
 	boost::chrono::milliseconds duration(milliseconds);
 	boost::this_thread::sleep_for(duration);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service Application::ActiveService() const
+shared_service application::activeService() const
 {
-	return *mImplementation->activeService;
+	return *_implementation->activeService;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Application::Register(shared_service service)
+void application::_register(shared_service service)
 {
 	weak_service serviceItem;
 	{	// If something has expired then reuse the slot
-		Implementation::SharedLock lock(mImplementation->serviceMutex);
-		Implementation::ServiceList::iterator item = mImplementation->services.begin();
-		while(item != mImplementation->services.end() && !item->expired())
+		implementation::shared_lock lock(_implementation->service_mutex);
+		implementation::service_list::iterator item = _implementation->services.begin();
+		while(item != _implementation->services.end() && !item->expired())
 		{
 			++item;
 		}
-		if (item != mImplementation->services.end())
+		if (item != _implementation->services.end())
 		{
 			*item = serviceItem = service;
 		}
@@ -339,40 +339,40 @@ void Application::Register(shared_service service)
 
 	if (serviceItem.expired())
 	{
-		Implementation::UniqueLock lock(mImplementation->serviceMutex);
-		mImplementation->services.erase(
-			std::remove_if(	mImplementation->services.begin(), 
-							mImplementation->services.end(), 
-							Expired<Service>()), 
-			mImplementation->services.end());
-		mImplementation->services.push_back(service);
+		implementation::UniqueLock lock(_implementation->service_mutex);
+		_implementation->services.erase(
+			std::remove_if(	_implementation->services.begin(), 
+							_implementation->services.end(), 
+							expired<Marbles::service>()), 
+			_implementation->services.end());
+		_implementation->services.push_back(service);
 	}
 
-	service->mState = Service::Queued;
+	service->_state = service::queued;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Application::Unregister(shared_service service)
+void application::unregister(shared_service service)
 {
-	Implementation::SharedLock lock(mImplementation->serviceMutex);
-	Implementation::ServiceList::iterator item = mImplementation->services.begin();
-	while(item->lock() != service && item != mImplementation->services.end())
+	implementation::shared_lock lock(_implementation->service_mutex);
+	implementation::service_list::iterator item = _implementation->services.begin();
+	while(item != _implementation->services.end() && item->lock() != service)
 	{
 		++item;
 	}
-	if (item != mImplementation->services.end())
+	if (item != _implementation->services.end())
 	{	
 		item->reset(); // Item is no longer a candidate
 	}
 
-	service->mState = Service::Stopped;
+	service->_state = service::stopped;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Application* Application::Get() 
+application* application::get() 
 { 
-	Application* app = Implementation::sApplication.get();
-	ASSERT(app || !"You must call Application::Run before calling this function."); 
+	application* app = implementation::sApplication.get();
+	ASSERT(app || !"You must call application::run before calling this function."); 
 	return app; 
 }
 

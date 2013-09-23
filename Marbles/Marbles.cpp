@@ -1,7 +1,7 @@
 // Marbles.cpp : Defines the entry point for the console application.
 //
 
-#include "behaviour\Behaviour.h"
+//#include "behaviour\Behaviour.h"
 
 //int UserTask(void* user)
 //{
@@ -11,7 +11,7 @@
 
 //int main(int argc, char* argv[])
 //{
-//	//Task task = Application.Start(UserTask, NULL);
+//	//task task = application.start(UserTask, NULL);
 //	(void)argc; (void) argv;
 //	return 0;
 //}

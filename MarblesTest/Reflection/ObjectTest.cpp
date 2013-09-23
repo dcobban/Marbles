@@ -23,7 +23,7 @@
 
 #include "FooBar.h"
 
-using namespace Marbles::Reflection;
+using namespace Marbles::reflection;
 
 BOOST_AUTO_TEST_SUITE( reflection_object )
 
@@ -38,18 +38,18 @@ BOOST_AUTO_TEST_CASE( reflection_object_field )
 	bool question = false; 
 	unsigned long long huge = std::numeric_limits<unsigned long long>::max(); 
 
-	Object foo_obj(foo);
-	Object half_obj(half);
-	Object tiny_obj(tiny);
-	Object negative_obj(negative);
-	Object question_obj(question);
-	Object huge_obj(huge);
+	object foo_obj(foo);
+	object half_obj(half);
+	object tiny_obj(tiny);
+	object negative_obj(negative);
+	object question_obj(question);
+	object huge_obj(huge);
 
-	BOOST_CHECK_EQUAL(half_obj.As<float>(), half);
-	BOOST_CHECK_EQUAL(tiny_obj.As<double>(), tiny);
-	BOOST_CHECK_EQUAL(negative_obj.As<int>(), negative);
-	BOOST_CHECK_EQUAL(question_obj.As<bool>(), question);
-	BOOST_CHECK_EQUAL(huge_obj.As<unsigned long long>(), huge);
+	BOOST_CHECK_EQUAL(half_obj.as<float>(), half);
+	BOOST_CHECK_EQUAL(tiny_obj.as<double>(), tiny);
+	BOOST_CHECK_EQUAL(negative_obj.as<int>(), negative);
+	BOOST_CHECK_EQUAL(question_obj.as<bool>(), question);
+	BOOST_CHECK_EQUAL(huge_obj.as<unsigned long long>(), huge);
 
 	half_obj = 0.25f;
 	BOOST_CHECK_EQUAL(half, 0.25f);
@@ -62,19 +62,25 @@ BOOST_AUTO_TEST_CASE( reflection_object_field )
 	huge_obj = 0ull;
 	BOOST_CHECK_EQUAL(huge, 0);
 
+	foo.x = 1;
+	foo.y = 2.0f;
+	foo.z = 3ull;
 
-	BOOST_CHECK_EQUAL(foo_obj.At("X").As<int>(), foo.x);
-	BOOST_CHECK_EQUAL(foo_obj.At("Y").As<float>(), foo.y);
-	BOOST_CHECK_EQUAL(foo_obj.At("Z").As<Marbles::uint64_t>(), foo.z);
+	BOOST_CHECK_EQUAL(foo_obj.at("X").as<int>(), foo.x);
+	BOOST_CHECK_EQUAL(foo_obj.at("Y").as<float>(), foo.y);
+	BOOST_CHECK_EQUAL(foo_obj.at("Z").as<Marbles::uint64_t>(), foo.z);
 
-	Object bar_obj = foo_obj.At("Bar");
-	bar_obj.At("reference_foo") = &foo;
+	object bar_obj = foo_obj.at("Bar");
+	bar_obj.at("reference_foo") = &foo;
 	BOOST_CHECK_EQUAL(foo.bar.reference_foo, &foo);
-	Object new_foo_obj = TypeOf<Foo>()->Create();
-	bar_obj.At("shared_foo") = new_foo_obj;
-	BOOST_CHECK_EQUAL(new_foo_obj.As<Foo*>(), bar_obj.At("shared_foo").As<Foo*>());
-	bar_obj.At("weak_foo") = bar_obj.At("shared_foo");
-	BOOST_CHECK_EQUAL(new_foo_obj.As<Foo*>(), bar_obj.At("weak_foo").As<Foo*>());
+	object new_foo_obj = type_of<Foo>()->create();
+	bar_obj.at("shared_foo") = new_foo_obj.as<Foo*>();
+	Foo* test1 = new_foo_obj.as<Foo*>();
+	Foo* test2 = bar_obj.at("shared_foo").as<Foo*>();
+	BOOST_CHECK_EQUAL(test1, test2);
+	bar_obj.at("weak_foo") = bar_obj.at("shared_foo");
+	Foo* test3 = bar_obj.at("weak_foo").as<Foo*>();
+	BOOST_CHECK_EQUAL(test1, test3);
 
 	
 

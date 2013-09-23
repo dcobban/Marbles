@@ -25,7 +25,7 @@
 
 #if defined _WIN32
 	#define PLATFORM_WIN32
-//	#include <Application/Source/platform_win32.h>
+//	#include <application/Source/platform_win32.h>
 //#elif defined _IOS
 //	#define PLATFORM_IOS
 //#elif defined _ANDROID
@@ -53,7 +53,7 @@ namespace Marbles
 	class Platform
 	{
 	public:
-		static Platform* Get() { ASSERT(NULL != sInstance); return sInstance; }
+		static Platform* get() { ASSERT(NULL != sInstance); return sInstance; }
 	private:
 		static Platform* sInstance;
 	};

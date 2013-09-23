@@ -1,5 +1,6 @@
-#include <Application/Service.h>
-#include <Application/Application.h>
+#include <application/event.h>
+#include <application/service.h>
+#include <application/application.h>
 
 BOOST_AUTO_TEST_SUITE( service )
 
@@ -11,14 +12,14 @@ struct ExecutedService
 	{
 		executed = false;
 		
-		Marbles::shared_service active = Marbles::Service::Active();
-		active->Post(std::bind(&ExecutedService::Execute, this));
+		Marbles::shared_service active = Marbles::service::active();
+		active->post(std::bind(&ExecutedService::Execute, this));
 	}
 
 	void Execute() 
 	{
 		executed = true; 
-		Marbles::Service::Active()->Stop();
+		Marbles::service::active()->stop();
 	}
 };
 
@@ -26,15 +27,14 @@ struct ApplicationStop
 {
 	int count;
 	int end;
-	Marbles::Task::Fn updateTask; 
+	Marbles::event<void ()> update;
 
 	ApplicationStop(const int count) 
 		: count(0)
 		, end(count)
 	{
-		Marbles::shared_service active = Marbles::Service::Active();
-		updateTask = std::bind(&ApplicationStop::Update, this);
-		active->Post(updateTask);
+		update += std::bind(&ApplicationStop::Update, this);
+		update();
 	}
 
 	~ApplicationStop() 
@@ -45,12 +45,11 @@ struct ApplicationStop
 		++count;
 		if (count == end)
 		{
-			Marbles::Application::Get()->Stop(0);
+			Marbles::application::get()->stop(0);
 		}
 		else
 		{
-			Marbles::shared_service active = Marbles::Service::Active();
-			active->Post(updateTask);
+			update();
 		}
 	}
 };
@@ -60,28 +59,58 @@ BOOST_AUTO_TEST_CASE( single_thread_test )
 	BOOST_MESSAGE( "service.single_thread_test" );
 
 	const int numCyclesToStop = 10;
-	Marbles::Application app;
-	Marbles::shared_service executeTest = app.Start<ExecutedService>();
-	Marbles::shared_service stopTest = app.Start<ApplicationStop>(numCyclesToStop);
+	Marbles::application app;
+	Marbles::shared_service executeTest = app.start<ExecutedService>();
+	std::vector<Marbles::shared_service> racers;
+	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
 
-	app.Run(1);
+	app.run(1);
 
-	BOOST_CHECK(executeTest->Provider<ExecutedService>()->executed);
-	BOOST_CHECK_EQUAL(numCyclesToStop, stopTest->Provider<ApplicationStop>()->count);
+	BOOST_CHECK(executeTest->provider<ExecutedService>()->executed);
+	Marbles::shared_service winner = *racers.begin();
+	for(std::vector<Marbles::shared_service>::iterator i = racers.begin() + 1;
+		i != racers.end();
+		++i)
+	{
+		if (winner->provider<ApplicationStop>()->count < (*i)->provider<ApplicationStop>()->count)
+		{
+			winner = *i;
+		}
+	}
+	BOOST_CHECK_EQUAL(numCyclesToStop, winner->provider<ApplicationStop>()->count);
 }
 
 BOOST_AUTO_TEST_CASE( multiple_thread_test )
 {
 	BOOST_MESSAGE( "service.multiple_thread_test" );
 	const int numCyclesToStop = 1000;
-	Marbles::Application app;
-	Marbles::shared_service executeTest = app.Start<ExecutedService>();
-	Marbles::shared_service stopTest = app.Start<ApplicationStop>(numCyclesToStop);
+	Marbles::application app;
+	Marbles::shared_service executeTest = app.start<ExecutedService>();
+	std::vector<Marbles::shared_service> racers;
+	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
 
-	app.Run();
+	app.run();
 
-	BOOST_CHECK(executeTest->Provider<ExecutedService>()->executed);
-	BOOST_CHECK_EQUAL(numCyclesToStop, stopTest->Provider<ApplicationStop>()->count);
+	BOOST_CHECK(executeTest->provider<ExecutedService>()->executed);
+	Marbles::shared_service winner = *racers.begin();
+	for(std::vector<Marbles::shared_service>::iterator i = racers.begin() + 1;
+		i != racers.end();
+		++i)
+	{
+		if (winner->provider<ApplicationStop>()->count < (*i)->provider<ApplicationStop>()->count)
+		{
+			winner = *i;
+		}
+	}
+	BOOST_CHECK_EQUAL(numCyclesToStop, winner->provider<ApplicationStop>()->count);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

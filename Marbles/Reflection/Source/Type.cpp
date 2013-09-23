@@ -21,14 +21,14 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Reflection.h>
+#include <reflection.h>
 #include <Common/Common.h>
-#include <Common/Hash.h>
+#include <Common/hash.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
 namespace 
 {
@@ -36,50 +36,50 @@ namespace
 } // namespace <>
 
 // --------------------------------------------------------------------------------------------------------------------
-std::map<hash_t, shared_type> Type::sRegistrar;
+std::map<hash_t, shared_type> type_info::sRegistrar;
 
 // --------------------------------------------------------------------------------------------------------------------
-Type::Type()
+type_info::type_info()
 : mByValue()
 , mCreateFn(NULL)
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Type::~Type() 
+type_info::~type_info() 
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-const std::string& Type::Name() const
+const std::string& type_info::name() const
 { 
-	return mByValue.MemberInfo()->Name(); 
+	return mByValue.memberInfo()->name(); 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-hash_t Type::HashName() const
+hash_t type_info::hashname() const
 { 
-	return mByValue.MemberInfo()->HashName(); 
+	return mByValue.memberInfo()->hashname(); 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-const bool Type::Implements(const shared_type& type) const
+const bool type_info::implements(const shared_type& type_info) const
 {
-	bool implements = type && *this == *type;
-	for(TypeList::const_iterator base = mImplements.begin(); 
+	bool implements = type_info && *this == *type_info;
+	for(type_list::const_iterator base = mImplements.begin(); 
 		!implements && base != mImplements.end(); 
 		++base)
 	{
-		implements = (*base)->Implements(type);
+		implements = (*base)->implements(type_info);
 	}
 	return implements;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Type::MemberList::size_type Type::MemberIndex(hash_t hashName) const
+type_info::member_list::size_type type_info::memberIndex(hash_t hashName) const
 {	// A binary search would be good!
-	MemberList::size_type i = 0; 
-	while (i < mMembers.size() && hashName != mMembers[i]->HashName())
+	member_list::size_type i = 0; 
+	while (i < mMembers.size() && hashName != mMembers[i]->hashname())
 	{
 		++i;
 	}
@@ -87,10 +87,10 @@ Type::MemberList::size_type Type::MemberIndex(hash_t hashName) const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object Type::Create(const char* name) const
+object type_info::create(const char* name) const
 {
 	ASSERT(NULL == name); // Usage of name not implemented
-	Object obj;
+	object obj;
 	if (mCreateFn)
 	{
 		(*mCreateFn)(obj);
@@ -99,38 +99,38 @@ Object Type::Create(const char* name) const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-const bool Type::operator==(const Type& type) const
+const bool type_info::operator==(const type_info& type_info) const
 {
-	return HashName() == type.HashName();
+	return hashname() == type_info.hashname();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-hash_t Type::Hash(const char* str)
+hash_t type_info::hash(const char* str)
 {
-	return Hash::djb2(str);
+	return hash::djb2(str);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-hash_t Type::Hash(const void* obj, size_t size)
+hash_t type_info::hash(const void* obj, size_t size)
 {
-	return Hash::djb2(obj, size);
+	return hash::djb2(obj, size);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_type	Type::Find(const char* name)
+shared_type	type_info::find(const char* name)
 {
-	return Find(Hash(name));
+	return find(hash(name));
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_type	Type::Find(hash_t hashName)
+shared_type	type_info::find(hash_t hashName)
 {
 	std::map<hash_t, shared_type>::iterator i = sRegistrar.find(hashName);
 	return i != sRegistrar.end() ? i->second : shared_type();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Type::Clear()
+void type_info::clear()
 {
 	for(std::map<hash_t, shared_type>::iterator i = sRegistrar.begin();
 		i != sRegistrar.end();
@@ -142,32 +142,32 @@ void Type::Clear()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-bool Type::Register(shared_type type)
+bool type_info::_register(shared_type type_info)
 {
-	const bool registered = sRegistrar.end() != sRegistrar.find(type->HashName());
+	const bool registered = sRegistrar.end() != sRegistrar.find(type_info->hashname());
 	if (!registered)
 	{
-		sRegistrar[type->HashName()] = type;
+		sRegistrar[type_info->hashname()] = type_info;
 	}
 	return !registered;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Type::Builder::Builder()
+type_info::builder::builder()
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_type Type::Builder::Create(const char* name)
+shared_type type_info::builder::create(const char* name)
 {
-	std::shared_ptr<Type> candidate = std::shared_ptr<Type>(new Type());
-	shared_type type = std::const_pointer_cast<const Type>(candidate);
+	std::shared_ptr<type_info> candidate = std::shared_ptr<type_info>(new type_info());
+	shared_type type = std::const_pointer_cast<const type_info>(candidate);
 
-	// Creates a circular reference Type->Member->Type
-	std::shared_ptr<Member> member = std::make_shared<Member>(name, type, "Default by value type member");
-	candidate->mByValue = std::const_pointer_cast<const Member>(member); 
+	// Creates a circular reference type_info->member->type_info
+	std::shared_ptr<member> mem = std::make_shared<member>(name, type, "Default by value type_info member");
+	candidate->mByValue = std::const_pointer_cast<const member>(mem); 
 
-	if (Type::Register(type))
+	if (type_info::_register(type))
 	{
 		mBuild.swap(candidate);
 	}
@@ -180,21 +180,21 @@ shared_type Type::Builder::Create(const char* name)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Type::Builder::SetCreator(Type::CreateFn fn)
+void type_info::builder::setCreator(type_info::CreateFn fn)
 {
 	ASSERT(mBuild);
 	mBuild->mCreateFn = fn;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Type::Builder::SetSize(size_t size)
+void type_info::builder::setSize(size_t size)
 {
 	ASSERT(mBuild);
 	mBuild->mSize = size;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void Type::Builder::SetAlignment(size_t alignment)
+void type_info::builder::setAlignment(size_t alignment)
 {
 	ASSERT(mBuild);
 	mBuild->mAlignment = 0;
@@ -207,7 +207,7 @@ void Type::Builder::SetAlignment(size_t alignment)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

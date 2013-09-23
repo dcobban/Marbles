@@ -26,123 +26,133 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
-class Object;
-typedef std::vector<Object> ObjectList;
-typedef std::map<hash_t, Object> ObjectMap;
+class object;
+typedef std::vector<object> ObjectList;
+typedef std::map<hash_t, object> ObjectMap;
 
 #pragma warning(push)
 #pragma warning(disable: 4521) // C4521 : multiple copy constructors specified
 
 // --------------------------------------------------------------------------------------------------------------------
-class Object
+class object
 {
 public:
-	Object();
-	~Object();
-	Object(const Object& obj);
-	Object(Object& obj); // Second copy constructor such that the template<> constructor does not apply
-	Object(const Declaration& declaration, void* pointee);
-	template<typename T>	explicit Object(T& obj);
+	object();
+	~object();
+	object(const object& obj);
+	object(object& obj); // Second copy constructor such that the template<> constructor does not apply
 
-	Object&					operator=(const Object& obj);
-	//Object&					operator=(const Object& obj);
-	template<typename T>	Object&	operator=(const T& obj);
+							explicit object(const declaration& declaration, 
+											void* pointee);
+							explicit object(const declaration& declaration, 
+											const std::shared_ptr<void>& pointee);
+	template<typename T>	explicit object(T& obj);
 
-	bool					IsValid() const;
+	object&					operator=(const object& obj);
+	//object&					operator=(const object& obj);
+	template<typename T>	object&	operator=(const T& obj);
+
+	bool					isValid() const;
 	bool					IsEnumerable() const{ return false; }
-	bool					IsCallable() const	{ return mInfo.IsCallable(); }
-	bool					IsConstant() const	{ return mInfo.IsConstant(); }
-	bool					IsValue() const		{ return mInfo.IsValue(); }
-	bool					IsReference() const	{ return mInfo.IsReference(); }
-	bool					IsShared() const	{ return mInfo.IsShared(); }
-	bool					IsWeak() const		{ return mInfo.IsWeak(); }
+	bool					isCallable() const	{ return mInfo.isCallable(); }
+	bool					isConstant() const	{ return mInfo.isConstant(); }
+	bool					isValue() const		{ return mInfo.isValue(); }
+	bool					isReference() const	{ return mInfo.isReference(); }
+	bool					isShared() const	{ return mInfo.isShared(); }
+	bool					isWeak() const		{ return mInfo.isWeak(); }
 
-	Object&					Swap(Object& obj);
+	object&					swap(object& obj);
+	void					Reset()				{ mPointee.reset(); }
 	void*					Address() const		{ return mPointee.get(); }
-	hash_t					HashName() const	{ return Type::Hash(this, sizeof(Object)); }
+	hash_t					HashName() const;
 
-	shared_type				_TypeInfo() const	{ return mInfo.TypeInfo(); }
-	shared_type				TypeInfo() const	{ return _TypeInfo(); }
-	shared_member			MemberInfo() const	{ return mInfo.MemberInfo(); }
-	shared_member			MemberInfo(const char* name) const;
-	shared_member			MemberInfo(const std::string& name) const;
-	shared_member			MemberInfo(const Path& route) const;
-	shared_member			MemberInfo(hash_t hashName) const;
-	const Type::MemberList& Members() const		{ return TypeInfo()->Members(); }
+	shared_type				_type_info() const	{ return mInfo.typeInfo(); }
+	shared_type				typeInfo() const	{ return _type_info(); }
+	shared_member			memberInfo() const	{ return mInfo.memberInfo(); }
+	shared_member			memberInfo(const char* name) const;
+	shared_member			memberInfo(const std::string& name) const;
+	shared_member			memberInfo(const path& route) const;
+	shared_member			memberInfo(hash_t hashName) const;
+	const type_info::member_list& members() const		{ return typeInfo()->members(); }
 
-	template<typename T>	T& As()				{ return To<T>::From(*this); }
-	template<typename T>	T& As() const		{ return To<T>::From(*const_cast<Object*>(this)); }
+	template<typename T>	T& as();
+	template<typename T>	T& as() const;
 
-	Object					At(const char* name) const;
-	Object					At(const std::string& name) const;
-	Object					At(const Path& route) const;
-	Object					At(const hash_t hashName) const;
-	Object					At(const shared_member& member) const;
-	Object					Append();
-	Object					Append(const Object& obj);
+	object					at(const char* name) const;
+	object					at(const std::string& name) const;
+	object					at(const path& route) const;
+	object					at(const hash_t hashName) const;
+	object					at(const shared_member& member) const;
+	object					Append();
+	object					Append(const object& obj);
 
-	bool					Equal(const Object& obj) const;
-	bool					Identical(const Object& obj) const;
+	bool					Equal(const object& obj) const;
+	bool					Identical(const object& obj) const;
 
-	bool					operator==(const Object& obj) const { return Equal(obj); }
-	bool					operator!=(const Object& obj) const { return !operator==(obj); }
+	bool					operator==(const object& obj) const { return Equal(obj); }
+	bool					operator!=(const object& obj) const { return !operator==(obj); }
 
-	Object					operator*() const;
-	//Object operator()() const;
-	//Object operator()(Object );
+	object					operator*() const;
+	//object operator()() const;
+	//object operator()(object );
 
-	template<typename T>	static void Create(Object& obj);
+	template<typename T>	static void create(object& obj);
+	template<typename T>	static void CreateShared(object& obj);
 private:
 	template<typename T>	struct To;
 	template<typename T>	struct Put;
 
 	bool	_IsZero() const;
 	template<typename T>
-	Object& _AssignReference(const Object& rhs);
-	Object& _AssignZero(const Object& zero);
+	object& _AssignReference(const object& rhs);
+	object& _AssignZero(const object& zero);
 	void	_SetAddress(void* p);
 
-	Declaration				mInfo;		// Description of how to interpret mPointee
+	friend class declaration;
+	declaration				mInfo;		// Description of how to interpret mPointee
 	std::shared_ptr<void>	mPointee;	// Generic reference to the object
 };
 
 #pragma warning(pop)
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> Object::Object(T& obj)
-: mInfo(DeclarationT<T>())
+template<typename T> object::object(T& obj)
+: mInfo(declarationT<T>())
 {
-	_SetAddress(DeclarationT<T>::Store(obj)); 
+	_SetAddress(declarationT<T>::store(obj)); 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> Object& Object::operator=(const T& value)
+template<typename T> object& object::operator=(const T& value)
 {
-	Object rhs(value);
+	object rhs(value);
 	return operator=(rhs);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct Put
 {
-	static Object& Value(Object& obj, const T& value) 
+	static object& Value(object& obj, const T& value) 
 	{ 
 		return obj;
 	}
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> struct Object::To
+template<typename T> struct object::To
 {
-	static T& From(const Object& obj) { return *To<T*>::From(obj); }
+	static T& from(const object& obj) 
+	{ 
+		return *To<T*>::from(obj); 
+	}
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> struct Object::To<T*>
+template<typename T> struct object::To<T*>
 {
-	static T*& From(const Object& obj)
+	static T*& from(const object& obj)
 	{	// TODO: check readonly flag here
 		typedef std::remove_cv<T>::type NoConstT;
 		const void* address = &obj.mPointee;
@@ -151,20 +161,37 @@ template<typename T> struct Object::To<T*>
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-inline bool Object::IsValid() const
+template<typename T> inline T& object::as()
 {
-	return mPointee && mInfo.IsValid();
+	if (isReference())
+	{
+		object deref(*(*this));
+		return To<T>::from(deref); 
+	}
+	return To<T>::from(*this); 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline bool Object::Identical(const Object& obj) const
+template<typename T> inline	T& object::as() const
+{ 
+	return const_cast<object*>(this)->as<T>();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+inline bool object::isValid() const
 {
-	return	obj.TypeInfo() == TypeInfo() &&
+	return mPointee && mInfo.isValid();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+inline bool object::Identical(const object& obj) const
+{
+	return	obj.typeInfo() == typeInfo() &&
 			obj.Address() == Address();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline Object& Object::Swap(Object& obj)
+inline object& object::swap(object& obj)
 {
 	std::swap(obj.mInfo, mInfo);
 	std::swap(obj.mPointee, mPointee);
@@ -172,57 +199,79 @@ inline Object& Object::Swap(Object& obj)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline shared_member Object::MemberInfo(const std::string& name) const
+inline shared_member object::memberInfo(const std::string& name) const
 {
-	return MemberInfo(name.c_str());
+	return memberInfo(name.c_str());
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline shared_member Object::MemberInfo(const char* name) const
+inline shared_member object::memberInfo(const char* name) const
 {
-	Path path(name);
-	return MemberInfo(path);
+	path path(name);
+	return memberInfo(path);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline shared_member Object::MemberInfo(hash_t hashName) const 
+inline shared_member object::memberInfo(hash_t hashName) const 
 {
-	const Type::MemberList& members = TypeInfo()->Members();
-	const Type::MemberList::size_type index = TypeInfo()->MemberIndex(hashName); 
+	const type_info::member_list& members = typeInfo()->members();
+	const type_info::member_list::size_type index = typeInfo()->memberIndex(hashName); 
 	return members[index];
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline Object Object::operator*() const 
+inline object object::operator*() const 
 {
-	Object result;
-	if (IsReference())
+	object result;
+	if (isShared())
 	{
-		Declaration info(TypeInfo()->ValueDeclaration(), IsConstant());
-		Object value(info, *reinterpret_cast<void**>(mPointee.get()));
-		result.Swap(value);
+		std::shared_ptr<void>* pointee = reinterpret_cast<std::shared_ptr<void>*>(mPointee.get());
+		object deref(	declaration(typeInfo()->parameters()[0], isConstant()),
+						*pointee);
+		result.swap(deref);
+	}
+	else if (isWeak())
+	{
+		std::weak_ptr<void>* pointee = reinterpret_cast<std::weak_ptr<void>*>(mPointee.get());
+		object deref(	declaration(typeInfo()->parameters()[0], isConstant()),
+						pointee->lock());
+		result.swap(deref);
+	}
+	else if (isReference())
+	{
+		object deref(	declaration(typeInfo()->valueDeclaration(), isConstant()),
+						*reinterpret_cast<void**>(mPointee.get()));
+		result.swap(deref);
 	}
 	return result; 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<> inline void Object::Create<void>(Object& obj) { Object invalid; obj.Swap(invalid); }
-template<typename T> inline void Object::Create(Object& obj)
+template<> inline void object::create<void>(object& obj) { object invalid; obj.swap(invalid); }
+template<typename T> inline void object::create(object& obj)
 {
-	obj.mInfo = DeclarationT<T>();
+	obj.mInfo = declarationT<T>();
 	obj._SetAddress(new T());
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline bool Object::_IsZero() const
+template<> inline void object::CreateShared<void>(object& obj) { object invalid; obj.swap(invalid); }
+template<typename T> inline void object::CreateShared(object& obj)
 {
-	return	IsReference() 
-		? 0 == To<unsigned*>::From(*this)
-		: 0 == To<unsigned>::From(*this);
+	std::shared_ptr<T> pT = std::make_shared<T>();
+	obj.Clone(*object(pT));
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline void Object::_SetAddress(void* p) 
+inline bool object::_IsZero() const
+{
+	return	isReference() 
+		? 0 == To<unsigned*>::from(*this)
+		: 0 == To<unsigned>::from(*this);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+inline void object::_SetAddress(void* p) 
 {	// std::shared_ptr<> does not allow us to set a raw pointer without allocating managed data.
 	// Since std::shared_ptr<> uses only the allocated managed data to perform deletion operations 
 	// setting the raw pointer does not put the std::shared_ptr<> into an invalid state.
@@ -231,16 +280,16 @@ inline void Object::_SetAddress(void* p)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
-template<typename T> inline bool operator==(const Marbles::Reflection::Object& obj, const T& var)
-{ return obj.TypeInfo()->Implements(Marbles::Reflection::TypeOf<T>()) && obj.As<T>() == var; }
-template<typename T> inline bool operator==(const T& var, const Marbles::Reflection::Object& obj)
-{ return obj.TypeInfo()->Implements(Marbles::Reflection::TypeOf<T>()) && var == obj.As<T>(); }
-template<typename T> inline bool operator!=(const Marbles::Reflection::Object& obj, const T& var)
+template<typename T> inline bool operator==(const Marbles::reflection::object& obj, const T& var)
+{ return obj.typeInfo()->implements(Marbles::reflection::type_of<T>()) && obj.as<T>() == var; }
+template<typename T> inline bool operator==(const T& var, const Marbles::reflection::object& obj)
+{ return obj.typeInfo()->implements(Marbles::reflection::type_of<T>()) && var == obj.as<T>(); }
+template<typename T> inline bool operator!=(const Marbles::reflection::object& obj, const T& var)
 { return !(obj == var); }
-template<typename T> inline bool operator!=(const T& var, const Marbles::Reflection::Object& obj)
+template<typename T> inline bool operator!=(const T& var, const Marbles::reflection::object& obj)
 { return !(var == obj); }
 
 // End of file --------------------------------------------------------------------------------------------------------

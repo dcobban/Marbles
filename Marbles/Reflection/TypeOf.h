@@ -23,77 +23,77 @@
 
 #pragma once
 
-#include <Common/Hash.h>
+#include <Common/hash.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
 // --------------------------------------------------------------------------------------------------------------------
-class Type;
-typedef std::shared_ptr<const Type> shared_type;
-typedef std::weak_ptr<const Type> weak_type;
+class type_info;
+typedef std::shared_ptr<const type_info> shared_type;
+typedef std::weak_ptr<const type_info> weak_type;
 
 // --------------------------------------------------------------------------------------------------------------------
-class Member;
-typedef std::shared_ptr<const Member> shared_member;
-typedef std::weak_ptr<const Member> weak_member;
+class member;
+typedef std::shared_ptr<const member> shared_member;
+typedef std::weak_ptr<const member> weak_member;
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> struct InstanceT 
+template<typename T> struct instance_t 
 { 
 	static T& get() { static T s_instance; return s_instance; } 
 private:
 	static const T& s_reference; // Forces a 'get' call during static initialization
 };
 
-template<typename T> const T& InstanceT<T>::s_reference = InstanceT<T>::get();
+template<typename T> const T& instance_t<T>::s_reference = instance_t<T>::get();
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> struct TypeOfT
+template<typename T> struct type_of_t
 { 
-	static shared_type TypeInfo(); 
+	static shared_type typeInfo(); 
 };
-template<typename T, bool hasTypeInfo = HasTypeInfo<T>::value> struct ResolveT
+template<typename T, bool hasTypeInfo = HasTypeInfo<T>::value> struct resolveT
 { 
-	inline static shared_type TypeInfo()
+	inline static shared_type typeInfo()
 	{
-		return TypeOfT<T>::TypeInfo();
+		return type_of_t<T>::typeInfo();
 	}
-	inline static shared_type TypeInfo(T*) 
+	inline static shared_type typeInfo(T*) 
 	{ 
-		return TypeOfT<T>::TypeInfo(); 
+		return type_of_t<T>::typeInfo(); 
 	} 
 };
-template<typename T> struct ResolveT<T, true> 
+template<typename T> struct resolveT<T, true> 
 {
-	inline static shared_type TypeInfo()
+	inline static shared_type typeInfo()
 	{
-		return TypeOfT<T>::TypeInfo();
+		return type_of_t<T>::typeInfo();
 	}
-	inline static shared_type TypeInfo(T* p)
+	inline static shared_type typeInfo(T* p)
 	{
-		return NULL == p ? TypeOfT<T>::TypeInfo() : p->_TypeInfo();
+		return NULL == p ? type_of_t<T>::typeInfo() : p->_type_info();
 	}
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> shared_type TypeOf()	
+template<typename T> shared_type type_of()	
 { 
-	return ResolveT<typename by_value<T>::type>::TypeInfo(); 
+	return resolveT<typename by_value<T>::type>::typeInfo(); 
 }
-template<typename T> shared_type TypeOf(T& obj)
+template<typename T> shared_type type_of(T& obj)
 {
-	return ResolveT<typename by_value<T>::type>::TypeInfo(&obj);
+	return resolveT<typename by_value<T>::type>::typeInfo(&obj);
 }
-template<typename T> shared_type TypeOf(T* obj)
+template<typename T> shared_type type_of(T* obj)
 {
-	return ResolveT<typename by_value<T>::type>::TypeInfo(obj);
+	return resolveT<typename by_value<T>::type>::typeInfo(obj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -104,36 +104,36 @@ template<typename T> shared_type TypeOf(T* obj)
 #define REFLECT_TEMPLATE_TYPE(_template,T,REFLECT_DEFINITION) \
 	REFLECT_COMMON_TYPE(_template,T,REFLECT_DEFINITION)
 
-// Todo: Ensure that builders are the only object that internally references a shared_ptr to a type!
+// Todo: Ensure that builders are the only object that internally references a shared_ptr to a type_info!
 #define REFLECT_COMMON_TYPE(_template,T,REFLECT_DEFINITION) \
-	_template struct ::Marbles::Reflection::TypeOfT<T> \
-	: public ::Marbles::Reflection::InstanceT< ::Marbles::Reflection::TypeOfT<T> > \
+	_template struct ::Marbles::reflection::type_of_t<T> \
+	: public ::Marbles::reflection::instance_t< ::Marbles::reflection::type_of_t<T> > \
 	{	\
 		typedef T type; \
-		static ::Marbles::Reflection::shared_type TypeInfo() \
+		static ::Marbles::reflection::shared_type typeInfo() \
 		{ \
-			::Marbles::Reflection::shared_type typeInfo = get().reflect_type.lock(); \
+			::Marbles::reflection::shared_type typeInfo = get().reflect_type.lock(); \
 			if (!typeInfo) \
-				typeInfo = get().Create(); \
+				typeInfo = get().create(); \
 			return typeInfo; \
 		} \
 	private: \
-		::Marbles::Reflection::weak_type reflect_type; \
+		::Marbles::reflection::weak_type reflect_type; \
 	public: \
-		::Marbles::Reflection::shared_type Create() \
+		::Marbles::reflection::shared_type create() \
 		{ \
 			typedef T self_type; \
-			::Marbles::Reflection::Type::Builder builder; \
-			reflect_type = builder.Create<T>(#T); \
+			::Marbles::reflection::type_info::builder build; \
+			reflect_type = build.create<T>(#T); \
 			REFLECT_DEFINITION \
-			return builder.TypeInfo(); \
+			return build.typeInfo(); \
 		} \
 	}; \
 
 #define REFLECT_CREATOR() \
-			builder.SetCreator(&Object::Create<self_type>); \
+			build.setCreator(&object::create<self_type>); \
 
 #define REFLECT_MEMBER(...) \
-			builder.AddMember(__VA_ARGS__); \
+			build.addMember(__VA_ARGS__); \
 
 // End of file --------------------------------------------------------------------------------------------------------

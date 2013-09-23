@@ -28,38 +28,38 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
-class Object;
-template<typename T> class MemberT;
+class object;
+template<typename T> class memberT;
 
 // --------------------------------------------------------------------------------------------------------------------
-class Member : public std::enable_shared_from_this<const Member>
+class member : public std::enable_shared_from_this<const member>
 {
 public:
-	Member(const std::string& name, const Declaration& declaration, const char* usage);
-	Member(const std::string& name, const shared_type& type, const char* usage);
+	member(const std::string& name, const declaration& declaration, const char* usage);
+	member(const std::string& name, const shared_type& type_info, const char* usage);
 
-	const std::string&	Name() const		{ return mName; }
-	hash_t				HashName() const	{ return mHashName; }
-	Declaration			DeclareInfo() const	{ return Declaration(shared_from_this(), mDeclaration); }
+	const std::string&	name() const		{ return mName; }
+	hash_t				hashname() const	{ return mHashName; }
+	declaration			declare_info() const	{ return declaration(shared_from_this(), mDeclaration); }
 	const char*			Usage() const		{ return mUsage; }
 
-	virtual shared_type TypeInfo() const	{ return mType.lock(); }
-	virtual Object		Assign(Object self, const Object& rhs) const;
-	virtual Object		Dereference(const Object& self) const;
-	virtual Object		Append(Object& self) const;
+	virtual shared_type typeInfo() const	{ return mType.lock(); }
+	virtual object		Assign(object self, const object& rhs) const;
+	virtual object		dereference(const object& self) const;
+	virtual object		Append(object& self) const;
 
 private:
 	std::string			mName;
 	hash_t				mHashName;
-	Declaration			mDeclaration;
+	declaration			mDeclaration;
 	weak_type			mType;
 	const char*			mUsage;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

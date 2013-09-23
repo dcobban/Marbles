@@ -78,7 +78,7 @@ template <typename A>
 inline const A& Min(const A& a, const A& b) { return a < b ? a : b; }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> struct Expired 
+template<typename T> struct expired 
 { inline bool operator()(const std::tr1::weak_ptr<T>& p) const { return p.expired(); } };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -188,7 +188,7 @@ public:
 	inline value_type& set(const self_type& rhs) 
 	{ return reinterpret_cast<value_type>(boost::atomic_write32(&mValue, boost::atomic_read32(&rhs.mValue))); }
 
-	// Get the value 
+	// get the value 
 	inline value_type get() 
 	{ return reinterpret_cast<value_type>(boost::atomic_read32(&mValue)); }
 	inline value_type get() const 
@@ -225,37 +225,8 @@ namespace std
 using namespace std::tr1; 
 
 // --------------------------------------------------------------------------------------------------------------------
-template<int condition, typename Then, typename Else> struct conditional { typedef Then type; };
-template<typename Then, typename Else> struct conditional<0, Then, Else> { typedef Else type; };
-
-//	// MACRO _IS_YES
-//typedef char (&_No)[1];
-//typedef char (&_Yes)[2];
-//
-// #define _IS_YES(ty)	(sizeof (ty) == sizeof (_STD tr1::_Yes))
-//
-//	// FUNCTION _Has_result_type
-//_No _Has_result_type(...);
-//
-//template<class _Ty>
-//	_Yes _Has_result_type(_Ty *,
-//		typename _Remove_reference<typename _Ty::result_type>::_Type * = 0);
-//
-//#define _HAS_RESULT_TYPE(_Ty)	\
-//	_IS_YES(_STD tr1::_Has_result_type((_Ty *)0))
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename T> struct is_default_constructable 
-{ 
-private:
-	template<typename U> static U* construct_default() { return new U(); }
-	template<typename U, U* (*pFn)() = &is_default_constructable::construct_default<U> > struct signature {};
-	template<typename U> static U* default_construct(signature<U>*);
-	template<typename U> static char default_construct(...);
-public:
-	static const bool value = sizeof(default_construct<T>(0)) != sizeof(char);
-	typedef typename std::conditional<value, T, void>::type result_type;
-};
+template<int condition, typename Then, typename Else> struct conditional { typedef Then type_info; };
+template<typename Then, typename Else> struct conditional<0, Then, Else> { typedef Else type_info; };
 
 // --------------------------------------------------------------------------------------------------------------------
 #define MAKE_SHARED(N) \

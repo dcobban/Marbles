@@ -29,7 +29,7 @@ namespace Marbles
 typedef size_t hash_t;
 
 // --------------------------------------------------------------------------------------------------------------------
-class Hash
+class hash
 {
 public:
 	// http://www.cse.yorku.ca/~oz/hash.html

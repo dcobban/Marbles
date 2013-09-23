@@ -21,7 +21,7 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Application/Platform.h>
+#include <application/Platform.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

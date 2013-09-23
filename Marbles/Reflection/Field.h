@@ -26,27 +26,28 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T, typename C> 
-class MemberT<T C::*> : public MemberT<T>
+class memberT<T C::*> : public memberT<T>
 {
 public:
 	typedef T return_type;
 	typedef C member_type;
 	typedef T C::*field_type;
 
-	MemberT(const std::string& name, field_type field, const char* usage)
-	: MemberT<T>(name, DeclarationT<T>(), usage)
+	memberT(const std::string& name, field_type field, const char* usage)
+	: memberT<T>(name, declarationT<T>(), usage)
 	, mField(field)
 	{
 	}
 
-	virtual Object Dereference(const Object& self) const
+	virtual object dereference(const object& self) const
 	{
-		ASSERT(self.TypeInfo()->Implements(TypeOf<typename member_type>()));
-		return Object(DeclareInfo(), &(self.As<typename member_type*>()->*mField));
+		ASSERT(self.typeInfo()->implements(type_of<typename member_type>()));
+		member_type* member = self.as<typename member_type*>();
+		return object(declare_info(), member ? &(member->*mField) : 0);
 	}
 
 private:
@@ -54,7 +55,7 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

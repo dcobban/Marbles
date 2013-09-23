@@ -21,110 +21,152 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Reflection.h>
+#include <reflection.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
 
 // --------------------------------------------------------------------------------------------------------------------
-Object::~Object()
+object::~object()
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object::Object() 
+object::object() 
 {}
 
 // --------------------------------------------------------------------------------------------------------------------
-Object::Object(const Object& obj)
+object::object(const object& obj)
 : mInfo(obj.mInfo)
 , mPointee(obj.mPointee)
 {}
 
 // --------------------------------------------------------------------------------------------------------------------
-Object::Object(Object& obj)
+object::object(object& obj)
 : mInfo(obj.mInfo)
 , mPointee(obj.mPointee) 
 {}
 
 // --------------------------------------------------------------------------------------------------------------------
-Object::Object(const Declaration& declaration, void* pointee)
+object::object(const declaration& declaration, void* pointee)
 : mInfo(declaration)
 {
 	_SetAddress(pointee);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object&	Object::operator=(const Object& rhs)
+object::object(const declaration& declaration, const std::shared_ptr<void>& pointee)
+: mInfo(declaration)
+, mPointee(pointee) 
+{
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+object&	object::operator=(const object& rhs)
 {
 	// if rhs is not valid then lhs becomes not valid
 	// if lhs is not valid then rhs is cloned
 	// if rhs implements lhs it is valid to do a formal assignment
 	// if rhs is zero then reset lhs approprately
-	shared_type typeInfo = TypeInfo();
-	if (!IsValid() || !rhs.IsValid())
-	{	// Clone the object
-		Object clone(rhs);
-		Swap(clone);
-	}
-	else if (mInfo.IsShared() || mInfo.IsWeak())
-	{
-		if (rhs.TypeInfo()->Implements(typeInfo))
-		{
-			MemberInfo()->Assign(*this, rhs);
-		}
-		else if (rhs.TypeInfo()->Implements(typeInfo->Parameters()[0]))
-		{
 
-		}
-		_AssignReference< std::shared_ptr<void> >(rhs);
-	}
-	else if (rhs.TypeInfo()->Implements(typeInfo))
-	{
-		if (mInfo.IsShared() || mInfo.IsWeak())
-		{
-			MemberInfo()->Assign(*this, rhs);
-		}
-		else if (mInfo.IsReference())
-		{	// Assign the values reference address
-			void* address = rhs.Address();
-			if (rhs.IsReference())
-			{	
-				address = (*rhs).Address();
-			}
-			*To<void**>::From(*this) = address;
-		}
-		else
-		{
-			MemberInfo()->Assign(*this, rhs);
-		}
-	}
-	else if (rhs._IsZero())
-	{
-		_AssignZero(rhs);
+	shared_type typeInfo = object::typeInfo();
+	if (!isValid() || !rhs.isValid())
+	{	// Clone the object
+		object clone(rhs);
+		swap(clone);
 	}
 	else
 	{
-		ASSERT(!"Unable to do assignment.");
+		object rhsValue(rhs);
+		if (rhsValue.isReference())
+		{	// rhs must always be a value type_info
+			object deref(*rhsValue);
+			rhsValue.swap(deref);
+		}
+
+		const bool shared_assignment = mInfo.isShared() | mInfo.isWeak();
+		if (shared_assignment)
+		{	// Test against the type_info the managed reference looks at.
+			typeInfo = (*(*this)).typeInfo();
+		}
+
+		if (rhsValue.typeInfo()->implements(typeInfo))
+		{
+			if (mInfo.isShared())
+			{	
+				std::shared_ptr<void>* self = To<std::shared_ptr<void>*>::from(*this);
+				if (0 != rhsValue.mPointee.use_count())
+				{
+					*self = rhsValue.mPointee;
+				}
+				else 
+				{
+					self->reset(rhsValue.mPointee.get());
+				}
+			}
+			else if (mInfo.isWeak())
+			{	
+				std::weak_ptr<void>* self = To<std::weak_ptr<void>*>::from(*this);
+				if (0 != rhsValue.mPointee.use_count())
+				{
+					*self = rhsValue.mPointee;
+				}
+				else 
+				{
+					ASSERT(!"Illogical conversion, the raw pointer will be deleted immediately.");
+				}
+			}
+			else if (mInfo.isReference())
+			{	// Assign the values reference address
+				void**& self = To<void**>::from(*this);
+				*self = rhsValue.Address();
+				assert(*To<void**>::from(*this) == rhsValue.Address());
+			}
+			else
+			{
+				memberInfo()->Assign(*this, rhsValue);
+			}
+		}
+		else if (rhs._IsZero())
+		{
+			_AssignZero(rhs);
+		}
+		else
+		{
+			ASSERT(!"Unable to do assignment.");
+		}
 	}
 	return *this;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_member Object::MemberInfo(const Path& route) const
+hash_t object::HashName() const
+{
+	// Different members can have the same address, therefore combine with type_info to differenciate
+	// References and values have the same type_info, therefore there are hash collisions
+
+	hash_t hash[] = {	reinterpret_cast<hash_t>(Address()), 
+						reinterpret_cast<hash_t>(typeInfo().get()),
+						static_cast<hash_t>(0 != mPointee.use_count())
+					};
+	return type_info::hash(&hash[0], sizeof(hash));
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+shared_member object::memberInfo(const path& route) const
 {
 	shared_member memberInfo;
-	shared_type typeInfo = TypeInfo();
-	for (Path::const_iterator i = route.begin(); typeInfo && i != route.end(); ++i)
+	shared_type typeInfo = object::typeInfo();
+	for (path::const_iterator i = route.begin(); typeInfo && i != route.end(); ++i)
 	{
-		Type::MemberList::size_type location = typeInfo->MemberIndex(*i);
-		if ((0 <= location) & (location < typeInfo->Members().size()))
+		type_info::member_list::size_type location = typeInfo->memberIndex(*i);
+		if ((0 <= location) & (location < typeInfo->members().size()))
 		{
-			memberInfo = typeInfo->Members()[location];
-			typeInfo = memberInfo->TypeInfo();
+			memberInfo = typeInfo->members()[location];
+			typeInfo = memberInfo->typeInfo();
 		}
 		else
 		{
@@ -136,70 +178,79 @@ shared_member Object::MemberInfo(const Path& route) const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object Object::At(const char* name) const
+object object::at(const char* name) const
 {
-	return At(Type::Hash(name));
+	return at(type_info::hash(name));
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object Object::At(const hash_t hashName) const
+object object::at(const hash_t hashName) const
 {
-	Object obj;
-	if (IsValid())
+	object obj;
+	if (isValid())
 	{
-		const Type::MemberList& members = Members();
-		const Type::MemberList::size_type index = TypeInfo()->MemberIndex(hashName);
+		const type_info::member_list& members = object::members();
+		const type_info::member_list::size_type index = typeInfo()->memberIndex(hashName);
 		if (index < members.size())
 		{
-			Object member(At(members[index]));
-			obj.Swap(member);
+			object member(at(members[index]));
+			obj.swap(member);
+		}
+		else if (isReference())
+		{
+			object deref(*(*this));
+			if (deref.isValid())
+			{
+				object member(deref.at(hashName));
+				obj.swap(member);
+			}
 		}
 	}
 	return obj;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object Object::At(const shared_member& member) const
+object object::at(const shared_member& member) const
 {
 	ASSERT(member);
-	return member->Dereference(*this);
+	return member->dereference(*this);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object Object::Append()
+object object::Append()
 {
-	return MemberInfo()->Append(*this);
+	return memberInfo()->Append(*this);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-Object Object::Append(const Object& obj)
+object object::Append(const object& obj)
 {
-	Object appended = Append();
+	object appended = Append();
 	appended = obj;
 	return appended;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-bool Object::Equal(const Object& obj) const
+bool object::Equal(const object& obj) const
 {
-	// TODO: Member by member comparison is required to determine if two objects are equivalant
+	// TODO: member by member comparison is required to determine if two objects are equivalant
 	return Identical(obj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T>
-Object& Object::_AssignReference(const Object& rhs)
+object& object::_AssignReference(const object& rhs)
 {
-	T& self_ptr = *To<T*>::From(*this);
-	if (rhs.mInfo.IsShared())
+	T& self_ptr = *To<T*>::from(*this);
+	if (rhs.mInfo.isShared())
 	{
-		self_ptr = *To<std::shared_ptr<void>*>::From(rhs);
+		self_ptr = *To<std::shared_ptr<void>*>::from(rhs);
 	}
-	else if (rhs.mInfo.IsWeak())
+	else if (rhs.mInfo.isWeak())
 	{
-		self_ptr = To<std::weak_ptr<void>*>::From(rhs)->lock();
+		self_ptr = To<std::weak_ptr<void>*>::from(rhs)->lock();
 	}
-	else if (rhs.mInfo.IsReference())
+	else if (rhs.mInfo.isReference())
 	{   // not good wrong deleter!
 		self_ptr = std::shared_ptr<void>(*reinterpret_cast<void**>(rhs.Address()));
 	}
@@ -207,30 +258,30 @@ Object& Object::_AssignReference(const Object& rhs)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline Object& Object::_AssignZero(const Object& zero)
+inline object& object::_AssignZero(const object& zero)
 {
-	if (mInfo.IsShared())
+	if (mInfo.isShared())
 	{
-		To<std::shared_ptr<void>*>::From(*this)->reset();
+		To<std::shared_ptr<void>*>::from(*this)->reset();
 	}
-	else if (mInfo.IsWeak())
+	else if (mInfo.isWeak())
 	{
-		To<std::weak_ptr<void>*>::From(*this)->reset();
+		To<std::weak_ptr<void>*>::from(*this)->reset();
 	}
-	else if (mInfo.IsReference())
+	else if (mInfo.isReference())
 	{
-		*To<void**>::From(*this) = 0;
+		*To<void**>::from(*this) = 0;
 	}
 	else
 	{	// This case should never be executed, it will be treated as a normal assignment by operator=()
-		ASSERT(zero.TypeInfo()->Implements(TypeInfo()));
-		MemberInfo()->Assign(*this, zero);
+		ASSERT(zero.typeInfo()->implements(typeInfo()));
+		memberInfo()->Assign(*this, zero);
 	}
 	return *this;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

@@ -29,90 +29,90 @@
 namespace Marbles
 {
 // --------------------------------------------------------------------------------------------------------------------
-class Task;
-typedef std::shared_ptr<Task> shared_task;
-typedef std::weak_ptr<Task> weak_task;
+class task;
+typedef std::shared_ptr<task> shared_task;
+typedef std::weak_ptr<task> weak_task;
 
-class Service;
-typedef std::shared_ptr<Service> shared_service;
-typedef std::weak_ptr<Service> weak_service;
+class service;
+typedef std::shared_ptr<service> shared_service;
+typedef std::weak_ptr<service> weak_service;
 
 // --------------------------------------------------------------------------------------------------------------------
-class Application
+class application
 {
 public:
-	struct UserSettings
+	struct user_settings
 	{
-		float FramesPerSecond;
+		float fps;
 
-		UserSettings()
-		: FramesPerSecond(60.0f)
+		user_settings()
+		: fps(60.0f)
 		{
 		}
 	};
-	static UserSettings& Settings();
+	static user_settings& settings();
 	//static int CommandLineCount();
 	//static char*[] CommandLine();
-	static unsigned NumHardwareThreads();
+	static unsigned num_hardware_threads();
 
-	static void Sleep(int milliseconds);
-	static Application* Get();
+	static void sleep(int milliseconds);
+	static application* get();
 
-	Application();
-	~Application();
-	void Stop(int runResult);
-	int Run(unsigned numThreads = 0); // The value given to Application::Stop() is returned by this function
+	application();
+	~application();
+	void stop(int run_result);
+	int run(unsigned numThreads = 0); // The value given to application::stop() is returned by this function
 
-	template<typename Fn>
-	shared_service Start();
-	template<typename Fn, typename A0>
-	shared_service Start(A0& a0);
-	template<typename Fn, typename A0, typename A1>
-	shared_service Start(A0& a0, A1& a1);
-	template<typename Fn, typename A0, typename A1, typename A2>
-	shared_service Start(A0& a0, A1& a1, A2& a2);
-	template<typename Fn, typename A0, typename A1, typename A2, typename A3>
-	shared_service Start(A0& a0, A1& a1, A2& a2, A3& a3);
-	template<typename Fn, typename A0, typename A1, typename A2, typename A3, typename A4>
-	shared_service Start(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4);
-	template<typename Fn, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-	shared_service Start(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5);
+	template<typename fn>
+	shared_service start();
+	template<typename fn, typename A0>
+	shared_service start(A0& a0);
+	template<typename fn, typename A0, typename A1>
+	shared_service start(A0& a0, A1& a1);
+	template<typename fn, typename A0, typename A1, typename A2>
+	shared_service start(A0& a0, A1& a1, A2& a2);
+	template<typename fn, typename A0, typename A1, typename A2, typename A3>
+	shared_service start(A0& a0, A1& a1, A2& a2, A3& a3);
+	template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4>
+	shared_service start(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4);
+	template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
+	shared_service start(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5);
 
 private:
-	struct Kernel;
-	struct Implementation;
-	friend class Service;
+	struct kernel;
+	struct implementation;
+	friend class service;
 
-	shared_service ActiveService() const;
-	void Register(shared_service service);
-	void Unregister(shared_service service);
+	shared_service activeService() const;
+	void _register(shared_service service);
+	void unregister(shared_service service);
 
-	Implementation* mImplementation;
+	implementation* _implementation;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename Fn>
-shared_service Application::Start()
+template<typename fn>
+shared_service application::start()
 {
-	shared_service service = Service::Create();
-	Register(service);
+	shared_service service = service::create();
+	_register(service);
 	if (service)
 	{
-		service->Post(std::bind<void>(	&Service::MakeProvider<Fn>, 
+		service->post(std::bind<void>(	&service::make_provider<fn>, 
 										service.get()));
 	}
 	return service;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename Fn, typename A0>
-shared_service Application::Start(A0& a0)
+template<typename fn, typename A0>
+shared_service application::start(A0& a0)
 {
-	shared_service service = Service::Create();
-	Register(service);
+	shared_service service = service::create();
+	_register(service);
 	if (service)
 	{
-		service->Post(std::bind<void>(	&Service::MakeProvider<Fn, A0>, 
+		service->post(std::bind<void>(	&service::make_provider<fn, A0>, 
 										service.get(), a0));
 	}
 	
@@ -120,70 +120,70 @@ shared_service Application::Start(A0& a0)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename Fn, typename A0, typename A1>
-shared_service Application::Start(A0& a0, A1& a1)
+template<typename fn, typename A0, typename A1>
+shared_service application::start(A0& a0, A1& a1)
 {
-	shared_service service = Service::Create();
-	Register(service);
+	shared_service service = service::create();
+	_register(service);
 	if (service)
 	{
-		service->Post(std::bind<void>(	&Service::MakeProvider<Fn, A0, A1>, 
+		service->post(std::bind<void>(	&service::make_provider<fn, A0, A1>, 
 										service.get(), a0, a1));
 	}
 	return service;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename Fn, typename A0, typename A1, typename A2>
-shared_service Application::Start(A0& a0, A1& a1, A2& a2)
+template<typename fn, typename A0, typename A1, typename A2>
+shared_service application::start(A0& a0, A1& a1, A2& a2)
 {
-	shared_service service = Service::Create();
-	Register(service);
+	shared_service service = service::create();
+	_register(service);
 	if (service)
 	{
-		service->Post(std::bind<void>(	&Service::MakeProvider<Fn, A0, A1, A2>, 
+		service->post(std::bind<void>(	&service::make_provider<fn, A0, A1, A2>, 
 										service.get(), a0, a1, a2));
 	}
 	return service;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename Fn, typename A0, typename A1, typename A2, typename A3>
-shared_service Application::Start(A0& a0, A1& a1, A2& a2, A3& a3)
+template<typename fn, typename A0, typename A1, typename A2, typename A3>
+shared_service application::start(A0& a0, A1& a1, A2& a2, A3& a3)
 {
-	shared_service service = Service::Create();
-	Register(service);
+	shared_service service = service::create();
+	_register(service);
 	if (service)
 	{
-		service->Post(std::bind<void>(	&Service::MakeProvider<Fn, A0, A1, A2, A3>, 
+		service->post(std::bind<void>(	&service::make_provider<fn, A0, A1, A2, A3>, 
 										service.get(), a0, a1, a2, a3));
 	}
 	return service;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename Fn, typename A0, typename A1, typename A2, typename A3, typename A4>
-shared_service Application::Start(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4)
+template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4>
+shared_service application::start(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4)
 {
-	shared_service service = Service::Create();
-	Register(service);
+	shared_service service = service::create();
+	_register(service);
 	if (service)
 	{
-		service->Post(std::bind<void>(	&Service::MakeProvider<Fn, A0, A1, A2, A3, A4>, 
+		service->post(std::bind<void>(	&service::make_provider<fn, A0, A1, A2, A3, A4>, 
 										service.get(), a0, a1, a2, a3, a4));
 	}
 	return service;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename Fn, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-shared_service Application::Start(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5)
+template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
+shared_service application::start(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5)
 {
-	shared_service service = Service::Create();
-	Register(service);
+	shared_service service = service::create();
+	_register(service);
 	if (service)
 	{
-		service->Post(std::bind<void>(	&Service::MakeProvider<Fn, A0, A1, A2, A3, A4, A5>, 
+		service->post(std::bind<void>(	&service::make_provider<fn, A0, A1, A2, A3, A4, A5>, 
 										service.get(), a0, a1, a2, a3, a4, a5));
 	}
 	return service;

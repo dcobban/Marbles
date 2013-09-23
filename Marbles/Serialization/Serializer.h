@@ -29,57 +29,57 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Serialization
+namespace serialization
 {
-using namespace Reflection;
+using namespace reflection;
 
 // --------------------------------------------------------------------------------------------------------------------
-class Serializer
+class serializer
 {
 public:
-	static bool Text(std::ostream& os, const Object& root);
-	static bool Text(std::ostream& os, const Object& root, const Object& sub);
-	//static bool Binary(std::ostream& os, const Object& root, const bool big_endian = PLATFORM_BIG_ENDIAN);
-	//static bool Binary(std::ostream& os, const Object& root, const Object& sub, const bool big_endian = PLATFORM_BIG_ENDIAN);
-	static bool From(std::istream& is, Object& root);
+	static bool text(std::ostream& os, const object& root);
+	static bool text(std::ostream& os, const object& root, const object& sub);
+	//static bool Binary(std::ostream& os, const object& root, const bool big_endian = PLATFORM_BIG_ENDIAN);
+	//static bool Binary(std::ostream& os, const object& root, const object& sub, const bool big_endian = PLATFORM_BIG_ENDIAN);
+	static bool from(std::istream& is, object& root);
 
-	template<typename T>				static bool Text(std::ostream& os, const T& root);
-	template<typename T, typename S>	static bool Text(std::ostream& os, const T& root, const S& sub);
+	template<typename T>				static bool text(std::ostream& os, const T& root);
+	template<typename T, typename S>	static bool text(std::ostream& os, const T& root, const S& sub);
 	//template<typename T>				static bool Binary(std::ostream& os, const T& root, const bool big_endian = PLATFORM_BIG_ENDIAN);
 	//template<typename T, typename S>	static bool Binary(std::ostream& os, const T& root, const S& sub, const bool big_endian = PLATFORM_BIG_ENDIAN);
-	template<typename T>				static bool From(std::istream& is, T& root);
+	template<typename T>				static bool from(std::istream& is, T& root);
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-inline bool Serializer::Text(std::ostream& os, const Object& root)
+inline bool serializer::text(std::ostream& os, const object& root)
 {
-	return Text(os, root, root);
+	return text(os, root, root);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> inline bool Serializer::Text(std::ostream& os, const T& root)
+template<typename T> inline bool serializer::text(std::ostream& os, const T& root)
 {
-	Object rootobj(root);
-	return Text(os, rootobj, rootobj);
+	object rootobj(root);
+	return text(os, rootobj, rootobj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T, typename S> inline bool Serializer::Text(std::ostream& os, const T& root, const S& sub)
+template<typename T, typename S> inline bool serializer::text(std::ostream& os, const T& root, const S& sub)
 {
-	Object rootobj(root);
-	Object subobj(sub);
-	return Text(os, rootobj, subobj);
+	object rootobj(root);
+	object subobj(sub);
+	return text(os, rootobj, subobj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> inline bool Serializer::From(std::istream& is, T& root)
+template<typename T> inline bool serializer::from(std::istream& is, T& root)
 {
-	Object rootobj(root);
-	return From(is, rootobj);
+	object rootobj(root);
+	return from(is, rootobj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Serialization
+} // namespace serialization
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

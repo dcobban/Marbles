@@ -30,12 +30,12 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
-class Type;
-typedef std::shared_ptr<const Type> shared_type;
-typedef std::weak_ptr<const Type> weak_type;
-typedef uint32_t Hash;
+class type_info;
+typedef std::shared_ptr<const type_info> shared_type;
+typedef std::weak_ptr<const type_info> weak_type;
+typedef uint32_t hash;
 
 // --------------------------------------------------------------------------------------------------------------------
 // Review(danc): should we create a 'Common\type_traits' for these?
@@ -70,7 +70,7 @@ template<typename T>
 struct HasTypeInfo
 {
 	template<typename U, shared_type (U::*)() const> struct signature {};
-	template<typename U> static int HasMethod(signature<U, &U::_TypeInfo>*);
+	template<typename U> static int HasMethod(signature<U, &U::_type_info>*);
 	template<typename U> static char HasMethod(...);
 	static const bool value = sizeof(HasMethod<T>(0)) != sizeof(char);
 };
@@ -134,7 +134,7 @@ struct SupportTraits
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

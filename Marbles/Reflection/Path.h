@@ -23,15 +23,15 @@
 
 #pragma once
 
-#include <Reflection/Type.h>
+#include <reflection/type.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace Reflection
+namespace reflection
 {
 // --------------------------------------------------------------------------------------------------------------------
-template<typename _Hash, _Hash (*_HashFn)(const char*) = &Type::Hash, typename _Ax = std::allocator<_Hash> >
+template<typename _Hash, _Hash (*_HashFn)(const char*) = &type_info::hash, typename _Ax = std::allocator<_Hash> >
 class PathT : public std::vector<_Hash, _Ax>
 {
 public:
@@ -179,7 +179,7 @@ typename PathT<_Hash, _HashFn, _Ax>::base_type PathT<_Hash, _HashFn, _Ax>::Parse
 		}
 		else
 		{	// leaf name
-			out.push_back(Type::Hash(begin));
+			out.push_back(type_info::hash(begin));
 			break;
 		}
 	} while ('\0' != *end);
@@ -187,16 +187,16 @@ typename PathT<_Hash, _HashFn, _Ax>::base_type PathT<_Hash, _HashFn, _Ax>::Parse
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-//inline Path HashPath(const Object& root, const Object& child)
+//inline path HashPath(const object& root, const object& child)
 //{
-//	typedef Type::MemberList::const_iterator iterator;
+//	typedef type_info::member_list::const_iterator iterator;
 //	typedef std::vector<std::pair<iterator, iterator> > Stack;
 //	
 //	Stack stack;
-//	stack.push_back(std::make_pair(root.Members().begin(), root.Members().end()));
+//	stack.push_back(std::make_pair(root.members().begin(), root.members().end()));
 //	while (!stack.empty() && stack.back().first->Identical(child))
 //	{
-//		Type::MemberList& backMembers = stack.back().first->Members();
+//		type_info::member_list& backMembers = stack.back().first->members();
 //		if (backMembers.empty())
 //		{	// What about the indexable elements?
 //			stack.pop_back();
@@ -212,7 +212,7 @@ typename PathT<_Hash, _HashFn, _Ax>::base_type PathT<_Hash, _HashFn, _Ax>::Parse
 //		}
 //	}
 //
-//	Path path;
+//	path path;
 //	path.reserve(stack.size());
 //	for (Stack::iterator i = stack.begin(); i != stack.end(); ++i)
 //	{
@@ -220,13 +220,13 @@ typename PathT<_Hash, _HashFn, _Ax>::base_type PathT<_Hash, _HashFn, _Ax>::Parse
 //	}
 //	return path;
 //
-//	// From SerializationWrite.inl(142) -- ExtendPathTo
-//	//Serializer::PathT::size_type depth = path.size();
-//	//for (	Type::MemberList::const_iterator i = obj.Members().begin();
+//	// from SerializationWrite.inl(142) -- ExtendPathTo
+//	//serializer::PathT::size_type depth = path.size();
+//	//for (	type_info::member_list::const_iterator i = obj.members().begin();
 //	//		i != members.end() && !path.back().Identical(obj);
 //	//		++i)
 //	//{
-//	//	path.push_back(path.back().At(*i));
+//	//	path.push_back(path.back().at(*i));
 //	//	if (!ExtendPathTo(path, obj))
 //	//	{
 //	//		path.pop_back();
@@ -235,9 +235,9 @@ typename PathT<_Hash, _HashFn, _Ax>::base_type PathT<_Hash, _HashFn, _Ax>::Parse
 //	//return depth != path.size();
 //}
 
-typedef PathT<hash_t> Path;
+typedef PathT<hash_t> path;
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Reflection
+} // namespace reflection
 } // namespace Marbles
 // End of file --------------------------------------------------------------------------------------------------------
