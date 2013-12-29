@@ -89,7 +89,7 @@ type_info::member_list::size_type type_info::memberIndex(hash_t hashName) const
 // --------------------------------------------------------------------------------------------------------------------
 object type_info::create(const char* name) const
 {
-	ASSERT(NULL == name); // Usage of name not implemented
+	ASSERT(NULL == name); // usage of name not implemented
 	object obj;
 	if (mCreateFn)
 	{
@@ -130,15 +130,14 @@ shared_type	type_info::find(hash_t hashName)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void type_info::clear()
+void type_info::clear_registrar()
 {
-	for(std::map<hash_t, shared_type>::iterator i = sRegistrar.begin();
-		i != sRegistrar.end();
-		++i)
+	// sRegistrar.clear();
+	while (!sRegistrar.empty())
 	{
-		i->second.reset();
+		TypeMap::iterator i = sRegistrar.begin();
+		sRegistrar.erase(i);
 	}
-	sRegistrar.clear();
 }
 
 // --------------------------------------------------------------------------------------------------------------------

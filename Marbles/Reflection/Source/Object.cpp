@@ -120,14 +120,14 @@ object&	object::operator=(const object& rhs)
 				}
 			}
 			else if (mInfo.isReference())
-			{	// Assign the values reference address
+			{	// assign the values reference address
 				void**& self = To<void**>::from(*this);
-				*self = rhsValue.Address();
-				assert(*To<void**>::from(*this) == rhsValue.Address());
+				*self = rhsValue.address();
+				assert(*To<void**>::from(*this) == rhsValue.address());
 			}
 			else
 			{
-				memberInfo()->Assign(*this, rhsValue);
+				memberInfo()->assign(*this, rhsValue);
 			}
 		}
 		else if (rhs._IsZero())
@@ -143,12 +143,12 @@ object&	object::operator=(const object& rhs)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-hash_t object::HashName() const
+hash_t object::hashName() const
 {
 	// Different members can have the same address, therefore combine with type_info to differenciate
 	// References and values have the same type_info, therefore there are hash collisions
 
-	hash_t hash[] = {	reinterpret_cast<hash_t>(Address()), 
+	hash_t hash[] = {	reinterpret_cast<hash_t>(address()), 
 						reinterpret_cast<hash_t>(typeInfo().get()),
 						static_cast<hash_t>(0 != mPointee.use_count())
 					};
@@ -217,15 +217,15 @@ object object::at(const shared_member& member) const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-object object::Append()
+object object::append()
 {
-	return memberInfo()->Append(*this);
+	return memberInfo()->append(*this);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-object object::Append(const object& obj)
+object object::append(const object& obj)
 {
-	object appended = Append();
+	object appended = append();
 	appended = obj;
 	return appended;
 }
@@ -252,7 +252,7 @@ object& object::_AssignReference(const object& rhs)
 	}
 	else if (rhs.mInfo.isReference())
 	{   // not good wrong deleter!
-		self_ptr = std::shared_ptr<void>(*reinterpret_cast<void**>(rhs.Address()));
+		self_ptr = std::shared_ptr<void>(*reinterpret_cast<void**>(rhs.address()));
 	}
 	return *this;
 }
@@ -275,7 +275,7 @@ inline object& object::_AssignZero(const object& zero)
 	else
 	{	// This case should never be executed, it will be treated as a normal assignment by operator=()
 		ASSERT(zero.typeInfo()->implements(typeInfo()));
-		memberInfo()->Assign(*this, zero);
+		memberInfo()->assign(*this, zero);
 	}
 	return *this;
 }

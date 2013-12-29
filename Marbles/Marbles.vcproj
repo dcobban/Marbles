@@ -175,7 +175,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Common\Concept.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Common\Definitions.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Common\Function_Delayed.h"
 				>
 			</File>
 			<File

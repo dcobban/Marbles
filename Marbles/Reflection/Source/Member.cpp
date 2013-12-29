@@ -55,7 +55,7 @@ member::member(const std::string& name, const shared_type& type_info, const char
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-object member::Assign(object self, const object& rhs) const
+object member::assign(object self, const object& rhs) const
 {
 	ASSERT(self.isValid());
 	ASSERT(rhs.typeInfo()->implements(self.typeInfo()));
@@ -74,7 +74,7 @@ object member::dereference(const object& /*self*/) const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-object member::Append(object& /*self*/) const
+object member::append(object& /*self*/) const
 {
 	return object();
 }

@@ -145,49 +145,49 @@ bool service::post(fn fn)
 template<typename fn> 
 void service::make_provider()
 {
-	_provider = std::shared_ptr<fn>(new fn());
+	_provider = std::make_shared<fn>();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename fn, typename A0> 
 void service::make_provider(A0& a0)
 {
-	_provider = std::shared_ptr<fn>(new fn(a0));
+	_provider = std::make_shared<fn>(a0);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename fn, typename A0, typename A1> 
 void service::make_provider(A0& a0, A1& a1)
 {
-	_provider = std::shared_ptr<fn>(new fn(a0, a1));
+	_provider = std::make_shared<fn>(a0, a1);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename fn, typename A0, typename A1, typename A2> 
 void service::make_provider(A0& a0, A1& a1, A2& a2)
 {
-	_provider = std::shared_ptr<fn>(new fn(a0, a1, a2));
+	_provider = std::make_shared<fn>(a0, a1, a2);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename fn, typename A0, typename A1, typename A2, typename A3> 
 void service::make_provider(A0& a0, A1& a1, A2& a2, A3& a3)
 {
-	_provider = std::shared_ptr<fn>(new fn(a0, a1, a2, a3));
+	_provider = std::make_shared<fn>(a0, a1, a2, a3);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4> 
 void service::make_provider(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4)
 {
-	_provider = std::shared_ptr<fn>(new fn(a0, a1, a2, a3, a4));
+	_provider = std::make_shared<fn>(a0, a1, a2, a3, a4);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5> 
 void service::make_provider(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5)
 {
-	_provider = std::shared_ptr<fn>(new fn(a0, a1, a2, a3, a4, a5));
+	_provider = std::make_shared<fn>(a0, a1, a2, a3, a4, a5);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

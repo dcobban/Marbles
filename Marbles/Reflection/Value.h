@@ -40,15 +40,15 @@ public:
 	: member(name, declaration, usage) {}
 
 	virtual shared_type	DeclaredType() const { return type_of<T>(); }
-	virtual object		Assign(object self, const object& rhs) const;
+	virtual object		assign(object self, const object& rhs) const;
 	virtual object		dereference(const object& /*self*/) const;
-	virtual object		Append(object& self) const;
+	virtual object		append(object& self) const;
 private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> 
-object memberT<T>::Assign(object self, const object& rhs) const
+object memberT<T>::assign(object self, const object& rhs) const
 {
 	ASSERT(self.isValid());
 	ASSERT(self.typeInfo()->implements(rhs.typeInfo()));
@@ -76,13 +76,13 @@ template<typename T>
 object memberT<T>::dereference(const object& self) const
 { 
 	declaration info(typeInfo()->valueDeclaration(), self.isConstant());
-	object value(info, *reinterpret_cast<void**>(self.Address()));
+	object value(info, *reinterpret_cast<void**>(self.address()));
 	return value; 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> 
-object memberT<T>::Append(object& /*self*/) const
+object memberT<T>::append(object& /*self*/) const
 {
 	ASSERT(!"Not implemented");
 	return object();

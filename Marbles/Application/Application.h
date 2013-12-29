@@ -87,7 +87,7 @@ private:
 	void _register(shared_service service);
 	void unregister(shared_service service);
 
-	implementation* _implementation;
+	unique_ptr<implementation> _implementation;
 };
 
 // --------------------------------------------------------------------------------------------------------------------

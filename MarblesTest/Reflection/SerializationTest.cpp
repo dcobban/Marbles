@@ -108,6 +108,8 @@ BOOST_AUTO_TEST_CASE( text_serialization )
 	BOOST_CHECK_EQUAL(foo.bar.shared_foo->x, org->x);
 	BOOST_CHECK_EQUAL(foo.bar.shared_foo->y, org->y);
 	BOOST_CHECK_EQUAL(foo.bar.shared_foo->z, org->z);
+
+	Marbles::reflection::type_info::clear_registrar();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

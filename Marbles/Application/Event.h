@@ -41,24 +41,86 @@ public:
 	typedef typename _T				derived;
 	typedef typename event_base<_T>	base;
 
-	inline base& operator+=(task::fn& fn)
-	{
-		return operator+=(std::make_shared<task>(fn, service::active()));
-	}
-	inline base& operator+=(shared_task& task)
+	inline base& operator+=(const shared_task& task)
 	{
 		m_multiCast.push_back(task);
 		return *this;
 	}
 
-	inline base& operator-=(task::fn& fn);
-	inline base& operator-=(shared_task& task);
+	inline base& operator-=(const shared_task& task)
+	{
+		std::vector<shared_task>::iterator end;
+		end = std::remove(m_multiCast.begin(), m_multiCast.end(), task);
+		m_multiCast.erase(end, m_multiCast.end());
+		return *this;
+	}
 
 	inline void operator()()
 	{
-		std::vector<shared_task>::iterator i = m_multiCast.begin();
-		std::vector<shared_task>::iterator end = m_multiCast.end();
-		while(i != end)
+		std::vector<shared_task>::iterator end;
+		end = std::remove_if(m_multiCast.begin(), m_multiCast.end(), PostMessage);
+		m_multiCast.erase(end, m_multiCast.end());
+	}
+
+	inline void operator()() const
+	{
+		std::for_each(m_multiCast.begin(), m_multiCast.end(), PostMessage);
+	}
+
+private:
+	static const bool PostMessage(const shared_task& task)
+	{
+		shared_service provider = task->service.lock();
+		if (provider)
+		{
+			provider->post(task);
+			return false;
+		}
+
+		return true;
+	}
+
+	std::vector<shared_task> m_multiCast;
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+template<>
+class event<void ()> : public event_base< event<void ()> >
+{
+public:
+	base& operator+=(const std::function<void()>& fn) 
+	{
+		shared_task pTask = std::make_shared<task>(fn, service::active());
+		return base::operator+=(pTask); 
+	}
+
+	base& operator+=(const shared_task& pTask) 
+	{
+		return base::operator+=(pTask);	
+	}
+};
+
+
+// How will this work without allocating?  Tasks have a life span and 
+// parameters must last that life span.  
+
+// Maybe just allocate a parameter list, eg struct callback { std::funcition<sig> fn; shared_parameters params; }
+// therefore the final task is a callback containing the fn and ... no not going to work needs 2 allocs
+template<typename P0>
+class event<void (P0)> : public event_base< event<void (P0)> >
+{
+public:
+	shared_task operator += (const std::function<void(P0)>& fn) 
+	{ 
+		shared_task pTask = std::make_shared<task>(fn, service::active());
+		return base::operator+=(pTask); 
+	}
+
+	inline void operator()()
+	{
+		for (std::vector<shared_task>::iterator i = m_multiCast.begin();
+			 i != m_multiCast.end();
+			 ++i)
 		{
 			shared_service provider = (*i)->service.lock();
 			while (!provider && i != end)
@@ -89,23 +151,6 @@ public:
 			}
 		}
 	}
-private:
-	std::vector<shared_task> m_multiCast;
-};
-
-// --------------------------------------------------------------------------------------------------------------------
-template<>
-class event<void ()> : public event_base< event<void ()> >
-{
-public:
-	base& operator += (const std::function<void()>& fn) 
-	{ 
-		shared_task pTask = std::make_shared<task>(fn, service::active());
-		return base::operator+=(pTask); 
-	}
-
-	template<typename Fn>
-	base& operator -= (const Fn& fn); // Unknown how to implement this, std::function cannot be compaired. 
 };
 
 // --------------------------------------------------------------------------------------------------------------------

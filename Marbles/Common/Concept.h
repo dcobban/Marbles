@@ -1,6 +1,6 @@
 // This source file is part of Marbles library.
 //
-// Copyright (c) 2012 Dan Cobban
+// Copyright (c) 2013 Dan Cobban
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,43 +23,37 @@
 
 #pragma once
 
-#include <type_traits>
-
 // --------------------------------------------------------------------------------------------------------------------
 namespace Marbles
 {
-namespace reflection
-{
-class object;
-template<typename T> class memberT;
 
 // --------------------------------------------------------------------------------------------------------------------
-class member : public std::enable_shared_from_this<const member>
+template<typename T>
+struct keyable
 {
-public:
-	member(const std::string& name, const declaration& declaration, const char* usage);
-	member(const std::string& name, const shared_type& type_info, const char* usage);
+	template<typename U, typename E, typename K, E (U::*Sig)(K)> struct signature
+	{
+		typedef U container_type;
+		typedef E value_type;
+		typedef K key_type;
+	};
+	//struct void_signature
+	//{
+	//	typedef void container_type;
+	//	typedef void value_type;
+	//	typedef void key_type;
+	//};
+	template<typename U, U> struct checker;
+	struct base { void operator[](int); };
+	struct join : public T, public base {}; // does not work with basic types
 
-	const std::string&	name() const		{ return mName; }
-	hash_t				hashname() const	{ return mHashName; }
-	declaration			declare_info() const{ return declaration(shared_from_this(), mDeclaration); }
-	const char*			usage() const		{ return mUsage; }
+	template<typename U> static char check_base(checker<void (U::*)(int), &U::operator[]>*);
+	template<typename U> static int check_base(...);
+	static const bool value = sizeof(check_base< join >(0)) != sizeof(char);
 
-	virtual shared_type typeInfo() const	{ return mType.lock(); }
-	virtual object		assign(object self, const object& rhs) const;
-	virtual object		dereference(const object& self) const;
-	virtual object		append(object& self) const;
-
-private:
-	std::string			mName;
-	hash_t				mHashName;
-	declaration			mDeclaration;
-	weak_type			mType;
-	const char*			mUsage;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace reflection
 } // namespace Marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

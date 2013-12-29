@@ -100,7 +100,7 @@ const ObjectList& Writer<F>::Context() const
 template<typename F> 
 void Writer<F>::PathWritten()
 {
-	hash_t hashName = mPath.back().HashName();
+	hash_t hashName = mPath.back().hashName();
 	PathMap::const_iterator written = mWritten.find(hashName);
 	if (written == mWritten.end())
 	{
@@ -117,7 +117,7 @@ void Writer<F>::PathWritten()
 		if (mPath.back().isReference())
 		{
 			object deref = *mPath.back();
-			hashName = deref.HashName();
+			hashName = deref.hashName();
 			written = mWritten.find(hashName);
 			if (written == mWritten.end())
 			{
@@ -136,11 +136,11 @@ bool Writer<F>::WriteReference(std::ostream& os, const object& obj)
 	if (write)
 	{
 		object value = *obj;
-		PathMap::const_iterator i = mWritten.find(value.HashName());
+		PathMap::const_iterator i = mWritten.find(value.hashName());
 		const bool hasPath = i != mWritten.end();
 
 		PathWritten();
-		if (0 == value.Address())
+		if (0 == value.address())
 		{
 			mFormat.Zero(os);
 		}
@@ -286,7 +286,7 @@ bool Writer<F>::Write(std::ostream& os)
 	std::ios::pos_type pos = os.tellp();
 	for(ObjectList::iterator i = mIncludes.begin(); i != mIncludes.end(); ++i)
 	{
-		PathMap::iterator written = mWritten.find(i->HashName());
+		PathMap::iterator written = mWritten.find(i->hashName());
 		if (mWritten.end() == written)
 		{
 			Write(os, *i);

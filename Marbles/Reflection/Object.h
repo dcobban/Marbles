@@ -64,9 +64,9 @@ public:
 	bool					isWeak() const		{ return mInfo.isWeak(); }
 
 	object&					swap(object& obj);
-	void					Reset()				{ mPointee.reset(); }
-	void*					Address() const		{ return mPointee.get(); }
-	hash_t					HashName() const;
+	void					reset()				{ mPointee.reset(); }
+	void*					address() const		{ return mPointee.get(); }
+	hash_t					hashName() const;
 
 	shared_type				_type_info() const	{ return mInfo.typeInfo(); }
 	shared_type				typeInfo() const	{ return _type_info(); }
@@ -85,8 +85,8 @@ public:
 	object					at(const path& route) const;
 	object					at(const hash_t hashName) const;
 	object					at(const shared_member& member) const;
-	object					Append();
-	object					Append(const object& obj);
+	object					append();
+	object					append(const object& obj);
 
 	bool					Equal(const object& obj) const;
 	bool					Identical(const object& obj) const;
@@ -99,7 +99,7 @@ public:
 	//object operator()(object );
 
 	template<typename T>	static void create(object& obj);
-	template<typename T>	static void CreateShared(object& obj);
+	template<typename T>	static void createShared(object& obj);
 private:
 	template<typename T>	struct To;
 	template<typename T>	struct Put;
@@ -187,7 +187,7 @@ inline bool object::isValid() const
 inline bool object::Identical(const object& obj) const
 {
 	return	obj.typeInfo() == typeInfo() &&
-			obj.Address() == Address();
+			obj.address() == address();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -255,8 +255,8 @@ template<typename T> inline void object::create(object& obj)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<> inline void object::CreateShared<void>(object& obj) { object invalid; obj.swap(invalid); }
-template<typename T> inline void object::CreateShared(object& obj)
+template<> inline void object::createShared<void>(object& obj) { object invalid; obj.swap(invalid); }
+template<typename T> inline void object::createShared(object& obj)
 {
 	std::shared_ptr<T> pT = std::make_shared<T>();
 	obj.Clone(*object(pT));
@@ -275,6 +275,10 @@ inline void object::_SetAddress(void* p)
 {	// std::shared_ptr<> does not allow us to set a raw pointer without allocating managed data.
 	// Since std::shared_ptr<> uses only the allocated managed data to perform deletion operations 
 	// setting the raw pointer does not put the std::shared_ptr<> into an invalid state.
+	
+	// TODO using the C++11 aliasing constructor shared_ptr::shared_ptr(std::shared_ptr<T>& base, T* alias)
+	// will remove this need.
+	// mPointee = std::shared_ptr<void>(std::shared_ptr<void>(), p);
 	mPointee.reset();
 	*reinterpret_cast<void**>(&mPointee) = p;
 }

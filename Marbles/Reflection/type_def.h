@@ -137,25 +137,27 @@ private:
 	template<template<FN_LIST(N,typename B,,FN_COMMA)> class T, FN_TYPENAME(N)> \
 	struct type_def< T<FN_TYPES(N)> > \
 	{ \
-		size_t			number_of_parameters() const		{ return N; } \
-		type_def_base	parameter_at(size_t index) const	{ return type_def_base; } \
+		static size_t			number_of_parameters() const		{ return N; } \
+		static type_def_base	parameter_at(size_t index) const	{ return type_def_base; } \
 		{ \
 			type_def_base parameters[N] = { BUILD_PARAMETER_LIST(N) }; \
 			return (0 <= index && index < N) ? parameters[index] : type_def_base(); \
 		} \
-		std::ostream&	signature(std::ostream& os) const \
+		static std::ostream&	signature(std::ostream& os) const \
 		{ \
-			return os << sName << '<' << BUILD_TYPE_DEF_LIST(N) << '>'; \
+			os << sName << '<'; \
+			os << BUILD_TYPE_DEF_LIST(N); \
+			os << '>'; \
+			return os; \
 		} \
 	private:
 		static const char* sName; \
-		//
 		//static void type_name(const char* name) \
 		//{ \
 		//	static const char* sName = name; \
 		//	ss << name << '<' << BUILD_TYPE_DEF_LIST(N) << '>'; \
 		//	return ss.str(); \
-		//} \
+		//} 
 	}
 
 BUILD_TYPE_DEF(1);

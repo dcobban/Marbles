@@ -21,45 +21,37 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#pragma once
+#include <common/concept.h>
 
-#include <type_traits>
-
-// --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
-{
-namespace reflection
-{
-class object;
-template<typename T> class memberT;
+BOOST_AUTO_TEST_SUITE( serialization )
 
 // --------------------------------------------------------------------------------------------------------------------
-class member : public std::enable_shared_from_this<const member>
+struct nonKeyable { int list[1024]; };
+struct nonconstKeyable : public nonKeyable
 {
-public:
-	member(const std::string& name, const declaration& declaration, const char* usage);
-	member(const std::string& name, const shared_type& type_info, const char* usage);
-
-	const std::string&	name() const		{ return mName; }
-	hash_t				hashname() const	{ return mHashName; }
-	declaration			declare_info() const{ return declaration(shared_from_this(), mDeclaration); }
-	const char*			usage() const		{ return mUsage; }
-
-	virtual shared_type typeInfo() const	{ return mType.lock(); }
-	virtual object		assign(object self, const object& rhs) const;
-	virtual object		dereference(const object& self) const;
-	virtual object		append(object& self) const;
-
-private:
-	std::string			mName;
-	hash_t				mHashName;
-	declaration			mDeclaration;
-	weak_type			mType;
-	const char*			mUsage;
+	int operator[](const int index) { return list[index]; }
+};
+struct constKeyable : public nonKeyable
+{
+	const int operator[](const int index) const { return list[index]; }
+};
+struct keyable : public constKeyable
+{
+	int operator[](const int index) { return list[index]; }
 };
 
+BOOST_AUTO_TEST_CASE( keyable_test )
+{
+	BOOST_MESSAGE( "concept.keyable" );
+	
+	//BOOST_CHECK_EQUAL(Marbles::keyable<int>::value, false);
+	//BOOST_CHECK_EQUAL(Marbles::keyable<nonKeyable>::value, false);
+	BOOST_CHECK_EQUAL(Marbles::keyable<nonconstKeyable>::value, true);
+	BOOST_CHECK_EQUAL(Marbles::keyable<constKeyable>::value, true);
+	BOOST_CHECK_EQUAL(Marbles::keyable<keyable>::value, true);
+}
+
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace reflection
-} // namespace Marbles
+BOOST_AUTO_TEST_SUITE_END()
 
 // End of file --------------------------------------------------------------------------------------------------------

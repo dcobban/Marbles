@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( reflection_object_field )
 	BOOST_CHECK_EQUAL(test1, test3);
 
 	
-
+	Marbles::reflection::type_info::clear_registrar();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

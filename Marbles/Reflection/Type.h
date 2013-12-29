@@ -67,7 +67,7 @@ public:
 	static hash_t			hash(const void* obj, size_t size);
 	static shared_type		find(const char* name);
 	static shared_type		find(hash_t hashname);
-	static void				clear();
+	static void				clear_registrar();
 
 private:
 	static bool				_register(shared_type type);
@@ -90,9 +90,16 @@ private:
 	// EnumeratorFn
 	// AppendFn
 
-	static std::map<hash_t, shared_type> sRegistrar;
+	typedef std::map<hash_t, shared_type> TypeMap;
+	static TypeMap sRegistrar;
 };
 
+// {
+//   type_info::builder builder;
+//   builder.addMember<int>("Member1");
+//   builder.addMember<float>("Member2");
+//   shared_type type = builder.create("MyType");
+// }
 // --------------------------------------------------------------------------------------------------------------------
 class type_info::builder
 {
@@ -123,31 +130,31 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_info::builder::template_traits
 {
-	static unsigned NumberOfParameters()				{ return 0; }
-	static declaration ParameterAt(unsigned /*index*/)	{ return declaration(); }
-	static std::string Typename(const char* name)		{ return std::string(name); }
+	static unsigned parameter_count()					{ return 0; }
+	static declaration parameter_at(unsigned /*index*/)	{ return declaration(); }
+	static std::string type_name(const char* name)		{ return std::string(name); }
 };
 
 // Review(danc): This only works for type_info parameters not numeric template parameters
-#define BUILD_TEMPLATE_TRAITS_PREFIX ::Marbles::reflection::type_of<A
-#define BUILD_TEMPLATE_TRAITS_POSTFIX >()
-#define BUILD_TEMPLATE_TRAITS_TYPENAME ->name()
-#define BUILD_TEMPLATE_TRAITS_SEP << ',' <<
-#define BUILD_TEMPLATE_TRAITS_LIST(N) FN_LIST(N,BUILD_TEMPLATE_TRAITS_PREFIX,BUILD_TEMPLATE_TRAITS_POSTFIX BUILD_TEMPLATE_TRAITS_TYPENAME,BUILD_TEMPLATE_TRAITS_SEP)
-#define BUILD_TEMPLATE_PARAMETERS_PREFIX ::Marbles::reflection::declarationT<A
-#define BUILD_TEMPLATE_PARAMETERS_POSTFIX >()
-#define BUILD_PARAMETER_TYPE_LIST(N) FN_LIST(N,BUILD_TEMPLATE_PARAMETERS_PREFIX,BUILD_TEMPLATE_PARAMETERS_POSTFIX,FN_COMMA)
+#define BUILD_TEMPLATE_TRAITS_PREFIX		::Marbles::reflection::type_of<A
+#define BUILD_TEMPLATE_TRAITS_POSTFIX		>()
+#define BUILD_TEMPLATE_TRAITS_TYPENAME		->name()
+#define BUILD_TEMPLATE_TRAITS_SEP			<< ',' <<
+#define BUILD_TEMPLATE_TRAITS_LIST(N)		FN_LIST(N,BUILD_TEMPLATE_TRAITS_PREFIX,BUILD_TEMPLATE_TRAITS_POSTFIX BUILD_TEMPLATE_TRAITS_TYPENAME,BUILD_TEMPLATE_TRAITS_SEP)
+#define BUILD_TEMPLATE_PARAMETERS_PREFIX	::Marbles::reflection::declarationT<A
+#define BUILD_TEMPLATE_PARAMETERS_POSTFIX	>()
+#define BUILD_PARAMETER_TYPE_LIST(N)		FN_LIST(N,BUILD_TEMPLATE_PARAMETERS_PREFIX,BUILD_TEMPLATE_PARAMETERS_POSTFIX,FN_COMMA)
 #define BUILD_TEMPLATE_TRAITS(N) \
 	template<template<FN_LIST(N,typename B,,FN_COMMA)> class T, FN_TYPENAME(N)> \
 	struct type_info::builder::template_traits< T<FN_TYPES(N)> > \
 	{ \
-		static unsigned NumberOfParameters() { return N; } \
-		static declaration ParameterAt(unsigned index) \
+		static unsigned parameter_count() { return N; } \
+		static declaration parameter_at(unsigned index) \
 		{ \
 			declaration parameters[] = { BUILD_PARAMETER_TYPE_LIST(N) }; \
 			return (0 <= index && index < N) ? parameters[index] : declaration(); \
 		} \
-		static std::string Typename(const char* name) \
+		static std::string type_name(const char* name) \
 		{ \
 			std::stringstream ss; \
 			int max_chars = 256; \
@@ -188,13 +195,13 @@ shared_type type_info::builder::create(const char* name)
 	std::shared_ptr<type_info> candidate = std::shared_ptr<type_info>(new type_info());
 	shared_type type = std::const_pointer_cast<const type_info>(candidate);
 
-	unsigned numberOfParameters = template_traits<typename by_value<T>::type>::NumberOfParameters(); 
+	unsigned numberOfParameters = template_traits<typename by_value<T>::type>::parameter_count(); 
 	candidate->mParameters.reserve(numberOfParameters);
 	for(unsigned i = 0; i < numberOfParameters; ++i)
 	{
-		candidate->mParameters.push_back(template_traits<typename by_value<T>::type>::ParameterAt(i)); 
+		candidate->mParameters.push_back(template_traits<typename by_value<T>::type>::parameter_at(i)); 
 	}
-	std::string fullname = template_traits<typename by_value<T>::type>::Typename(name);
+	std::string fullname = template_traits<typename by_value<T>::type>::type_name(name);
 	std::shared_ptr< memberT<T> > mem = std::make_shared< memberT<T> >(fullname, type, "Default value type_info member.");
 	candidate->mByValue = declaration(std::static_pointer_cast<member>(mem)); 
 

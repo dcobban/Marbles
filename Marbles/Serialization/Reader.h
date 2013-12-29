@@ -73,7 +73,7 @@ bool Reader<F>::Read(std::istream& is, object& value)
 		else if (mFormat.OpenEnumeration(is))
 		{
 			do {
-				object element = value.Append();
+				object element = value.append();
 				Read(is, element);
 			} while(!mFormat.CloseEnumeration(is));
 		}
@@ -138,7 +138,7 @@ hash_t Reader<F>::hash(const path& route)
 	hash_t hash = 0;
 	for(path::const_iterator i = path.begin(); i != path.end(); ++i)
 	{
-		hash += i->memberInfo()->HashName();
+		hash += i->memberInfo()->hashName();
 	}
 	return hash;
 }

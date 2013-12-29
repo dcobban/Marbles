@@ -23,43 +23,14 @@
 
 #pragma once
 
-#include <type_traits>
+#ifndef _DELAYED_FUNCTION_H_
+#define _DELAYED_FUNCTION_H_
+
+#include <Common\Function_Traits.h>
+
+
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
-{
-namespace reflection
-{
-class object;
-template<typename T> class memberT;
+#endif // _DELAYED_FUNCTION_H_
 
-// --------------------------------------------------------------------------------------------------------------------
-class member : public std::enable_shared_from_this<const member>
-{
-public:
-	member(const std::string& name, const declaration& declaration, const char* usage);
-	member(const std::string& name, const shared_type& type_info, const char* usage);
-
-	const std::string&	name() const		{ return mName; }
-	hash_t				hashname() const	{ return mHashName; }
-	declaration			declare_info() const{ return declaration(shared_from_this(), mDeclaration); }
-	const char*			usage() const		{ return mUsage; }
-
-	virtual shared_type typeInfo() const	{ return mType.lock(); }
-	virtual object		assign(object self, const object& rhs) const;
-	virtual object		dereference(const object& self) const;
-	virtual object		append(object& self) const;
-
-private:
-	std::string			mName;
-	hash_t				mHashName;
-	declaration			mDeclaration;
-	weak_type			mType;
-	const char*			mUsage;
-};
-
-// --------------------------------------------------------------------------------------------------------------------
-} // namespace reflection
-} // namespace Marbles
-
-// End of file --------------------------------------------------------------------------------------------------------
+// End of File --------------------------------------------------------------------------------------------------------

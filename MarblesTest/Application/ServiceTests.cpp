@@ -28,17 +28,22 @@ struct ApplicationStop
 	int count;
 	int end;
 	Marbles::event<void ()> update;
+	Marbles::shared_task updateTask;
 
 	ApplicationStop(const int count) 
 		: count(0)
 		, end(count)
 	{
-		update += std::bind(&ApplicationStop::Update, this);
+		updateTask = std::make_shared<Marbles::task>(	std::bind(&ApplicationStop::Update, this), 
+														Marbles::service::active());
+		update += updateTask;
 		update();
 	}
 
 	~ApplicationStop() 
-	{}
+	{
+		update -= updateTask;
+	}
 
 	void Update() 
 	{
@@ -81,7 +86,8 @@ BOOST_AUTO_TEST_CASE( single_thread_test )
 			winner = *i;
 		}
 	}
-	BOOST_CHECK_EQUAL(numCyclesToStop, winner->provider<ApplicationStop>()->count);
+	const int stopCount = winner->provider<ApplicationStop>()->count;
+	BOOST_CHECK_EQUAL(numCyclesToStop, stopCount);
 }
 
 BOOST_AUTO_TEST_CASE( multiple_thread_test )
@@ -110,7 +116,8 @@ BOOST_AUTO_TEST_CASE( multiple_thread_test )
 			winner = *i;
 		}
 	}
-	BOOST_CHECK_EQUAL(numCyclesToStop, winner->provider<ApplicationStop>()->count);
+	const int stopCount = winner->provider<ApplicationStop>()->count;
+	BOOST_CHECK_EQUAL(numCyclesToStop, stopCount);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
