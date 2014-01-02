@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)Marbles&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)Marbles&quot;;&quot;$(SolutionDir)tools\boost_1_51_0&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -64,8 +64,8 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)\$(ProjectName)d.exe"
 				LinkIncremental="2"
+				AdditionalLibraryDirectories="$(SolutionDir)\tools\boost_1_51_0\stage\lib"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				SubSystem="1"
@@ -123,7 +123,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)Marbles&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)Marbles&quot;;&quot;$(SolutionDir)tools\boost_1_51_0&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -145,6 +145,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="$(SolutionDir)\tools\boost_1_51_0\stage\lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
 				OptimizeReferences="2"
