@@ -12,14 +12,14 @@ struct ExecutedService
 	{
 		executed = false;
 		
-		Marbles::shared_service active = Marbles::service::active();
+		marbles::shared_service active = marbles::service::active();
 		active->post(std::bind(&ExecutedService::Execute, this));
 	}
 
 	void Execute() 
 	{
 		executed = true; 
-		Marbles::service::active()->stop();
+		marbles::service::active()->stop();
 	}
 };
 
@@ -27,15 +27,14 @@ struct ApplicationStop
 {
 	int count;
 	int end;
-	Marbles::event<void ()> update;
-	Marbles::shared_task updateTask;
+	marbles::event<void ()> update;
+	marbles::shared_task updateTask;
 
 	ApplicationStop(const int count) 
 		: count(0)
 		, end(count)
 	{
-		updateTask = std::make_shared<Marbles::task>(	std::bind(&ApplicationStop::Update, this), 
-														Marbles::service::active());
+		updateTask = std::make_shared<marbles::task>(std::bind(&ApplicationStop::Update, this));
 		update += updateTask;
 		update();
 	}
@@ -50,7 +49,7 @@ struct ApplicationStop
 		++count;
 		if (count == end)
 		{
-			Marbles::application::get()->stop(0);
+			marbles::application::get()->stop(0);
 		}
 		else
 		{
@@ -64,9 +63,9 @@ BOOST_AUTO_TEST_CASE( single_thread_test )
 	BOOST_MESSAGE( "service.single_thread_test" );
 
 	const int numCyclesToStop = 10;
-	Marbles::application app;
-	Marbles::shared_service executeTest = app.start<ExecutedService>();
-	std::vector<Marbles::shared_service> racers;
+	marbles::application app;
+	marbles::shared_service executeTest = app.start<ExecutedService>();
+	std::vector<marbles::shared_service> racers;
 	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
 	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
 	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
@@ -76,8 +75,8 @@ BOOST_AUTO_TEST_CASE( single_thread_test )
 	app.run(1);
 
 	BOOST_CHECK(executeTest->provider<ExecutedService>()->executed);
-	Marbles::shared_service winner = *racers.begin();
-	for(std::vector<Marbles::shared_service>::iterator i = racers.begin() + 1;
+	marbles::shared_service winner = *racers.begin();
+	for(std::vector<marbles::shared_service>::iterator i = racers.begin() + 1;
 		i != racers.end();
 		++i)
 	{
@@ -94,9 +93,9 @@ BOOST_AUTO_TEST_CASE( multiple_thread_test )
 {
 	BOOST_MESSAGE( "service.multiple_thread_test" );
 	const int numCyclesToStop = 1000;
-	Marbles::application app;
-	Marbles::shared_service executeTest = app.start<ExecutedService>();
-	std::vector<Marbles::shared_service> racers;
+	marbles::application app;
+	marbles::shared_service executeTest = app.start<ExecutedService>();
+	std::vector<marbles::shared_service> racers;
 	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
 	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
 	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
@@ -106,8 +105,8 @@ BOOST_AUTO_TEST_CASE( multiple_thread_test )
 	app.run();
 
 	BOOST_CHECK(executeTest->provider<ExecutedService>()->executed);
-	Marbles::shared_service winner = *racers.begin();
-	for(std::vector<Marbles::shared_service>::iterator i = racers.begin() + 1;
+	marbles::shared_service winner = *racers.begin();
+	for(std::vector<marbles::shared_service>::iterator i = racers.begin() + 1;
 		i != racers.end();
 		++i)
 	{

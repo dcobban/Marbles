@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -24,7 +24,7 @@
 #pragma once
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace serialization
 {
@@ -41,14 +41,14 @@ public:
 
 	// Put put interface
 	virtual std::ostream&	Write(std::ostream& os, const bool& value) const = 0;
-	virtual std::ostream&	Write(std::ostream& os, const Marbles::uint8_t& value) const = 0;
-	virtual std::ostream&	Write(std::ostream& os, const Marbles::uint16_t& value) const = 0;
-	virtual std::ostream&	Write(std::ostream& os, const Marbles::uint32_t& value) const = 0;
-	virtual std::ostream&	Write(std::ostream& os, const Marbles::uint64_t& value) const = 0;
-	virtual std::ostream&	Write(std::ostream& os, const Marbles::int8_t& value) const = 0;
-	virtual std::ostream&	Write(std::ostream& os, const Marbles::int16_t& value) const = 0;
-	virtual std::ostream&	Write(std::ostream& os, const Marbles::int32_t& value) const = 0;
-	virtual std::ostream&	Write(std::ostream& os, const Marbles::int64_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::uint8_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::uint16_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::uint32_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::uint64_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::int8_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::int16_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::int32_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::int64_t& value) const = 0;
 	virtual std::ostream&	Write(std::ostream& os, const std::string& value) const = 0;
 	virtual std::ostream&	Write(std::ostream& os, const double& value) const = 0;
 	virtual std::ostream&	Write(std::ostream& os, const float& value) const = 0;
@@ -80,6 +80,6 @@ public:
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace serialization
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

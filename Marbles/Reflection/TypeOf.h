@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -26,7 +26,7 @@
 #include <Common/hash.h>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace reflection
 {
@@ -94,36 +94,36 @@ template<typename T> shared_type type_of(T* obj)
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace reflection
-} // namespace Marbles
+} // namespace marbles
 
 // --------------------------------------------------------------------------------------------------------------------
 #define REFLECT_TYPE(T,REFLECT_DEFINITION) \
 	REFLECT_COMMON_TYPE(template<>,T,REFLECT_DEFINITION)
 
-#define RFFLECT_COMMA ,
+#define REFLECT_COMMA ,
 #define REFLECT_TEMPLATE_TYPE(_template,T,REFLECT_DEFINITION) \
 	REFLECT_COMMON_TYPE(_template,T,REFLECT_DEFINITION)
 
 // Todo: Ensure that builders are the only object that internally references a shared_ptr to a type_info!
 #define REFLECT_COMMON_TYPE(_template,T,REFLECT_DEFINITION) \
-	_template struct ::Marbles::reflection::type_of_t<T> \
-	: public ::Marbles::reflection::instance_t< ::Marbles::reflection::type_of_t<T> > \
+	_template struct ::marbles::reflection::type_of_t<T> \
+	: public ::marbles::reflection::instance_t< ::marbles::reflection::type_of_t<T> > \
 	{	\
 		typedef T type; \
-		static ::Marbles::reflection::shared_type typeInfo() \
+		static ::marbles::reflection::shared_type typeInfo() \
 		{ \
-			::Marbles::reflection::shared_type typeInfo = get().reflect_type.lock(); \
+			::marbles::reflection::shared_type typeInfo = get().reflect_type.lock(); \
 			if (!typeInfo) \
 				typeInfo = get().create(); \
 			return typeInfo; \
 		} \
 	private: \
-		::Marbles::reflection::weak_type reflect_type; \
+		::marbles::reflection::weak_type reflect_type; \
 	public: \
-		::Marbles::reflection::shared_type create() \
+		::marbles::reflection::shared_type create() \
 		{ \
 			typedef T self_type; \
-			::Marbles::reflection::type_info::builder build; \
+			::marbles::reflection::type_info::builder build; \
 			reflect_type = build.create<T>(#T); \
 			REFLECT_DEFINITION \
 			return build.typeInfo(); \

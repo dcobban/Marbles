@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -44,11 +44,11 @@ BOOST_AUTO_TEST_CASE( keyable_test )
 {
 	BOOST_MESSAGE( "concept.keyable" );
 	
-	//BOOST_CHECK_EQUAL(Marbles::keyable<int>::value, false);
-	//BOOST_CHECK_EQUAL(Marbles::keyable<nonKeyable>::value, false);
-	BOOST_CHECK_EQUAL(Marbles::keyable<nonconstKeyable>::value, true);
-	BOOST_CHECK_EQUAL(Marbles::keyable<constKeyable>::value, true);
-	BOOST_CHECK_EQUAL(Marbles::keyable<keyable>::value, true);
+	BOOST_CHECK_EQUAL(marbles::keyable<int>::value, false);
+	BOOST_CHECK_EQUAL(marbles::keyable<nonKeyable>::value, false);
+	BOOST_CHECK_EQUAL(marbles::keyable<nonconstKeyable>::value, true);
+	BOOST_CHECK_EQUAL(marbles::keyable<constKeyable>::value, true);
+	BOOST_CHECK_EQUAL(marbles::keyable<keyable>::value, true);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

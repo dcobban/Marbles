@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -25,33 +25,33 @@
 
 // --------------------------------------------------------------------------------------------------------------------
 // REFLECT_TYPE(void,)
-template<> struct ::Marbles::reflection::type_of_t<void> 
-: public ::Marbles::reflection::instance_t< ::Marbles::reflection::type_of_t<void> > 
+template<> struct ::marbles::reflection::type_of_t<void> 
+: public ::marbles::reflection::instance_t< ::marbles::reflection::type_of_t<void> > 
 {
 	typedef void type_info; 
-	static ::Marbles::reflection::shared_type typeInfo() 
+	static ::marbles::reflection::shared_type typeInfo() 
 	{ 
-		return ::Marbles::reflection::shared_type(); 
+		return ::marbles::reflection::shared_type(); 
 	} 
 }; 
 
 // --------------------------------------------------------------------------------------------------------------------
-REFLECT_TYPE(Marbles::reflection::type_info, REFLECT_CREATOR())
+REFLECT_TYPE(marbles::reflection::type_info, REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
 REFLECT_TYPE(bool,				REFLECT_CREATOR())
-REFLECT_TYPE(Marbles::uint8_t,	REFLECT_CREATOR())
-REFLECT_TYPE(Marbles::uint16_t,	REFLECT_CREATOR())
-REFLECT_TYPE(Marbles::uint32_t,	REFLECT_CREATOR())
-REFLECT_TYPE(Marbles::uint64_t,	REFLECT_CREATOR())
-REFLECT_TYPE(Marbles::int8_t,	REFLECT_CREATOR())
-REFLECT_TYPE(Marbles::int16_t,	REFLECT_CREATOR())
-REFLECT_TYPE(Marbles::int32_t,	REFLECT_CREATOR())
-REFLECT_TYPE(Marbles::int64_t,	REFLECT_CREATOR())
+REFLECT_TYPE(marbles::uint8_t,	REFLECT_CREATOR())
+REFLECT_TYPE(marbles::uint16_t,	REFLECT_CREATOR())
+REFLECT_TYPE(marbles::uint32_t,	REFLECT_CREATOR())
+REFLECT_TYPE(marbles::uint64_t,	REFLECT_CREATOR())
+REFLECT_TYPE(marbles::int8_t,	REFLECT_CREATOR())
+REFLECT_TYPE(marbles::int16_t,	REFLECT_CREATOR())
+REFLECT_TYPE(marbles::int32_t,	REFLECT_CREATOR())
+REFLECT_TYPE(marbles::int64_t,	REFLECT_CREATOR())
 REFLECT_TYPE(float,				REFLECT_CREATOR())
 REFLECT_TYPE(double,			REFLECT_CREATOR())
 REFLECT_TYPE(std::string,		REFLECT_CREATOR())
-REFLECT_TYPE(Marbles::reflection::object,REFLECT_CREATOR())
+REFLECT_TYPE(marbles::reflection::object,REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
 REFLECT_TEMPLATE_TYPE(template<typename T>, std::char_traits<T>,)
@@ -60,8 +60,8 @@ REFLECT_TEMPLATE_TYPE(template<typename T>, std::shared_ptr<T>,	REFLECT_CREATOR(
 REFLECT_TEMPLATE_TYPE(template<typename T>, std::weak_ptr<T>,	REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
-REFLECT_TEMPLATE_TYPE(template<typename T RFFLECT_COMMA typename A>, 
-					  std::vector<T RFFLECT_COMMA A>, 
+REFLECT_TEMPLATE_TYPE(template<typename T REFLECT_COMMA typename A>, 
+					  std::vector<T REFLECT_COMMA A>, 
 					  REFLECT_CREATOR())
 
 // End of file --------------------------------------------------------------------------------------------------------

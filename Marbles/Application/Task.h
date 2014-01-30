@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -26,7 +26,7 @@
 #include <application\application.h>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 
 class task;
@@ -39,14 +39,16 @@ class task
 public:
 	typedef std::function<void __cdecl()> fn;
 
+	void			operator()() const { run(); }
+	void			run() const { task_fn(); }
+
 					task();
-					task(const fn& task, shared_service& service);
+					task(const fn& task);
 
 	fn				task_fn;
-	weak_service	service;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

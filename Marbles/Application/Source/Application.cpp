@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -27,7 +27,7 @@
 #include <boost\thread.hpp>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -353,7 +353,7 @@ void application::_register(shared_service service)
 		_implementation->services.erase(
 			std::remove_if(	_implementation->services.begin(), 
 							_implementation->services.end(), 
-							expired<Marbles::service>()), 
+							expired<marbles::service>()), 
 			_implementation->services.end());
 		_implementation->services.push_back(service);
 	}
@@ -387,6 +387,6 @@ application* application::get()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

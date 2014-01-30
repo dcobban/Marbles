@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -30,7 +30,7 @@
 #include <map>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace reflection
 {
@@ -136,12 +136,12 @@ template<typename T> struct type_info::builder::template_traits
 };
 
 // Review(danc): This only works for type_info parameters not numeric template parameters
-#define BUILD_TEMPLATE_TRAITS_PREFIX		::Marbles::reflection::type_of<A
+#define BUILD_TEMPLATE_TRAITS_PREFIX		::marbles::reflection::type_of<A
 #define BUILD_TEMPLATE_TRAITS_POSTFIX		>()
 #define BUILD_TEMPLATE_TRAITS_TYPENAME		->name()
 #define BUILD_TEMPLATE_TRAITS_SEP			<< ',' <<
 #define BUILD_TEMPLATE_TRAITS_LIST(N)		FN_LIST(N,BUILD_TEMPLATE_TRAITS_PREFIX,BUILD_TEMPLATE_TRAITS_POSTFIX BUILD_TEMPLATE_TRAITS_TYPENAME,BUILD_TEMPLATE_TRAITS_SEP)
-#define BUILD_TEMPLATE_PARAMETERS_PREFIX	::Marbles::reflection::declarationT<A
+#define BUILD_TEMPLATE_PARAMETERS_PREFIX	::marbles::reflection::declarationT<A
 #define BUILD_TEMPLATE_PARAMETERS_POSTFIX	>()
 #define BUILD_PARAMETER_TYPE_LIST(N)		FN_LIST(N,BUILD_TEMPLATE_PARAMETERS_PREFIX,BUILD_TEMPLATE_PARAMETERS_POSTFIX,FN_COMMA)
 #define BUILD_TEMPLATE_TRAITS(N) \
@@ -242,6 +242,6 @@ template<typename T> void type_info::builder::addMember(const char* name, T memb
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace reflection
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

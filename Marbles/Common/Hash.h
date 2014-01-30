@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -24,7 +24,7 @@
 #pragma once
 #pragma warning(disable:4706)
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 typedef size_t hash_t;
 
@@ -92,7 +92,7 @@ public:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Marbles
+} // namespace marbles
 
 #pragma warning(default:4706)
 

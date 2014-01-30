@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -24,7 +24,7 @@
 #include <application\service.h>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -66,12 +66,11 @@ void service::stop(bool /*block*/)
 //}
 
 // --------------------------------------------------------------------------------------------------------------------
-bool service::post(task::fn& fn)
-{	
-	shared_service service = _self.lock();
-	shared_task task(new task(fn, service));
-	return post(task);
-}
+//bool service::post(task::fn& fn)
+//{	
+//	shared_task task(new task(fn));
+//	return post(task);
+//}
 
 // --------------------------------------------------------------------------------------------------------------------
 bool service::post(shared_task task)
@@ -94,6 +93,6 @@ shared_service service::create()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

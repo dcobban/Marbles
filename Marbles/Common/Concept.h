@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2013 Dan Cobban
 //
@@ -24,7 +24,7 @@
 #pragma once
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -43,17 +43,19 @@ struct keyable
 	//	typedef void value_type;
 	//	typedef void key_type;
 	//};
-	template<typename U, U> struct checker;
+	struct empty {};
 	struct base { void operator[](int); };
-	struct join : public T, public base {}; // does not work with basic types
+	typedef typename std::conditional<std::is_class<T>::value, T, empty>::type_info user_base;
+	struct join : public user_base, public base {}; // does not work with basic types
+	template<typename U, U> struct checker;
 
-	template<typename U> static char check_base(checker<void (U::*)(int), &U::operator[]>*);
-	template<typename U> static int check_base(...);
-	static const bool value = sizeof(check_base< join >(0)) != sizeof(char);
-
+	template<typename U> 
+	static char check_base(U*, checker<void (base::*)(int), &U::operator[]>* = 0);
+	static int check_base(...);
+	static const bool value = sizeof(check_base(reinterpret_cast<join*>(0))) != sizeof(char);
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -48,7 +48,7 @@
 	#define PLATFORM_WIN32
 #endif
 
-namespace Marbles
+namespace marbles
 {
 	class Platform
 	{

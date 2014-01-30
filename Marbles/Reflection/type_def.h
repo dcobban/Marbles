@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -27,7 +27,7 @@
 #include <ios>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace reflection
 {
@@ -125,12 +125,12 @@ private:
 
 // --------------------------------------------------------------------------------------------------------------------
 // Review(danc): This only works for type_info parameters not numeric template parameters
-#define BUILD_TYPE_DEF_PREFIX ::Marbles::reflection::type_of<A
+#define BUILD_TYPE_DEF_PREFIX ::marbles::reflection::type_of<A
 #define BUILD_TYPE_DEF_POSTFIX >()
 #define BUILD_TYPE_DEF_TYPENAME ->name()
 #define BUILD_TYPE_DEF_SEP << ',' <<
 #define BUILD_TYPE_DEF_LIST(N) FN_LIST(N,BUILD_TYPE_DEF_PREFIX,BUILD_TYPE_DEF_POSTFIX BUILD_TYPE_DEF_TYPENAME,BUILD_TYPE_DEF_SEP)
-#define BUILD_PARAMETERS_PREFIX ::Marbles::reflection::type_def<A
+#define BUILD_PARAMETERS_PREFIX ::marbles::reflection::type_def<A
 #define BUILD_PARAMETERS_POSTFIX >()
 #define BUILD_PARAMETER_LIST(N) FN_LIST(N,BUILD_PARAMETERS_PREFIX,BUILD_PARAMETERS_POSTFIX,FN_COMMA)
 #define BUILD_TYPE_DEF(N) \
@@ -183,6 +183,6 @@ BUILD_TYPE_DEF(12);
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace reflection
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

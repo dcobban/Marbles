@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -28,7 +28,7 @@
 #include <Common/Function_Traits.h>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace reflection
 {
@@ -135,6 +135,6 @@ struct SupportTraits
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace reflection
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -27,7 +27,7 @@
 #include <reflection.h>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace serialization
 {
@@ -80,6 +80,6 @@ template<typename T> inline bool serializer::from(std::istream& is, T& root)
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace serialization
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

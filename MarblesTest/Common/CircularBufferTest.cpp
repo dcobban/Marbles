@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE( basic_operations )
 	BOOST_MESSAGE( "CircularBuffer.basic_operations" );
 
 	const int size = 10;
-	Marbles::CircularBuffer<int, size> buffer;
+	marbles::CircularBuffer<int, size> buffer;
 
 	int pop = 0;
 	int push = 0;
@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE( basic_operations )
 namespace 
 {
 	static const int bufferSize = 10;
-	typedef Marbles::CircularBuffer<int, bufferSize> Buffer_t;
+	typedef marbles::CircularBuffer<int, bufferSize> Buffer_t;
 	static std::vector< Buffer_t > buffers;
 	static Buffer_t accumulation;
 }

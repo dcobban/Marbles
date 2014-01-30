@@ -1,4 +1,4 @@
-// Marbles.cpp : Defines the entry point for the console application.
+// marbles.cpp : Defines the entry point for the console application.
 //
 
 //#include "behaviour\Behaviour.h"

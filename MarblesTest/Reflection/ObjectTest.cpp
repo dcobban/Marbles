@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -23,7 +23,7 @@
 
 #include "FooBar.h"
 
-using namespace Marbles::reflection;
+using namespace marbles::reflection;
 
 BOOST_AUTO_TEST_SUITE( reflection_object )
 
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE( reflection_object_field )
 
 	BOOST_CHECK_EQUAL(foo_obj.at("X").as<int>(), foo.x);
 	BOOST_CHECK_EQUAL(foo_obj.at("Y").as<float>(), foo.y);
-	BOOST_CHECK_EQUAL(foo_obj.at("Z").as<Marbles::uint64_t>(), foo.z);
+	BOOST_CHECK_EQUAL(foo_obj.at("Z").as<marbles::uint64_t>(), foo.z);
 
 	object bar_obj = foo_obj.at("Bar");
 	bar_obj.at("reference_foo") = &foo;
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE( reflection_object_field )
 	BOOST_CHECK_EQUAL(test1, test3);
 
 	
-	Marbles::reflection::type_info::clear_registrar();
+	marbles::reflection::type_info::clear_registrar();
 }
 
 BOOST_AUTO_TEST_SUITE_END()

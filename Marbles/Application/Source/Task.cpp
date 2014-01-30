@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -24,7 +24,7 @@
 #include <application/task.h>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace 
 {
@@ -38,13 +38,12 @@ task::task()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-task::task(const fn& task_fn, shared_service& service)
+task::task(const fn& task_fn)
 : task_fn(task_fn)
-, service(service)
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

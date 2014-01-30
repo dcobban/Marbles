@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -29,7 +29,7 @@
 #include <locale>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace serialization
 {
@@ -57,21 +57,21 @@ struct TextFormat : public format
 {
 	std::ostream& Write(std::ostream& os, const bool& value) const
 	{ return os << std::ios::boolalpha << value; } 
-	std::ostream& Write(std::ostream& os, const Marbles::uint8_t& value) const
+	std::ostream& Write(std::ostream& os, const marbles::uint8_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const Marbles::uint16_t& value) const
+	std::ostream& Write(std::ostream& os, const marbles::uint16_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const Marbles::uint32_t& value) const
+	std::ostream& Write(std::ostream& os, const marbles::uint32_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const Marbles::uint64_t& value) const
+	std::ostream& Write(std::ostream& os, const marbles::uint64_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const Marbles::int8_t& value) const
+	std::ostream& Write(std::ostream& os, const marbles::int8_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const Marbles::int16_t& value) const
+	std::ostream& Write(std::ostream& os, const marbles::int16_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const Marbles::int32_t& value) const
+	std::ostream& Write(std::ostream& os, const marbles::int32_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const Marbles::int64_t& value) const
+	std::ostream& Write(std::ostream& os, const marbles::int64_t& value) const
 	{ return os << value; } 
 	std::ostream& Write(std::ostream& os, const float& value) const
 	{ return os << value; } 
@@ -135,14 +135,14 @@ struct TextFormat : public format
 		}
 		else if ('-' == peek || std::isdigit(peek, mReadStop))
 		{	// Read a number
-			if (*type_info == *type_of<Marbles::uint8_t>())		is >> value.as<Marbles::uint8_t>();
-			else if (*type_info == *type_of<Marbles::uint16_t>())	is >> value.as<Marbles::uint16_t>();
-			else if (*type_info == *type_of<Marbles::uint32_t>())	is >> value.as<Marbles::uint32_t>();
-			else if (*type_info == *type_of<Marbles::uint64_t>())	is >> value.as<Marbles::uint64_t>();
-			else if (*type_info == *type_of<Marbles::int8_t>())	is >> value.as<Marbles::int8_t>();
-			else if (*type_info == *type_of<Marbles::int16_t>())	is >> value.as<Marbles::int16_t>();
-			else if (*type_info == *type_of<Marbles::int32_t>())	is >> value.as<Marbles::int32_t>();
-			else if (*type_info == *type_of<Marbles::int64_t>())	is >> value.as<Marbles::int64_t>();
+			if (*type_info == *type_of<marbles::uint8_t>())		is >> value.as<marbles::uint8_t>();
+			else if (*type_info == *type_of<marbles::uint16_t>())	is >> value.as<marbles::uint16_t>();
+			else if (*type_info == *type_of<marbles::uint32_t>())	is >> value.as<marbles::uint32_t>();
+			else if (*type_info == *type_of<marbles::uint64_t>())	is >> value.as<marbles::uint64_t>();
+			else if (*type_info == *type_of<marbles::int8_t>())	is >> value.as<marbles::int8_t>();
+			else if (*type_info == *type_of<marbles::int16_t>())	is >> value.as<marbles::int16_t>();
+			else if (*type_info == *type_of<marbles::int32_t>())	is >> value.as<marbles::int32_t>();
+			else if (*type_info == *type_of<marbles::int64_t>())	is >> value.as<marbles::int64_t>();
 			else if (*type_info == *type_of<float>())				is >> value.as<float>();
 			else if (*type_info == *type_of<double>())			is >> value.as<double>();
 			else { ASSERT(!"Unknown numeric type_info!"); }
@@ -467,6 +467,6 @@ bool serializer::from(std::istream& is, object& root)
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace serialization
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

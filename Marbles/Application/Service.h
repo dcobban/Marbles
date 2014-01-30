@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -25,12 +25,13 @@
 
 #include <application/task.h>
 #include <Common/CircularBuffer.h>
+#include <Common/Common.h>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition.hpp>
 #include <boost/any.hpp>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -57,7 +58,7 @@ public:
 	T*						provider();
 	template<typename Fn>
 	bool					post(Fn fn);
-	bool					post(task::fn& fn);
+	// bool					post(task::fn& fn);
 	bool					post(shared_task task);
 
 	bool					operator==(const service& rhs);
@@ -133,12 +134,10 @@ T* service::provider()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename fn> 
-bool service::post(fn fn)
+template<typename FN> 
+bool service::post(FN taskFn)
 {
-	shared_service service = _self.lock();
-	shared_task task(new task(fn, service));
-	return post(task);
+	return post(std::make_shared< task >(taskFn));
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -191,6 +190,6 @@ void service::make_provider(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -74,7 +74,7 @@
 #define FN_TYPEDEF(N)		FN_LIST_PAIR(N,typedef A,, arg,_type;,)	// typedef A0 arg0_type;typedef A1 arg1_type;...
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace reflection
 {
@@ -182,6 +182,6 @@ FN_TRAITS(12)
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace reflection
-} // namespace Marbles
+} // namespace marbles
 
 // End of File --------------------------------------------------------------------------------------------------------

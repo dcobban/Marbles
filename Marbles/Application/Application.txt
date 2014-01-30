@@ -1,10 +1,10 @@
-Marbles application layer
+marbles application layer
 
 The application layer is a set of classes designed for managing the primary 
 platform device features.  This layer consists of features to control the flow
 of the application and make it simple for users to quickly modify that flow.  
-By design all Marbles applications are multi-thread and therefore the application 
-layer's primary feature is that of an execution service.  A Marbles application 
+By design all marbles applications are multi-thread and therefore the application 
+layer's primary feature is that of an execution service.  A marbles application 
 consists of a finite set of services operating together asyncronously, 
 communicating to each other via a tasking system.
 

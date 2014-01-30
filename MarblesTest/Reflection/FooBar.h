@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -50,7 +50,7 @@ struct Foo
 	Bar					bar;
 	int					x;
 	float				y;
-	Marbles::uint64_t	z;
+	marbles::uint64_t	z;
 
 	float				GetX() const				{ return static_cast<float>(x); }
 	void				SetX(const float val)		{ x = static_cast<int>(val); }

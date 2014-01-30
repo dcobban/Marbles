@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -50,7 +50,7 @@ namespace boost
 #define Message(label, msg) message (Location(label) msg)
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -58,11 +58,14 @@ namespace Marbles
 #define ASSERT assert
 
 // --------------------------------------------------------------------------------------------------------------------
+template <typename T>
+struct AlignOfT
+{
+	char base; T aligned; char tail;
+	static const int value = reinterpret_cast<int>(&aligned - &base);
+};
 template <typename T> 
-inline size_t AlignOf() 
-{ 
-	return __alignof(T); // This is win32 specific
-}
+inline size_t AlignOf() { return AlignOfT<T>::value; }
 
 // --------------------------------------------------------------------------------------------------------------------
 template <typename T> 
@@ -217,7 +220,7 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Marbles
+} // namespace marbles
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace std 

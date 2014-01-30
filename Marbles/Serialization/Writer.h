@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -24,7 +24,7 @@
 #pragma once
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace serialization
 {
@@ -353,14 +353,14 @@ bool Writer<F>::Write(std::ostream& os, const object& value)
 		}
 	}
 	else if (Translate<bool>(os, value))				{}
-	else if (Translate<Marbles::uint8_t>(os, value))	{}
-	else if (Translate<Marbles::uint16_t>(os, value))	{}
-	else if (Translate<Marbles::uint32_t>(os, value))	{}
-	else if (Translate<Marbles::uint64_t>(os, value))	{}
-	else if (Translate<Marbles::int8_t>(os, value))		{}
-	else if (Translate<Marbles::int16_t>(os, value))	{}
-	else if (Translate<Marbles::int32_t>(os, value))	{}
-	else if (Translate<Marbles::int64_t>(os, value))	{}
+	else if (Translate<marbles::uint8_t>(os, value))	{}
+	else if (Translate<marbles::uint16_t>(os, value))	{}
+	else if (Translate<marbles::uint32_t>(os, value))	{}
+	else if (Translate<marbles::uint64_t>(os, value))	{}
+	else if (Translate<marbles::int8_t>(os, value))		{}
+	else if (Translate<marbles::int16_t>(os, value))	{}
+	else if (Translate<marbles::int32_t>(os, value))	{}
+	else if (Translate<marbles::int64_t>(os, value))	{}
 	else if (Translate<float>(os, value))				{}
 	else if (Translate<double>(os, value))				{}
 	else if (Translate<std::string>(os, value))			{}
@@ -373,6 +373,6 @@ bool Writer<F>::Write(std::ostream& os, const object& value)
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace serialization
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

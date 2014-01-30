@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2013 Dan Cobban
 //
@@ -27,7 +27,7 @@
 #include <application\service.h>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 
 template<typename sig>
@@ -43,23 +43,28 @@ public:
 
 	inline base& operator+=(const shared_task& task)
 	{
-		m_multiCast.push_back(task);
+		event_task local;
+		local.task = task;
+		local.service = marbles::service::active();
+		m_multiCast.push_back(local);
 		return *this;
 	}
 
 	inline base& operator-=(const shared_task& task)
 	{
-		std::vector<shared_task>::iterator end;
-		end = std::remove(m_multiCast.begin(), m_multiCast.end(), task);
-		m_multiCast.erase(end, m_multiCast.end());
+		m_multiCast.erase(	std::remove(m_multiCast.begin(), 
+										m_multiCast.end(), 
+										task), 
+							m_multiCast.end());
 		return *this;
 	}
 
 	inline void operator()()
 	{
-		std::vector<shared_task>::iterator end;
-		end = std::remove_if(m_multiCast.begin(), m_multiCast.end(), PostMessage);
-		m_multiCast.erase(end, m_multiCast.end());
+		m_multiCast.erase(	std::remove_if(	m_multiCast.begin(), 
+											m_multiCast.end(), 
+											PostMessage), 
+							m_multiCast.end());
 	}
 
 	inline void operator()() const
@@ -68,19 +73,29 @@ public:
 	}
 
 private:
-	static const bool PostMessage(const shared_task& task)
+	struct event_task
 	{
-		shared_service provider = task->service.lock();
+		shared_task task;
+		weak_service service;
+		const bool operator ==(shared_task rhs)
+		{
+			return task == rhs;
+		}
+	};
+
+	static const bool PostMessage(const event_task& task)
+	{
+		shared_service provider = task.service.lock();
 		if (provider)
 		{
-			provider->post(task);
+			provider->post(task.task);
 			return false;
 		}
 
 		return true;
 	}
 
-	std::vector<shared_task> m_multiCast;
+	std::vector<event_task> m_multiCast;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -90,7 +105,7 @@ class event<void ()> : public event_base< event<void ()> >
 public:
 	base& operator+=(const std::function<void()>& fn) 
 	{
-		shared_task pTask = std::make_shared<task>(fn, service::active());
+		shared_task pTask = std::make_shared<task>(fn);
 		return base::operator+=(pTask); 
 	}
 
@@ -154,6 +169,6 @@ public:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

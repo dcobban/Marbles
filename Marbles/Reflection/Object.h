@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -24,7 +24,7 @@
 #pragma once
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace Marbles
+namespace marbles
 {
 namespace reflection
 {
@@ -285,15 +285,15 @@ inline void object::_SetAddress(void* p)
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace reflection
-} // namespace Marbles
+} // namespace marbles
 
-template<typename T> inline bool operator==(const Marbles::reflection::object& obj, const T& var)
-{ return obj.typeInfo()->implements(Marbles::reflection::type_of<T>()) && obj.as<T>() == var; }
-template<typename T> inline bool operator==(const T& var, const Marbles::reflection::object& obj)
-{ return obj.typeInfo()->implements(Marbles::reflection::type_of<T>()) && var == obj.as<T>(); }
-template<typename T> inline bool operator!=(const Marbles::reflection::object& obj, const T& var)
+template<typename T> inline bool operator==(const marbles::reflection::object& obj, const T& var)
+{ return obj.typeInfo()->implements(marbles::reflection::type_of<T>()) && obj.as<T>() == var; }
+template<typename T> inline bool operator==(const T& var, const marbles::reflection::object& obj)
+{ return obj.typeInfo()->implements(marbles::reflection::type_of<T>()) && var == obj.as<T>(); }
+template<typename T> inline bool operator!=(const marbles::reflection::object& obj, const T& var)
 { return !(obj == var); }
-template<typename T> inline bool operator!=(const T& var, const Marbles::reflection::object& obj)
+template<typename T> inline bool operator!=(const T& var, const marbles::reflection::object& obj)
 { return !(var == obj); }
 
 // End of file --------------------------------------------------------------------------------------------------------

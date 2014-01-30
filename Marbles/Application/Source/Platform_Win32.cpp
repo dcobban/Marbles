@@ -1,4 +1,4 @@
-// This source file is part of Marbles library.
+// This source file is part of marbles library.
 //
 // Copyright (c) 2012 Dan Cobban
 //
@@ -26,7 +26,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-namespace Marbles
+namespace marbles
 {
 namespace 
 {
@@ -109,6 +109,6 @@ static Platform_Win32 sPlatform;
 // --------------------------------------------------------------------------------------------------------------------
 Platform* Platform::sInstance = &sPlatform;
 
-} // namespace Marbles
+} // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------
