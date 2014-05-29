@@ -56,12 +56,15 @@ public:
 	static unsigned num_hardware_threads();
 
 	static void sleep(int milliseconds);
+	static void yield();
 	static application* get();
 
 	application();
 	~application();
 	void stop(int run_result);
 	int run(unsigned numThreads = 0); // The value given to application::stop() is returned by this function
+
+	task task_unregister() const;
 
 	template<typename fn>
 	shared_service start();
@@ -84,8 +87,8 @@ private:
 	friend class service;
 
 	shared_service activeService() const;
-	void _register(shared_service service);
-	void unregister(shared_service service);
+	void _register(const shared_service& service);
+	void unregister(const shared_service& service);
 
 	unique_ptr<implementation> _implementation;
 };

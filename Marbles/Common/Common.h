@@ -226,6 +226,7 @@ private:
 namespace std 
 { 
 using namespace std::tr1; 
+using namespace std::placeholders;
 
 // --------------------------------------------------------------------------------------------------------------------
 template<int condition, typename Then, typename Else> struct conditional { typedef Then type_info; };

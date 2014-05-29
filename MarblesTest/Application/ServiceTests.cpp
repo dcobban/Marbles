@@ -28,20 +28,20 @@ struct ApplicationStop
 	int count;
 	int end;
 	marbles::event<void ()> update;
-	marbles::shared_task updateTask;
+	marbles::task updateTask;
 
 	ApplicationStop(const int count) 
 		: count(0)
 		, end(count)
 	{
-		updateTask = std::make_shared<marbles::task>(std::bind(&ApplicationStop::Update, this));
-		update += updateTask;
+		updateTask = update += std::bind(&ApplicationStop::Update, this);
 		update();
 	}
 
 	~ApplicationStop() 
 	{
 		update -= updateTask;
+		update.clear();
 	}
 
 	void Update() 
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE( single_thread_test )
 {
 	BOOST_MESSAGE( "service.single_thread_test" );
 
-	const int numCyclesToStop = 10;
+	const int numCyclesToStop = 1000;
 	marbles::application app;
 	marbles::shared_service executeTest = app.start<ExecutedService>();
 	std::vector<marbles::shared_service> racers;

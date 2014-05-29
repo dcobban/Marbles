@@ -44,7 +44,6 @@ public:
 		startup,
 		queued,
 		running,
-		// ShutdownPending,
 		shutdown,
 		stopped,
 	};
@@ -59,7 +58,7 @@ public:
 	template<typename Fn>
 	bool					post(Fn fn);
 	// bool					post(task::fn& fn);
-	bool					post(shared_task task);
+	bool					post(task task);
 
 	bool					operator==(const service& rhs);
 
@@ -92,16 +91,14 @@ private:
 	template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
 	void					make_provider(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5);
 
-	typedef CircularBuffer<shared_task, 128> task_queue;
-	typedef boost::mutex					mutex;
-	typedef boost::unique_lock<mutex>		mutex_lock;
-	typedef boost::condition_variable		condition;
+	typedef CircularBuffer<task, 128>	task_queue;
+	typedef boost::mutex				mutex;
+	typedef boost::unique_lock<mutex>	mutex_lock;
+	typedef boost::condition_variable	condition;
 
 	task_queue				_taskQueue;
 
 	atomic<execution_state>	_state;
-	// mutable mutex			_stateMutex; // We can remove this by not allowing resizing  
-	// mutable condition		_stateChanged;
 
 	boost::any				_provider;
 	weak_service			_self;
@@ -135,9 +132,11 @@ T* service::provider()
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename FN> 
-bool service::post(FN taskFn)
+bool service::post(FN action_fn)
 {
-	return post(std::make_shared< task >(taskFn));
+	task msg;
+	msg._fn = std::make_shared<task::fn>(action_fn);
+	return post(msg);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

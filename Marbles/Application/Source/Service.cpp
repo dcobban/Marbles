@@ -40,13 +40,16 @@ service::execution_state service::state() const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void service::stop(bool /*block*/)
+void service::stop(bool block)
 {
-	post(std::bind<void>(&application::unregister, application::get(), _self.lock()));
-	//if (block)
-	//{
-	//	wait(stopped);
-	//}
+	task unregister = application::get()->task_unregister();
+	unregister._param = std::make_shared<shared_service>(_self.lock());
+	post(unregister);
+
+	if (block)
+	{
+		// wait(stopped);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -73,9 +76,9 @@ void service::stop(bool /*block*/)
 //}
 
 // --------------------------------------------------------------------------------------------------------------------
-bool service::post(shared_task task)
+bool service::post(task action)
 {
-	return _taskQueue.try_push(task);
+	return _taskQueue.try_push(action);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

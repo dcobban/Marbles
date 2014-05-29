@@ -41,22 +41,27 @@ public:
 	typedef typename _T				derived;
 	typedef typename event_base<_T>	base;
 
-	inline base& operator+=(const shared_task& task)
+	inline void clear()
 	{
-		event_task local;
-		local.task = task;
-		local.service = marbles::service::active();
-		m_multiCast.push_back(local);
-		return *this;
+		m_multiCast.clear();
 	}
 
-	inline base& operator-=(const shared_task& task)
+	inline task operator+=(const task& task)
+	{
+		event_task local;
+		local.action = task;
+		local.service = marbles::service::active();
+		m_multiCast.push_back(local);
+		return task;
+	}
+
+	inline task operator-=(const task& task)
 	{
 		m_multiCast.erase(	std::remove(m_multiCast.begin(), 
 										m_multiCast.end(), 
 										task), 
 							m_multiCast.end());
-		return *this;
+		return task;
 	}
 
 	inline void operator()()
@@ -75,11 +80,11 @@ public:
 private:
 	struct event_task
 	{
-		shared_task task;
+		task action;
 		weak_service service;
-		const bool operator ==(shared_task rhs)
+		const bool operator ==(const task& rhs)
 		{
-			return task == rhs;
+			return action == rhs;
 		}
 	};
 
@@ -88,7 +93,7 @@ private:
 		shared_service provider = task.service.lock();
 		if (provider)
 		{
-			provider->post(task.task);
+			provider->post(task.action);
 			return false;
 		}
 
@@ -102,16 +107,21 @@ private:
 template<>
 class event<void ()> : public event_base< event<void ()> >
 {
+private:
+	class wrap
+	{
+	public:
+		wrap(const std::function<void()>& fn) : _fn(fn) {}
+		void operator()(const task::shared_param&) { _fn(); }
+	private:
+		std::function<void()> _fn;
+	};
 public:
-	base& operator+=(const std::function<void()>& fn) 
+	task operator+=(const std::function<void()>& fn) 
 	{
-		shared_task pTask = std::make_shared<task>(fn);
-		return base::operator+=(pTask); 
-	}
-
-	base& operator+=(const shared_task& pTask) 
-	{
-		return base::operator+=(pTask);	
+		task action;
+		action._fn = std::make_shared<task::fn>(wrap(fn));
+		return base::operator+=(action); 
 	}
 };
 
