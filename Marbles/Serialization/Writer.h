@@ -109,7 +109,7 @@ void Writer<F>::PathWritten()
 		{
 			ss << "." << i->memberInfo()->name();
 		}
-		if (0 != ss.tellg())
+		if (0 == ss.tellg())
 		{
 			ss << ".";
 		}

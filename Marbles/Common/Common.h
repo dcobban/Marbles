@@ -229,8 +229,8 @@ using namespace std::tr1;
 using namespace std::placeholders;
 
 // --------------------------------------------------------------------------------------------------------------------
-template<int condition, typename Then, typename Else> struct conditional { typedef Then type_info; };
-template<typename Then, typename Else> struct conditional<0, Then, Else> { typedef Else type_info; };
+//template<int condition, typename Then, typename Else> struct conditional { typedef Then type_info; };
+//template<typename Then, typename Else> struct conditional<0, Then, Else> { typedef Else type_info; };
 
 // --------------------------------------------------------------------------------------------------------------------
 #define MAKE_SHARED(N) \

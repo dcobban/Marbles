@@ -1,0 +1,173 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Common">
+      <UniqueIdentifier>{97968469-1aa3-4d52-af55-bb4b3bea15c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Source">
+      <UniqueIdentifier>{f5ecfa90-4ba0-4ff5-88a7-198b6c13f7cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Behaviour">
+      <UniqueIdentifier>{085be1f8-73dd-4824-95b3-5e53adeb2094}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application">
+      <UniqueIdentifier>{7e53bc8a-be85-4f80-8827-453e13c3c4ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Application\Source">
+      <UniqueIdentifier>{60ede3dc-c52c-4997-8c9a-f1aa5581cc92}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Reflection">
+      <UniqueIdentifier>{93490cf5-76b9-47a8-9e1e-974eb5e04dfe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Reflection\Source">
+      <UniqueIdentifier>{6fc5880e-8d58-4d86-9cb4-c8e8e4cc3bbc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Rendering">
+      <UniqueIdentifier>{67fd60bf-53e9-407e-becd-e63d4d13672a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Serialization">
+      <UniqueIdentifier>{a8027e20-c428-457a-b30c-18a1c4efac6e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Serialization\Source">
+      <UniqueIdentifier>{25fc171d-14d3-4c34-bb83-dec56572ecb2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Common\CircularBuffer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Common.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Concept.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Definitions.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Function_Delayed.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Function_Traits.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Hash.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Source\Platform_Win32.h">
+      <Filter>Common\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Behaviour\Agent.h">
+      <Filter>Behaviour</Filter>
+    </ClInclude>
+    <ClInclude Include="Behaviour\Bag.h">
+      <Filter>Behaviour</Filter>
+    </ClInclude>
+    <ClInclude Include="Behaviour\Behaviour.h">
+      <Filter>Behaviour</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Application.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Event.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Platform.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Service.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Application\Task.h">
+      <Filter>Application</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Declaration.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Enumerator.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Field.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Member.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Method.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Object.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Path.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Primitives.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Property.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Traits.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Type.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\type_def.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\TypeOf.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Reflection\Value.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
+    <ClInclude Include="Serialization\Format.h">
+      <Filter>Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Serialization\Reader.h">
+      <Filter>Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Serialization\Serializer.h">
+      <Filter>Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Serialization\Writer.h">
+      <Filter>Serialization</Filter>
+    </ClInclude>
+    <ClInclude Include="Marbles.h" />
+    <ClInclude Include="Reflection.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Application\Application.txt">
+      <Filter>Application</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Application\Source\Application.cpp">
+      <Filter>Application\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Source\Platform_Win32.cpp">
+      <Filter>Application\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Source\Service.cpp">
+      <Filter>Application\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Application\Source\Task.cpp">
+      <Filter>Application\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Reflection\Source\Member.cpp">
+      <Filter>Reflection\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Reflection\Source\Object.cpp">
+      <Filter>Reflection\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Reflection\Source\Type.cpp">
+      <Filter>Reflection\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Serialization\Source\Serializer.cpp">
+      <Filter>Serialization\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Marbles.cpp" />
+  </ItemGroup>
+</Project>

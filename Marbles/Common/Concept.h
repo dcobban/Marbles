@@ -45,7 +45,7 @@ struct keyable
 	//};
 	struct empty {};
 	struct base { void operator[](int); };
-	typedef typename std::conditional<std::is_class<T>::value, T, empty>::type_info user_base;
+	typedef typename std::conditional<std::is_class<T>::value, T, empty>::type user_base;
 	struct join : public user_base, public base {}; // does not work with basic types
 	template<typename U, U> struct checker;
 

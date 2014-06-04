@@ -38,7 +38,7 @@ class declaration
 public:
 	shared_type		typeInfo() const;
 	shared_member	memberInfo() const	{ return member; }
-	inline bool		isValid() const		{ return member; }
+	inline bool		isValid() const		{ return !!member; }
 	inline bool		isConstant() const	{ return is_constant; }
 	inline bool		isValue() const		{ return Value == semantic; }
 	inline bool		isCallable() const	{ return Function == semantic; }

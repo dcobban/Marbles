@@ -82,7 +82,7 @@ struct application::kernel
 	kernel();
 	~kernel();
 
-	inline bool running() const { return activeService; }
+	inline bool running() const { return NULL != activeService; }
 
 	void Main(application* application);
 	void startThread();
@@ -219,7 +219,7 @@ shared_service application::kernel::selectService()
 			}
 
 			// If we have looped over all services and their is no possible selection then exit loop.
-			const bool accepted = candidate;
+			const bool accepted = NULL != candidate;
 			const bool atEnd	= next == start;
 			const bool yield	= atEnd & isSelectionPossible;
 			const bool exit		= atEnd & !isSelectionPossible;

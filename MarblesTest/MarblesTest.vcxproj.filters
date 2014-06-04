@@ -2,21 +2,24 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Application">
-      <UniqueIdentifier>{e02e28be-c079-46cc-beef-5e701c0252a0}</UniqueIdentifier>
+      <UniqueIdentifier>{7ebc1290-26e5-4245-a65d-71362a0ef3c4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Behaviour">
-      <UniqueIdentifier>{6ce0fe81-0cc0-41df-a0ae-a8eb56ac6ad5}</UniqueIdentifier>
+      <UniqueIdentifier>{6e8c2d02-696e-4b28-a9ea-a2e105e2bced}</UniqueIdentifier>
     </Filter>
     <Filter Include="Reflection">
-      <UniqueIdentifier>{d5ebbf87-90a3-4270-b6d4-95ac5b432300}</UniqueIdentifier>
+      <UniqueIdentifier>{3b586763-d682-4077-8369-3558a97e438c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Common">
-      <UniqueIdentifier>{6f212986-d751-4ccc-846c-69b25f538635}</UniqueIdentifier>
+      <UniqueIdentifier>{7a36d55c-14d8-4e19-af1f-b4e907ebaec2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application\ServiceTests.cpp">
       <Filter>Application</Filter>
+    </ClCompile>
+    <ClCompile Include="Reflection\ObjectTest.cpp">
+      <Filter>Reflection</Filter>
     </ClCompile>
     <ClCompile Include="Reflection\SerializationTest.cpp">
       <Filter>Reflection</Filter>
@@ -24,9 +27,15 @@
     <ClCompile Include="Common\CircularBufferTest.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="Common\ConceptTest.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
     <ClCompile Include="MarblesTest.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Reflection\FooBar.h">
+      <Filter>Reflection</Filter>
+    </ClInclude>
     <ClInclude Include="MarblesTest.h" />
   </ItemGroup>
 </Project>

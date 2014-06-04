@@ -23,7 +23,7 @@
 
 #include <common/concept.h>
 
-BOOST_AUTO_TEST_SUITE( serialization )
+BOOST_AUTO_TEST_SUITE(serialization)
 
 // --------------------------------------------------------------------------------------------------------------------
 struct nonKeyable { int list[1024]; };
