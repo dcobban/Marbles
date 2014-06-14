@@ -96,12 +96,12 @@ private:
 	typedef boost::unique_lock<mutex>	mutex_lock;
 	typedef boost::condition_variable	condition;
 
-	task_queue				_taskQueue;
+	task_queue						_taskQueue;
 
-	atomic<execution_state>	_state;
+	std::atomic<execution_state>	_state;
 
-	boost::any				_provider;
-	weak_service			_self;
+	boost::any						_provider;
+	weak_service					_self;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ inline bool service::operator==(const service& rhs)
 // --------------------------------------------------------------------------------------------------------------------
 inline bool	service::hasStopped() const
 {
-	return stopped == _state.get();
+	return stopped == _state.load();
 }
 
 //// --------------------------------------------------------------------------------------------------------------------

@@ -22,7 +22,8 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 #include <Common/CircularBuffer.h>
-#include <boost/thread.hpp>
+//#include <boost/thread.hpp>
+#include <thread>
 
 BOOST_AUTO_TEST_SUITE( CircularBuffer )
 
@@ -76,9 +77,11 @@ BOOST_AUTO_TEST_CASE( basic_operations )
 
 namespace 
 {
-	static const int bufferSize = 10;
+	static const int numProducers = 15;
+	static const int numBuffers = (numProducers + 1) / 2;
+	static const int bufferSize = 15;
 	typedef marbles::CircularBuffer<int, bufferSize> Buffer_t;
-	static std::vector< Buffer_t > buffers;
+	static Buffer_t buffers[numBuffers];
 	static Buffer_t accumulation;
 }
 
@@ -86,7 +89,7 @@ void marshaller()
 {
 	int value;
 	int index = 0;
-	for(int i = buffers.size(); i--; )
+	for (int i = numBuffers; i--;)
 	{
 		value = buffers[index].pop();
 		accumulation.push(value);
@@ -95,11 +98,11 @@ void marshaller()
 	int timeout;
 	do 
 	{
-		timeout = 100*buffers.size();
+		timeout = 100 * numBuffers;
 		do
 		{
 			index += 1;
-			index %= buffers.size();
+			index %= numBuffers;
 			--timeout;
 		} while(buffers[index].empty() && 0 < timeout);
 
@@ -121,15 +124,12 @@ void producer(Buffer_t* buffer, int value, int amount)
 BOOST_AUTO_TEST_CASE( multi_thread_usage )
 {
 	BOOST_MESSAGE( "CircularBuffer.multi_thread_usage" );
-	const int numProducers = 15;
 	const int amountProduced = bufferSize * 10;
-	typedef std::array<boost::thread, numProducers> ThreadArray;
+	typedef std::array<std::thread, numProducers> ThreadArray;
 	typedef std::array<int, numProducers> AmountArray;
 
 	AmountArray amounts;
 	ThreadArray threads;
-
-	buffers.resize((numProducers + 1)/2);
 
 	AmountArray::iterator amount = amounts.begin();
 	while(amount != amounts.end())
@@ -137,11 +137,11 @@ BOOST_AUTO_TEST_CASE( multi_thread_usage )
 		*amount++ = 0;
 	}
 
-	boost::thread marshallerThread(marshaller);
-	boost::thread marshaller2Thread(marshaller);
+	std::thread marshallerThread(marshaller);
+	std::thread marshaller2Thread(marshaller);
 	for(unsigned i = numProducers; i--;)
 	{
-		boost::thread action(std::bind(producer, &buffers[i%buffers.size()], i, amountProduced));
+		std::thread action(std::bind(producer, &buffers[i%numBuffers], i, amountProduced));
 		threads[i].swap(action);
 	}
 
@@ -158,8 +158,8 @@ BOOST_AUTO_TEST_CASE( multi_thread_usage )
 
 	// Push an exit for each marchal thread
 	const int exit = -1;
-	buffers.front().push(exit);
-	buffers.front().push(exit);
+	for (int i = 0; i < numBuffers;++i)
+		buffers[i].push(exit);
 
 	amount = amounts.begin();
 	while(amount != amounts.end())
@@ -172,7 +172,6 @@ BOOST_AUTO_TEST_CASE( multi_thread_usage )
 	marshaller2Thread.join();
 
 	accumulation.clear();
-	buffers.resize(0);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

@@ -36,11 +36,12 @@ public:
 	, _clean(0)
 	{
 	}
+	CircularBuffer(const CircularBuffer<T, N>&) = delete;
 	~CircularBuffer(){}
 	inline unsigned size() const
 	{
-		const unsigned start = _start.get();
-		const unsigned end = _end.get();
+		const unsigned start = _start.load();
+		const unsigned end = _end.load();
 		return start <= end ? end - start : end + N + 1 - start;
 	}
 	inline bool empty() const
@@ -64,20 +65,20 @@ public:
 		unsigned next;
 		do
 		{	// Reserve an element to be created
-			reserved = _init.get();
+			reserved = _init.load();
 			next = (reserved + 1) % (N + 1);
-			if (next == _clean.get())
+			if (next == _clean.load())
 				return false;
 			// Try again if another thread has modified the _init value before me.
-		} while(reserved != _init.compare_exchange(next, reserved));
+		} while (!_init.compare_exchange_strong(reserved, next));
 		
 		// Element reserved, assign the value
 		_items[reserved] = value;
 
 		// Syncronize the end position with the updated reserved position
-		while (reserved != _end.compare_exchange(next, reserved))
+		while (!_end.compare_exchange_strong(reserved, next))
 		{	// wait for the other element to be completed.
-			application::sleep(1); 
+			application::yield(); 
 		}
 
 		return true;
@@ -87,7 +88,7 @@ public:
 	{
 		while (!try_push(value))
 		{
-			application::sleep(1);
+			application::yield();
 		}
 	}
 
@@ -97,19 +98,19 @@ public:
 		unsigned next;
 		do 
 		{
-			start = _start.get();
-			if (start == _end.get())
+			start = _start.load();
+			if (start == _end.load())
 				return false;
 			next = (start + 1) % (N + 1);
-		} while(start != _start.compare_exchange(next, start));
+		} while(!_start.compare_exchange_strong(start, next));
 		
 		out = T();
 		std::swap(_items[start], out);
 
 		// Syncronize the clean position with the updated start position
-		while (start != _clean.compare_exchange(next, start))
+		while (!_clean.compare_exchange_strong(start, next))
 		{	// wait for the other element to be cleaned first
-			application::sleep(1); 
+			application::yield(); 
 		}
 		
 		return true;
@@ -120,17 +121,17 @@ public:
 		T tmp;
 		while (!try_pop(tmp))
 		{
-			application::sleep(1);
+			application::yield();
 		}
 		return tmp;
 	}
 private:
 	// Todo: We really should control construction and destruction
 	T						_items[N + 1]; 
-	atomic<unsigned>		_start;
-	atomic<unsigned>		_end;
-	atomic<unsigned>		_init;
-	atomic<unsigned>		_clean;
+	std::atomic<unsigned>	_start;
+	std::atomic<unsigned>	_end;
+	std::atomic<unsigned>	_init;
+	std::atomic<unsigned>	_clean;
 };
 
 } // namespace marbles

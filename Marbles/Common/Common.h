@@ -27,6 +27,7 @@
 #include <functional>
 #include <algorithm>
 #include <vector>
+#include <atomic>
 #include <array>
 #include <limits>
 #include <cassert>
@@ -34,11 +35,11 @@
 
 // We should not make these global includes if possible
 #include <boost/cstdint.hpp>
-#include <boost/interprocess/detail/atomic.hpp>
-namespace boost
-{
-	using namespace interprocess::ipcdetail;
-}
+//#include <boost/interprocess/detail/atomic.hpp>
+//namespace boost
+//{
+//	using namespace interprocess::ipcdetail;
+//}
 
 #include <Common/Function_Traits.h>
 #include <Common/Definitions.h>
@@ -118,143 +119,12 @@ CONSTRUCT_WITH_ARGS(12)
 #undef CONSTRUCT_WITH_ARGS
 
 // --------------------------------------------------------------------------------------------------------------------
-// to be replaced by std::unique_ptr<>
-template<typename T> class unique_ptr : public std::auto_ptr<T>
-{
-public:
-	explicit unique_ptr(T* p = 0) 
-		:  std::auto_ptr<T>(p)
-		{	// construct from object pointer
-		}
-
-	unique_ptr(const unique_ptr<T>& rhs) 
-		:  std::auto_ptr<T>(const_cast<unique_ptr<T>&>(rhs))
-		{	
-		}
-
-	unique_ptr(const std::auto_ptr_ref<T> rhs) 
-		: std::auto_ptr<T>(rhs)
-		{	
-		}
-};
-
-// --------------------------------------------------------------------------------------------------------------------
-// to be replaced by std::atomic<>
-template<typename T>
-class atomic
-{
-	typedef T					value_type;
-	typedef atomic<value_type>	self_type;
-	typedef value_type&			reference;
-public:
-	atomic() {}
-	atomic(value_type value) : mValue(value) {}
-	atomic(const self_type& rhs) : mValue(boost::atomic_read32(&rhs.mValue)) {}
-
-	inline self_type& operator=(value_type value) 
-	{ boost::atomic_write32(&mValue, static_cast<boost::uint32_t>(value)); return *this; }
-	inline self_type& operator=(const self_type& rhs) 
-	{ boost::atomic_write32(&mValue, boost::atomic_read32(&rhs.mValue)); return *this; }
-
-	inline value_type get() 
-	{ return static_cast<value_type>(boost::atomic_read32(&mValue)); }
-	inline value_type get() const 
-	{ return const_cast<self_type*>(this)->get(); }
-
-	inline value_type compare_exchange(value_type value, value_type compare) 
-	{ return static_cast<value_type>(boost::atomic_cas32(&mValue, static_cast<boost::uint32_t>(value), static_cast<boost::uint32_t>(compare))); }
-
-	// value_type operator++() { return boost::atomic_increment(&mValue); }
-private:
-	mutable volatile boost::uint32_t mValue;
-};
-
-template<typename T>
-class atomic<T*>
-{
-	typedef T*					value_type;
-	typedef atomic<value_type>	self_type;
-	typedef value_type&			reference;
-public:
-	atomic() {}
-	atomic(value_type value) : mValue(reinterpret_cast<boost::uint32_t>(value)) {}
-	atomic(const self_type& rhs) : mValue(boost::atomic_read32(&rhs.mValue)) {}
-	
-	inline self_type& operator=(value_type value) 
-	{ Set(value); return *this; }
-	inline self_type& operator=(const self_type& rhs) 
-	{ Set(rhs); return *this; }
-
-	// Set the value and return the previous value
-	inline value_type& set(value_type value) 
-	{ return reinterpret_cast<value_type>(boost::atomic_write32(&mValue, reinterpret_cast<boost::uint32_t>(value))); }
-	inline value_type& set(const self_type& rhs) 
-	{ return reinterpret_cast<value_type>(boost::atomic_write32(&mValue, boost::atomic_read32(&rhs.mValue))); }
-
-	// get the value 
-	inline value_type get() 
-	{ return reinterpret_cast<value_type>(boost::atomic_read32(&mValue)); }
-	inline value_type get() const 
-	{ return const_cast<self_type*>(this)->get(); }
-
-	// if value equal to 'compare' then set to 'newValue', always returning the previous value
-	inline value_type compare_exchange(value_type newValue, value_type compare) 
-	{ 
-		return reinterpret_cast<value_type>(boost::atomic_cas32(
-			&mValue, 
-			reinterpret_cast<boost::uint32_t>(newValue), 
-			reinterpret_cast<boost::uint32_t>(compare))); 
-	}
-
-	// Increment/Decrement operators
-	inline value_type operator++() 
-	{ return boost::atomic_inc32(&mValue); }
-	inline value_type operator--() 
-	{ return boost::atomic_dec32(&mValue); }
-	inline value_type operator++(int) 
-	{ return boost::atomic_inc32(&mValue) + 1; }
-	inline value_type operator--(int) 
-	{ return boost::atomic_dec32(&mValue) - 1; }
-private:
-	volatile boost::uint32_t mValue;
-};
-
-// --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace std 
 { 
-using namespace std::tr1; 
-using namespace std::placeholders;
-
-// --------------------------------------------------------------------------------------------------------------------
-//template<int condition, typename Then, typename Else> struct conditional { typedef Then type_info; };
-//template<typename Then, typename Else> struct conditional<0, Then, Else> { typedef Else type_info; };
-
-// --------------------------------------------------------------------------------------------------------------------
-#define MAKE_SHARED(N) \
-	template<typename T, FN_TYPENAME(N)> \
-	shared_ptr<T> make_shared(FN_PARAMETER(N)) { return shared_ptr<T>(new T(FN_ARGUMENTS(N))); } \
-
-// MAKE_SHARED(0)
-template<typename T>
-shared_ptr<T> make_shared() { return shared_ptr<T>(new T()); }
-
-MAKE_SHARED(1)
-MAKE_SHARED(2)
-MAKE_SHARED(3)
-MAKE_SHARED(4)
-MAKE_SHARED(5)
-MAKE_SHARED(6)
-MAKE_SHARED(7)
-MAKE_SHARED(8)
-MAKE_SHARED(9)
-MAKE_SHARED(10)
-MAKE_SHARED(11)
-MAKE_SHARED(12)
-	
-#undef MAKE_SHARED
+	using namespace placeholders;
 }
 
 // End of file --------------------------------------------------------------------------------------------------------

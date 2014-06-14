@@ -90,7 +90,7 @@ private:
 	void _register(const shared_service& service);
 	void unregister(const shared_service& service);
 
-	unique_ptr<implementation> _implementation;
+	std::unique_ptr<implementation> _implementation;
 };
 
 // --------------------------------------------------------------------------------------------------------------------

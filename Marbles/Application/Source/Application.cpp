@@ -25,7 +25,9 @@
 #include <application\service.h>
 #include <common\common.h>
 #include <boost\any.hpp>
+#include <chrono>
 #include <boost\thread.hpp>
+#include <thread>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
@@ -61,7 +63,7 @@ struct application::implementation
 	service_list			services;
 
 	ActiveService			activeService;
-	atomic<unsigned int>	next_service;
+	std::atomic<unsigned>	next_service;
 	int						run_result;
 
 	static void				unregister(const task::shared_param& param) { sApplication->unregister(*reinterpret_cast<shared_service*>(param.get())); };
@@ -72,7 +74,7 @@ struct application::implementation
 // --------------------------------------------------------------------------------------------------------------------
 struct application::kernel
 {
-	boost::thread	thread;
+	std::thread		thread;
 	shared_service	activeService;
 	shared_service	nextService;
 	size_t			id;
@@ -143,7 +145,7 @@ void application::kernel::Main(application* application)
 void application::kernel::startThread()
 {	// What if we are already running?
 	application* application = application::get();
-	boost::thread kernel(std::bind(&application::kernel::Main, this, application));
+	std::thread kernel(std::bind(&application::kernel::Main, this, application));
 	thread.swap(kernel);
 }
 
@@ -159,7 +161,7 @@ void application::kernel::chooseService()
 	shared_service selected;
 	if (activeService)
 	{	// Queue current service
-		service::execution_state state = activeService->_state.get();
+		service::execution_state state = activeService->_state.load();
 		activeService->_state = service::queued;
 		if (service::stopped == state)
 		{	// Stopped services require thier task queue to be emptied
@@ -192,7 +194,7 @@ shared_service application::kernel::selectService()
 {	
 	shared_service candidate;
 	application::implementation* const application = application::get()->_implementation.get();
-	unsigned int start = application->next_service.get();
+	unsigned int start = application->next_service.load();
 	bool isSelectionPossible = false;
 	bool selected = false;
 
@@ -206,14 +208,15 @@ shared_service application::kernel::selectService()
 			unsigned int index = 0;
 			do 
 			{	
-				index = application->next_service.get();
+				index = application->next_service.load();
 				next = (index + 1) % size;
 				ASSERT(index != next); // Ensures that 2 <= mServiceList.size()
 				// try again if another thread has changed the value before me 
-			} while(index != application->next_service.compare_exchange(next, index));
+			} while (!application->next_service.compare_exchange_strong(index, next));
 
+			service::execution_state state = service::queued;
 			candidate = application->services[index].lock();
-			if (!candidate || service::queued != candidate->_state.compare_exchange(service::running, service::queued))
+			if (!candidate || !candidate->_state.compare_exchange_strong(state, service::running))
 			{
 				candidate.reset();
 			}
@@ -232,7 +235,7 @@ shared_service application::kernel::selectService()
 			// If the service is valid and is being processed then pick another.
 		} while(!selected);
 	}
-	ASSERT(!candidate || service::queued != candidate->_state.get());
+	ASSERT(!candidate || service::queued != candidate->_state.load());
 	return candidate;
 }
 
@@ -307,7 +310,7 @@ int application::run(unsigned nuthreads)
 		}
 	}
 
-	shared_service primary = _implementation->services[_implementation->next_service.get()].lock();
+	shared_service primary = _implementation->services[_implementation->next_service.load()].lock();
 	primary->provider<kernel>()->Main(this);
 
 	for(implementation::kernel_list::iterator service = _implementation->kernels.begin();
@@ -345,15 +348,15 @@ unsigned application::num_hardware_threads()
 // --------------------------------------------------------------------------------------------------------------------
 void application::sleep(int milliseconds)
 {
-	boost::chrono::milliseconds duration(milliseconds);
-	boost::this_thread::sleep_for(duration);
+	std::chrono::milliseconds duration(milliseconds);
+	std::this_thread::sleep_for(duration);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 void application::yield()
 {
-	boost::chrono::milliseconds duration(0);
-	boost::this_thread::sleep_for(duration);
+	std::chrono::nanoseconds duration(1);
+	std::this_thread::sleep_for(duration);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -396,7 +399,7 @@ void application::_register(const shared_service& service)
 // --------------------------------------------------------------------------------------------------------------------
 void application::unregister(const shared_service& service)
 {
-	service::execution_state service_state = service->_state.get();
+	service::execution_state service_state = service->_state.load();
 	if (service_state != service::stopped)
 	{
 		implementation::shared_lock lock(_implementation->service_mutex);
