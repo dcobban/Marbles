@@ -355,8 +355,7 @@ void application::sleep(int milliseconds)
 // --------------------------------------------------------------------------------------------------------------------
 void application::yield()
 {
-	std::chrono::nanoseconds duration(1);
-	std::this_thread::sleep_for(duration);
+	std::this_thread::yield();
 }
 
 // --------------------------------------------------------------------------------------------------------------------

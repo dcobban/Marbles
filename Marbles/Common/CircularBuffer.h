@@ -67,7 +67,8 @@ public:
 		{	// Reserve an element to be created
 			reserved = _init.load();
 			next = (reserved + 1) % (N + 1);
-			if (next == _clean.load())
+			const bool isFull = next == _clean.load();
+			if (isFull)
 				return false;
 			// Try again if another thread has modified the _init value before me.
 		} while (!_init.compare_exchange_strong(reserved, next));
@@ -99,13 +100,14 @@ public:
 		do 
 		{
 			start = _start.load();
-			if (start == _end.load())
+			const bool isEmpty = start == _end.load();
+			if (isEmpty)
 				return false;
 			next = (start + 1) % (N + 1);
 		} while(!_start.compare_exchange_strong(start, next));
 		
-		out = T();
-		std::swap(_items[start], out);
+		out = T(_items[start]);
+		//std::swap(_items[start], out);
 
 		// Syncronize the clean position with the updated start position
 		while (!_clean.compare_exchange_strong(start, next))

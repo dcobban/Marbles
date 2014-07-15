@@ -22,7 +22,6 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 #include <Common/CircularBuffer.h>
-//#include <boost/thread.hpp>
 #include <thread>
 
 BOOST_AUTO_TEST_SUITE( CircularBuffer )
@@ -75,74 +74,189 @@ BOOST_AUTO_TEST_CASE( basic_operations )
 	BOOST_CHECK(buffer.empty());
 }
 
-namespace 
+BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 {
-	static const int numProducers = 15;
-	static const int numBuffers = (numProducers + 1) / 2;
-	static const int bufferSize = 15;
-	typedef marbles::CircularBuffer<int, bufferSize> Buffer_t;
-	static Buffer_t buffers[numBuffers];
-	static Buffer_t accumulation;
-}
+	BOOST_MESSAGE("CircularBuffer.multi_threaded_push");
+	const int quantity = 150;
+	const int numProducers = 15;
 
-void marshaller()
-{
-	int value;
-	int index = 0;
-	for (int i = numBuffers; i--;)
+	marbles::CircularBuffer<int, numProducers*quantity> data;
+	marbles::CircularBuffer<int, numProducers*quantity> consumerData;
+	std::array<std::thread, numProducers> producerThreads;
+	for (auto id = numProducers; id--;)
 	{
-		value = buffers[index].pop();
-		accumulation.push(value);
+		std::thread producer([&data, id, quantity]()
+		{
+			for (int i = quantity; i--;)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				data.push(id);
+			}
+		});
+		producerThreads[id].swap(producer);
 	}
 
-	int timeout;
-	do 
+	for (auto j = producerThreads.size(); j--;)
 	{
-		timeout = 100 * numBuffers;
-		do
-		{
-			index += 1;
-			index %= numBuffers;
-			--timeout;
-		} while(buffers[index].empty() && 0 < timeout);
+		producerThreads[j].join();
+	}
 
-		if (buffers[index].try_pop(value))
+	typedef std::array<int, numProducers> tally_t;
+	tally_t tally;
+	for (auto& sum : tally)
+	{
+		sum = 0;
+	}
+
+	while (!data.empty())
+	{
+		int value = data.pop();
+		consumerData.push(value);
+		++tally[value];
+	}
+
+	for (auto sum : tally)
+	{
+		BOOST_CHECK_EQUAL(sum, quantity);
+	}
+
+	BOOST_MESSAGE("CircularBuffer.multi_threaded_pop");
+	const int numConsumers = 6;
+	std::array<tally_t, numConsumers> tallySheet;
+	for (auto& tally : tallySheet)
+	{
+		for (auto& value : tally)
 		{
-			accumulation.push(value);
+			value = 0;
 		}
-	} while(0 <= value);
-}
+	}
 
-void producer(Buffer_t* buffer, int value, int amount)
-{
-	for(int i = amount; i--; )
+	std::array<std::thread, numConsumers> consumerThreads;
+	for (auto id = numConsumers; id--;)
 	{
-		buffer->push(value);
+		tally_t& tally = tallySheet[id];
+		std::thread consumer([&tally, &consumerData]()
+		{
+			int value = 0;
+			while (consumerData.try_pop(value))
+			{
+				++tally[value];
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+		});
+		consumerThreads[id].swap(consumer);
+	}
+
+	for (auto j = consumerThreads.size(); j--;)
+	{
+		consumerThreads[j].join();
+	}
+
+	tally_t finalTally;
+	for (auto& value : finalTally)
+	{
+		value = 0;
+	}
+
+	for (auto& tally : tallySheet)
+	{
+		for (int i = tally.size(); i--;)
+		{
+			finalTally[i] += tally[i];
+		}
+	}
+
+	for (auto& sum : finalTally)
+	{
+		BOOST_CHECK_EQUAL(sum, quantity);
 	}
 }
 
-BOOST_AUTO_TEST_CASE( multi_thread_usage )
+namespace
+{
+	//static const int numProducers = 3; // 15;
+	//static const int numBuffers = (numProducers + 1) / 2;
+	//static const int bufferSize = 15;
+	//typedef marbles::CircularBuffer<int, bufferSize> Buffer_t;
+	//static std::array<Buffer_t, numBuffers> buffers;
+	//static Buffer_t accumulation;
+}
+
+//void accumulator(int id)
+//{
+//	int value = 0;
+//	unsigned index = 0;
+//	do
+//	{
+//		++index;
+//		index %= numBuffers;
+//
+//		if (buffers[index].try_pop(value) && 0 <= value)
+//		{
+//			accumulation.push(value);
+//		}
+//		std::this_thread::yield();
+//	} while (0 <= value);
+//
+//	std::cout << "accumulator " << id << " end." << std::endl;
+//}
+
+BOOST_AUTO_TEST_CASE(multi_thread_usage)
 {
 	BOOST_MESSAGE( "CircularBuffer.multi_thread_usage" );
-	const int amountProduced = bufferSize * 10;
+	const int quantity = 150;
+	const int bufferSize = 10;
+	const int numProducers = 15;
+	const int numBuffers = numProducers >> 1;
+
+	typedef marbles::CircularBuffer<int, bufferSize> Buffer;
+	typedef std::array<Buffer, numProducers> BufferArray;
 	typedef std::array<std::thread, numProducers> ThreadArray;
-	typedef std::array<int, numProducers> AmountArray;
+	typedef std::array<int, numProducers> TallyArray;
 
-	AmountArray amounts;
+	TallyArray tally;
 	ThreadArray threads;
+	BufferArray buffers;
+	Buffer accumulation;
 
-	AmountArray::iterator amount = amounts.begin();
-	while(amount != amounts.end())
+	for (auto& count : tally)
 	{
-		*amount++ = 0;
+		count = 0;
 	}
 
-	std::thread marshallerThread(marshaller);
-	std::thread marshaller2Thread(marshaller);
-	for(unsigned i = numProducers; i--;)
+	auto accumulator = [&buffers, &accumulation](int) //id)
 	{
-		std::thread action(std::bind(producer, &buffers[i%numBuffers], i, amountProduced));
-		threads[i].swap(action);
+		int value = 0;
+		unsigned index = 0;
+		do
+		{
+			++index;
+			index %= buffers.size();
+		
+			if (buffers[index].try_pop(value) && 0 <= value)
+			{
+				accumulation.push(value);
+			}
+			std::this_thread::yield();
+		} while (0 <= value);
+		
+		//std::cout << "accumulator " << id << " end." << std::endl;
+	};
+
+	std::thread accumulatorThread([accumulator]{ accumulator(1); });
+	std::thread accumulator2Thread([accumulator]{ accumulator(2); });
+	for (unsigned id = 0; id < numProducers; ++id)
+	{
+		Buffer& buffer = buffers[id%numBuffers];
+		std::thread producer([&buffer, id, quantity]()
+		{
+			for (int i = quantity; i--;)
+			{
+				// std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				buffer.push(id);
+			}
+		});
+		threads[id].swap(producer);
 	}
 
 	int sum = 0;
@@ -151,25 +265,30 @@ BOOST_AUTO_TEST_CASE( multi_thread_usage )
 		int value;
 		if (accumulation.try_pop(value))
 		{
-			++amounts[value];
+			++tally[value];
 			++sum;
 		}
-	} while(sum < numProducers*amountProduced);
+	} while (sum < numProducers*quantity);
+	
+	std::cout << "All values received" << std::endl;
 
-	// Push an exit for each marchal thread
-	const int exit = -1;
-	for (int i = 0; i < numBuffers;++i)
-		buffers[i].push(exit);
-
-	amount = amounts.begin();
-	while(amount != amounts.end())
+	int k = 0;
+	for(auto amount : tally)
 	{
-		BOOST_CHECK_EQUAL(*amount++, amountProduced);
+		BOOST_CHECK_EQUAL(amount, quantity);
+		threads[k++].join();
+	}
+
+	// Push an exit for each accumulator thread
+	const int exit = -1;
+	for (unsigned j = 0; j < buffers.size(); ++j)
+	{
+		buffers[j].push(exit);
 	}
 
 	// Clean up
-	marshallerThread.join();
-	marshaller2Thread.join();
+	accumulatorThread.join();
+	accumulator2Thread.join();
 
 	accumulation.clear();
 }
