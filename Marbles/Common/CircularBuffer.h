@@ -71,14 +71,16 @@ public:
 			if (isFull)
 				return false;
 			// Try again if another thread has modified the _init value before me.
-		} while (!_init.compare_exchange_strong(reserved, next));
+		} while (!_init.compare_exchange_weak(reserved, next));
 		
 		// Element reserved, assign the value
 		_items[reserved] = value;
 
 		// Syncronize the end position with the updated reserved position
-		while (!_end.compare_exchange_strong(reserved, next))
+		const unsigned persist = reserved;
+		while (!_end.compare_exchange_weak(reserved, next))
 		{	// wait for the other element to be completed.
+			reserved = persist;
 			application::yield(); 
 		}
 
@@ -104,14 +106,16 @@ public:
 			if (isEmpty)
 				return false;
 			next = (start + 1) % (N + 1);
-		} while(!_start.compare_exchange_strong(start, next));
+		} while(!_start.compare_exchange_weak(start, next));
 		
 		out = T(_items[start]);
 		//std::swap(_items[start], out);
 
 		// Syncronize the clean position with the updated start position
-		while (!_clean.compare_exchange_strong(start, next))
+		const unsigned persist = start;
+		while (!_clean.compare_exchange_weak(start, next))
 		{	// wait for the other element to be cleaned first
+			start = persist;
 			application::yield(); 
 		}
 		
