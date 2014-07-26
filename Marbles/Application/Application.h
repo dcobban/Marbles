@@ -57,10 +57,14 @@ private:
 	struct implementation;
 	friend class service;
 
-	shared_service activeService() const;
-	shared_service createService();
+	shared_service active_service() const;
+	shared_service create_service();
+	shared_service select_service();
+
+	void choose_service();
 	void _register(const shared_service& service);
 	void unregister(const shared_service& service);
+	void process_services();
 
 	std::unique_ptr<implementation> _implementation;
 };
@@ -69,7 +73,7 @@ private:
 template<typename T, typename... ARG> 
 inline shared_service application::start(ARG&&... args)
 {
-	shared_service service = createService();
+	shared_service service = create_service();
 	if (service)
 	{
 		service->post([=]() { service->make_provider<T>(std::forward<ARG>(args)...); });

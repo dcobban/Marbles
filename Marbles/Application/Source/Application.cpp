@@ -42,13 +42,14 @@ struct application::implementation
 	typedef boost::thread_specific_ptr<shared_service> ActiveService;
 	typedef boost::thread_specific_ptr<application> ActiveApplication;
 	typedef std::vector<weak_service>			service_list;
-	typedef std::vector<shared_service>			kernel_list;
+	typedef std::vector<std::thread>			thread_list;
 
 	implementation()
 	: _active_service(&do_nothing<shared_service>)
 	, _next_service(0)
 	, _run_result(0)
 	{
+		_choose_service._fn = std::make_shared<task::fn>([]() { application::get()->choose_service(); });
 	}
 
 	~implementation()
@@ -57,12 +58,11 @@ struct application::implementation
 
 	template<typename T> static void do_nothing(T*) {};
 
-	shared_mutex			_kernel_mutex;
-	kernel_list				_kernels;
-
 	shared_mutex			_service_mutex;
 	service_list			_services;
+	thread_list				_threads;
 
+	task					_choose_service;
 	ActiveService			_active_service;
 	std::atomic<unsigned>	_next_service;
 	int						_run_result;
@@ -71,116 +71,47 @@ struct application::implementation
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-struct application::kernel
+void application::process_services()
 {
-	std::thread		_thread;
-	shared_service	_active_service;
-	shared_service	_next_service;
-	size_t			_id;
-
-	task			_choose_next_service;
-
-	kernel();
-	~kernel();
-
-	inline bool running() const { return NULL != _active_service; }
-
-	void Main(application* application);
-	void start_thread();
-	void stop_thread();
-	void choose_service();
-	shared_service select_service();
-};
-
-// --------------------------------------------------------------------------------------------------------------------
-application::kernel::kernel()
-{
-	_choose_next_service._fn = std::make_shared<task::fn>();
-	if (_choose_next_service._fn)
-	{
-		*_choose_next_service._fn = [this]() { this->choose_service(); };
-	}
-	_active_service.reset();
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-application::kernel::~kernel()
-{
-	stop_thread();
-	if (_thread.joinable())
-	{
-		_thread.join();
-	}
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-void application::kernel::Main(application* application)
-{
-	application::implementation::sApplication.reset(application);
-	application->_implementation->_active_service.reset(&_active_service);
-	ASSERT(!_active_service);
+	shared_service choosen;
+	application::implementation::sApplication.reset(this);
+	_implementation->_active_service.reset(&choosen);
 	choose_service();
-	while(_active_service) 
+	while(choosen) 
 	{
-		ASSERT(service::queued != _active_service->state());
-		ASSERT(!_active_service->_taskQueue.empty());
-		task run = _active_service->_taskQueue.pop();
-		run();
+		ASSERT(service::queued != choosen->state());
+		ASSERT(!choosen->_taskQueue.empty());
+		choosen->_taskQueue.pop().run();
 	}
-	_active_service.reset();
-	application->_implementation->_active_service.reset();
+	_implementation->_active_service.reset();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void application::kernel::start_thread()
-{	// What if we are already running?
-	application* application = application::get();
-	std::thread kernel([=]() { this->Main(application); });
-	_thread.swap(kernel);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-void application::kernel::stop_thread()
-{	// Without an active service the _thread will exit
-	_active_service.reset();
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-void application::kernel::choose_service()
+void application::choose_service()
 {
-	shared_service selected;
-	if (_active_service)
+	shared_service& active = *_implementation->_active_service;
+	if (active)
 	{	// Queue current service
-		service::execution_state state = _active_service->_state.load();
-		_active_service->_state = service::queued;
+		service::execution_state state = active->_state.load();
+		active->_state = service::queued;
 		if (service::stopped == state)
 		{	// Stopped _services require thier task queue to be emptied
-			_active_service->_taskQueue.clear();
-			_active_service->_state = service::stopped;
+			active->_taskQueue.clear();
+			active->_state = service::stopped;
 		}
-		_active_service.reset();
+		active.reset();
 	}
 
 	// Select the next service
-	if (_next_service)
+	active = select_service();
+	if (active)
 	{
-		_next_service->_state = service::running;
-		_active_service = _next_service;
-		_next_service.reset();
-	}
-	else
-	{
-		_active_service = select_service();
-	}
-
-	if (_active_service)
-	{
-		_active_service->post(_choose_next_service); // Schedule the next attempt to switch _services
+		active->post(_implementation->_choose_service); // Schedule the next attempt to switch _services
 	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service application::kernel::select_service()
+shared_service application::select_service()
 {	
 	shared_service candidate;
 	application::implementation* const application = application::get()->_implementation.get();
@@ -248,17 +179,15 @@ void application::stop(int run_result)
 {
 	_implementation->_run_result = run_result;
 
+	implementation::shared_lock lock(_implementation->_service_mutex);
+	for(implementation::service_list::iterator i = _implementation->_services.begin(); 
+		i != _implementation->_services.end(); 
+		++i)
 	{
-		implementation::shared_lock lock(_implementation->_service_mutex);
-		for(implementation::service_list::iterator i = _implementation->_services.begin(); 
-			i != _implementation->_services.end(); 
-			++i)
+		shared_service service = (*i).lock();
+		if (service)
 		{
-			shared_service service = (*i).lock();
-			if (service)
-			{
-				service->stop();
-			}
+			service->stop();
 		}
 	}
 }
@@ -267,56 +196,42 @@ void application::stop(int run_result)
 int application::run(unsigned nu_threads)
 {
 	bool isRunning = NULL != implementation::sApplication.get();
-	if (isRunning)
+	if (isRunning || _implementation->_services.empty())
 	{
 		return -1;
 	}
-
-	implementation::sApplication.reset(this);
 
 	if (0 >= nu_threads)
 	{
 		nu_threads = num_hardware_threads();
 	}
 
+
 	// The _services to initialize first are the _kernels.
-	_implementation->_next_service = _implementation->_services.size();
+	_implementation->_next_service = 0; // or random
 
-	{	// create the requested kernel
-		application::implementation::unique_lock lock(_implementation->_kernel_mutex);
-		_implementation->_kernels.reserve(nu_threads);
-		for(int i = nu_threads; i--; )
+	implementation::sApplication.reset(this);
+	{	// Initialize threads
+		shared_service primary = _implementation->_services.front().lock();
+		_implementation->_threads.resize(nu_threads - 1);
+		for(int i = _implementation->_threads.size(); i--; )
 		{
-			shared_service service = service::create();
-			_register(service);
-			service->make_provider<kernel>();
-			application::kernel* provider = service->provider<kernel>();
-			if (!_implementation->_kernels.empty())
-			{	// Launch a _thread for all _kernels except the current _thread.
-				service->post(std::bind<void>(&application::kernel::start_thread, provider));
-			}
-			provider->_id = _implementation->_kernels.size();
-			_implementation->_kernels.push_back(service);
-		}
-	}
-
-	shared_service primary = _implementation->_services[_implementation->_next_service.load()].lock();
-	primary->provider<kernel>()->Main(this);
-
-	for(implementation::kernel_list::iterator service = _implementation->_kernels.begin();
-		service != _implementation->_kernels.end();
-		++service)
-	{
-		if (primary != (*service))
-		{
-			kernel* provider = (*service)->provider<kernel>();
-			if (provider->_thread.joinable())
+			auto thread_start = [this, i]() 
 			{
-				provider->_thread.join();
-			}
+				std::thread worker([this](){ application::process_services(); });
+				this->_implementation->_threads[i].swap(worker);
+			};
+			primary->post(thread_start);
 		}
 	}
-	_implementation->_kernels.clear();
+
+	application::process_services();
+
+	for(unsigned i = 0; i < _implementation->_threads.size(); ++i)
+	{
+		_implementation->_threads[i].join();
+	}
+	_implementation->_threads.clear();
 	_implementation->_services.clear();
 	
 	implementation::sApplication.reset();
@@ -343,13 +258,13 @@ void application::yield()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service application::activeService() const
+shared_service application::active_service() const
 {
 	return NULL == _implementation.get() ? shared_service() : *_implementation->_active_service;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-shared_service application::createService()
+shared_service application::create_service()
 {
 	shared_service service = service::create();
 	_register(service);

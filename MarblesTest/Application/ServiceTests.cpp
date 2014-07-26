@@ -52,8 +52,7 @@ struct ApplicationStop
 			update();
 		}
 		else
-		{
-			//marbles::service::active()->stop();
+		{	// We have a winner stop the application
 			marbles::application::get()->stop(0);
 		}
 	}
