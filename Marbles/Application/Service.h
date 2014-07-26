@@ -127,7 +127,7 @@ template<typename FN>
 bool service::post(FN action_fn)
 {
 	task msg;
-	msg._fn = std::make_shared<task::fn>(action_fn);
+	msg._fn = std::make_shared<task::fn>(action_fn); // Need to remove this allocation
 	return post(msg);
 }
 
