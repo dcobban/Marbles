@@ -107,20 +107,11 @@ private:
 template<>
 class event<void ()> : public event_base< event<void ()> >
 {
-private:
-	class wrap
-	{
-	public:
-		wrap(const std::function<void()>& fn) : _fn(fn) {}
-		void operator()(const task::shared_param&) { _fn(); }
-	private:
-		std::function<void()> _fn;
-	};
 public:
 	task operator+=(const std::function<void()>& fn) 
 	{
 		task action;
-		action._fn = std::make_shared<task::fn>(wrap(fn));
+		action._fn = std::make_shared<task::fn>(fn);
 		return base::operator+=(action); 
 	}
 };

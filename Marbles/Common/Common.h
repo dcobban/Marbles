@@ -89,7 +89,6 @@ template<typename T> struct expired
 inline void NoDelete(void*) {}
 template<typename T> inline void Destruct(void* p) { p->~T(); }
 template<typename T> inline void Delete(void* p) { delete reinterpret_cast<T*>(p); }
-template<typename T> inline void Empty(T*) { }
 
 #define CONSTRUCT_WITH_ARGS(N) \
 	template<typename T, FN_TYPENAME(N)> \

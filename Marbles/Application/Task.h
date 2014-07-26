@@ -33,20 +33,19 @@ namespace marbles
 class task
 {
 public:
-	typedef std::shared_ptr<void>	shared_param;
-	typedef void __cdecl			fn_sig(const shared_param&);
+	typedef void __cdecl			fn_sig();
 	typedef std::function<fn_sig>	fn;
 	typedef std::shared_ptr<fn>		shared_fn;
 
 	bool 			operator==(const task& rhs) const { return _fn == rhs._fn; }
 	void			operator()() const { run(); }
-	void			run() const { (*_fn)(_param); }
+	void			run() const { (*_fn)(); }
 
 					task();
 					task(const fn& task);
 
-	shared_param	_param;
 	shared_fn		_fn;
+	shared_service  _service;
 };
 
 // --------------------------------------------------------------------------------------------------------------------

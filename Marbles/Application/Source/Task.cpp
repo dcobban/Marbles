@@ -23,6 +23,7 @@
 
 #include <application/task.h>
 #include <application/application.h>
+#include <application/service.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
@@ -37,6 +38,7 @@ task::task()
 task::task(const fn& action_fn)
 : _fn(std::make_shared<fn>(action_fn))
 {
+	_service = marbles::service::active();
 }
 
 // --------------------------------------------------------------------------------------------------------------------

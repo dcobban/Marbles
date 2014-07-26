@@ -172,35 +172,6 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 	}
 }
 
-namespace
-{
-	//static const int numProducers = 3; // 15;
-	//static const int numBuffers = (numProducers + 1) / 2;
-	//static const int bufferSize = 15;
-	//typedef marbles::CircularBuffer<int, bufferSize> Buffer_t;
-	//static std::array<Buffer_t, numBuffers> buffers;
-	//static Buffer_t accumulation;
-}
-
-//void accumulator(int id)
-//{
-//	int value = 0;
-//	unsigned index = 0;
-//	do
-//	{
-//		++index;
-//		index %= numBuffers;
-//
-//		if (buffers[index].try_pop(value) && 0 <= value)
-//		{
-//			accumulation.push(value);
-//		}
-//		std::this_thread::yield();
-//	} while (0 <= value);
-//
-//	std::cout << "accumulator " << id << " end." << std::endl;
-//}
-
 BOOST_AUTO_TEST_CASE(multi_thread_usage)
 {
 	BOOST_MESSAGE( "CircularBuffer.multi_thread_usage" );
@@ -224,7 +195,7 @@ BOOST_AUTO_TEST_CASE(multi_thread_usage)
 		count = 0;
 	}
 
-	auto accumulator = [&buffers, &accumulation](int) //id)
+	auto accumulator = [&buffers, &accumulation](int)
 	{
 		int value = 0;
 		unsigned index = 0;
@@ -239,8 +210,6 @@ BOOST_AUTO_TEST_CASE(multi_thread_usage)
 			}
 			std::this_thread::yield();
 		} while (0 <= value);
-		
-		//std::cout << "accumulator " << id << " end." << std::endl;
 	};
 
 	std::thread accumulatorThread([accumulator]{ accumulator(1); });
@@ -252,7 +221,7 @@ BOOST_AUTO_TEST_CASE(multi_thread_usage)
 		{
 			for (int i = quantity; i--;)
 			{
-				// std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				buffer.push(id);
 			}
 		});
@@ -270,8 +239,6 @@ BOOST_AUTO_TEST_CASE(multi_thread_usage)
 		}
 	} while (sum < numProducers*quantity);
 	
-	std::cout << "All values received" << std::endl;
-
 	int k = 0;
 	for(auto amount : tally)
 	{

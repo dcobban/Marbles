@@ -30,7 +30,8 @@ template<typename T, size_t N> class CircularBuffer
 {
 public:
 	CircularBuffer()
-	: _start(0)
+	: _items(reinterpret_cast<T*>(&_buffer[0]))
+	, _start(0)
 	, _end(0)
 	, _init(0)
 	, _clean(0)
@@ -74,7 +75,7 @@ public:
 		} while (!_init.compare_exchange_weak(reserved, next));
 		
 		// Element reserved, assign the value
-		_items[reserved] = value;
+		new (&_items[reserved]) T(value);
 
 		// Syncronize the end position with the updated reserved position
 		const unsigned persist = reserved;
@@ -108,8 +109,8 @@ public:
 			next = (start + 1) % (N + 1);
 		} while(!_start.compare_exchange_weak(start, next));
 		
-		out = T(_items[start]);
-		//std::swap(_items[start], out);
+		out = std::move(_items[start]);
+		_items[start].~T();
 
 		// Syncronize the clean position with the updated start position
 		const unsigned persist = start;
@@ -133,7 +134,8 @@ public:
 	}
 private:
 	// Todo: We really should control construction and destruction
-	T						_items[N + 1]; 
+	unsigned char			_buffer[sizeof(T)*(N + 1)]; 
+	T*						_items;
 	std::atomic<unsigned>	_start;
 	std::atomic<unsigned>	_end;
 	std::atomic<unsigned>	_init;

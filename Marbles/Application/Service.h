@@ -30,6 +30,8 @@
 #include <boost/thread/condition.hpp>
 #include <boost/any.hpp>
 
+#include <memory>
+
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
@@ -70,26 +72,16 @@ public:
 	static shared_service	active();
 private:
 	friend class application;
+//	template<> friend shared_service std::make_shared<service>();
 	typedef std::shared_ptr<boost::any> shared_provider;
 	typedef std::weak_ptr<boost::any> weak_provider;
 
 							service();
 
+	template<typename T, typename... ARGS>
+	void					make_provider(ARGS&&... args);
 	static shared_service	create();
-	template<typename fn>
-	void					make_provider();
-	template<typename fn, typename A0>
-	void					make_provider(A0& a0);
-	template<typename fn, typename A0, typename A1>
-	void					make_provider(A0& a0, A1& a1);
-	template<typename fn, typename A0, typename A1, typename A2>
-	void					make_provider(A0& a0, A1& a1, A2& a2);
-	template<typename fn, typename A0, typename A1, typename A2, typename A3>
-	void					make_provider(A0& a0, A1& a1, A2& a2, A3& a3);
-	template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4>
-	void					make_provider(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4);
-	template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5>
-	void					make_provider(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5);
+
 
 	typedef CircularBuffer<task, 128>	task_queue;
 	typedef boost::mutex				mutex;
@@ -140,52 +132,10 @@ bool service::post(FN action_fn)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename fn> 
-void service::make_provider()
+template<typename T, typename... ARGS>
+inline void service::make_provider(ARGS&&... args)
 {
-	_provider = std::make_shared<fn>();
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename fn, typename A0> 
-void service::make_provider(A0& a0)
-{
-	_provider = std::make_shared<fn>(a0);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename fn, typename A0, typename A1> 
-void service::make_provider(A0& a0, A1& a1)
-{
-	_provider = std::make_shared<fn>(a0, a1);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename fn, typename A0, typename A1, typename A2> 
-void service::make_provider(A0& a0, A1& a1, A2& a2)
-{
-	_provider = std::make_shared<fn>(a0, a1, a2);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename fn, typename A0, typename A1, typename A2, typename A3> 
-void service::make_provider(A0& a0, A1& a1, A2& a2, A3& a3)
-{
-	_provider = std::make_shared<fn>(a0, a1, a2, a3);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4> 
-void service::make_provider(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4)
-{
-	_provider = std::make_shared<fn>(a0, a1, a2, a3, a4);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename fn, typename A0, typename A1, typename A2, typename A3, typename A4, typename A5> 
-void service::make_provider(A0& a0, A1& a1, A2& a2, A3& a3, A4& a4, A5& a5)
-{
-	_provider = std::make_shared<fn>(a0, a1, a2, a3, a4, a5);
+	_provider = std::make_shared<T>(std::forward<ARGS>(args)...);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
