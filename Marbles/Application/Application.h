@@ -57,13 +57,16 @@ private:
 	struct implementation;
 	friend class service;
 
+	size_t service_count() const;
+	shared_service service_at(size_t index);
 	shared_service active_service() const;
 	shared_service create_service();
 	shared_service select_service();
 
-	void choose_service();
+
 	void _register(const shared_service& service);
 	void unregister(const shared_service& service);
+	void choose_service();
 	void process_services();
 
 	std::unique_ptr<implementation> _implementation;

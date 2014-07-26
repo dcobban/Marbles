@@ -81,6 +81,18 @@ bool service::post(task action)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+size_t service::count()
+{
+	return application::get()->service_count();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+shared_service service::at(unsigned int i)
+{
+	return application::get()->service_at(i);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 shared_service service::active()
 {
 	return application::get()->active_service();

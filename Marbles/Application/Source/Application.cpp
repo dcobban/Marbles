@@ -71,97 +71,6 @@ struct application::implementation
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-void application::process_services()
-{
-	shared_service choosen;
-	implementation::sApplication.reset(this);
-	_implementation->_active_service.reset(&choosen);
-	choose_service();
-	while(choosen) 
-	{
-		ASSERT(service::queued != choosen->state());
-		ASSERT(!choosen->_taskQueue.empty());
-		choosen->_taskQueue.pop().run();
-	}
-	_implementation->_active_service.reset();
-	implementation::sApplication.reset();
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-void application::choose_service()
-{
-	shared_service& active = *_implementation->_active_service;
-	if (active)
-	{	// Queue current service
-		service::execution_state state = active->_state.load();
-		active->_state = service::queued;
-		if (service::stopped == state)
-		{	// Stopped _services require thier task queue to be emptied
-			active->_taskQueue.clear();
-			active->_state = service::stopped;
-		}
-		active.reset();
-	}
-
-	// Select the next service
-	active = select_service();
-	if (active)
-	{
-		active->post(_implementation->_choose_service); // Schedule the next attempt to switch _services
-	}
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-shared_service application::select_service()
-{	
-	shared_service candidate;
-	application::implementation* const application = application::get()->_implementation.get();
-	unsigned int start = application->_next_service.load();
-	bool isSelectionPossible = false;
-	bool selected = false;
-
-	implementation::shared_lock lock(application->_service_mutex);
-	const size_t size = application->_services.size();
-	if (0 != size)
-	{
-		do
-		{
-			unsigned int next = 0;
-			unsigned int index = 0;
-			do 
-			{	
-				index = application->_next_service.load();
-				next = (index + 1) % size;
-				ASSERT(index != next); // Ensures that 2 <= mServiceList.size()
-				// try again if another _thread has changed the value before me 
-			} while (!application->_next_service.compare_exchange_strong(index, next));
-
-			service::execution_state state = service::queued;
-			candidate = application->_services[index].lock();
-			if (!candidate || !candidate->_state.compare_exchange_strong(state, service::running))
-			{
-				candidate.reset();
-			}
-
-			// If we have looped over all _services and their is no possible selection then exit loop.
-			const bool accepted = NULL != candidate;
-			const bool atEnd	= next == start;
-			const bool yield	= atEnd & isSelectionPossible;
-			const bool exit		= atEnd & !isSelectionPossible;
-			isSelectionPossible = (atEnd & accepted) | (!atEnd & (isSelectionPossible | accepted));
-			selected = accepted | exit;
-			if (yield)
-			{
-				application::yield();
-			}
-			// If the service is valid and is being processed then pick another.
-		} while(!selected);
-	}
-	ASSERT(!candidate || service::queued != candidate->_state.load());
-	return candidate;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
 application::implementation::ActiveApplication application::implementation::sApplication(&application::implementation::do_nothing<application>);
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -238,9 +147,17 @@ int application::run(unsigned nu_threads)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-unsigned application::num_hardware_threads()
+application* application::get() 
+{ 
+	application* app = implementation::sApplication.get();
+	ASSERT(app || !"You must call application::run before calling this function."); 
+	return app; 
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void application::yield()
 {
-	return std::thread::hardware_concurrency();
+	std::this_thread::yield();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -251,9 +168,23 @@ void application::sleep(int milliseconds)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void application::yield()
+unsigned application::num_hardware_threads()
 {
-	std::this_thread::yield();
+	return std::thread::hardware_concurrency();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+size_t application::service_count() const
+{
+	implementation::shared_lock lock(_implementation->_service_mutex);
+	return _implementation->_services.size();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+shared_service application::service_at(size_t index)
+{
+	implementation::shared_lock lock(_implementation->_service_mutex);
+	return _implementation->_services[index].lock();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -268,6 +199,56 @@ shared_service application::create_service()
 	shared_service service = service::create();
 	_register(service);
 	return std::move(service);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+shared_service application::select_service()
+{	
+	shared_service candidate;
+	application::implementation* const application = application::get()->_implementation.get();
+	unsigned int start = application->_next_service.load();
+	bool isSelectionPossible = false;
+	bool selected = false;
+
+	implementation::shared_lock lock(application->_service_mutex);
+	const size_t size = application->_services.size();
+	if (0 != size)
+	{
+		do
+		{
+			unsigned int next = 0;
+			unsigned int index = 0;
+			do 
+			{	
+				index = application->_next_service.load();
+				next = (index + 1) % size;
+				ASSERT(index != next); // Ensures that 2 <= mServiceList.size()
+				// try again if another _thread has changed the value before me 
+			} while (!application->_next_service.compare_exchange_strong(index, next));
+
+			service::execution_state state = service::queued;
+			candidate = application->_services[index].lock();
+			if (!candidate || !candidate->_state.compare_exchange_strong(state, service::running))
+			{
+				candidate.reset();
+			}
+
+			// If we have looped over all _services and their is no possible selection then exit loop.
+			const bool accepted = NULL != candidate;
+			const bool atEnd	= next == start;
+			const bool yield	= atEnd & isSelectionPossible;
+			const bool exit		= atEnd & !isSelectionPossible;
+			isSelectionPossible = (atEnd & accepted) | (!atEnd & (isSelectionPossible | accepted));
+			selected = accepted | exit;
+			if (yield)
+			{
+				application::yield();
+			}
+			// If the service is valid and is being processed then pick another.
+		} while(!selected);
+	}
+	ASSERT(!candidate || service::queued != candidate->_state.load());
+	return candidate;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -323,11 +304,44 @@ void application::unregister(const shared_service& service)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-application* application::get() 
-{ 
-	application* app = implementation::sApplication.get();
-	ASSERT(app || !"You must call application::run before calling this function."); 
-	return app; 
+void application::process_services()
+{
+	shared_service choosen;
+	implementation::sApplication.reset(this);
+	_implementation->_active_service.reset(&choosen);
+	choose_service();
+	while(choosen) 
+	{
+		ASSERT(service::queued != choosen->state());
+		ASSERT(!choosen->_taskQueue.empty());
+		choosen->_taskQueue.pop().run();
+	}
+	_implementation->_active_service.reset();
+	implementation::sApplication.reset();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void application::choose_service()
+{
+	shared_service& active = *_implementation->_active_service;
+	if (active)
+	{	// Queue current service
+		service::execution_state state = active->_state.load();
+		active->_state = service::queued;
+		if (service::stopped == state)
+		{	// Stopped _services require thier task queue to be emptied
+			active->_taskQueue.clear();
+			active->_state = service::stopped;
+		}
+		active.reset();
+	}
+
+	// Select the next service
+	active = select_service();
+	if (active)
+	{
+		active->post(_implementation->_choose_service); // Schedule the next attempt to switch _services
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
