@@ -74,7 +74,7 @@ struct application::implementation
 void application::process_services()
 {
 	shared_service choosen;
-	application::implementation::sApplication.reset(this);
+	implementation::sApplication.reset(this);
 	_implementation->_active_service.reset(&choosen);
 	choose_service();
 	while(choosen) 
@@ -84,6 +84,7 @@ void application::process_services()
 		choosen->_taskQueue.pop().run();
 	}
 	_implementation->_active_service.reset();
+	implementation::sApplication.reset();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -210,7 +211,6 @@ int application::run(unsigned nu_threads)
 	// The _services to initialize first are the _kernels.
 	_implementation->_next_service = 0; // or random
 
-	implementation::sApplication.reset(this);
 	{	// Initialize threads
 		shared_service primary = _implementation->_services.front().lock();
 		_implementation->_threads.resize(nu_threads - 1);
@@ -233,8 +233,7 @@ int application::run(unsigned nu_threads)
 	}
 	_implementation->_threads.clear();
 	_implementation->_services.clear();
-	
-	implementation::sApplication.reset();
+
 	return _implementation->_run_result;
 }
 
