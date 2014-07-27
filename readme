@@ -1,0 +1,15 @@
+Instructions for setting up your first time building marbles
+
+1) Marbles depends on boost 1.55.0 that can be downloaded from here:
+
+http://downloads.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.zip?r=http%3A%2F%2Fsourceforge.net%2Fprojects%2Fboost%2F%3Fsource%3Ddlp&ts=1406416544&use_mirror=iweb
+
+2) The archive should be opened to a tools folder in the same folder containing the solution.  For example if the solution exists in '.\Marbles\Marbles.sln' than extract boost to '.\Marbles\tools\boost\main'.
+
+3) Open a visual studio prompt from the start menu and navigate to '.\Marbles\tools\boost\main'
+
+4) From this folder run 'bootstrap.bat'.
+
+5) On the command line run '.\b2' to build the boot *.lib files.  These are required for boost threads and boost test.
+
+6) Now open the visual studio 2013 solution and build normally. 
