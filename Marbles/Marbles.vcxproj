@@ -110,7 +110,6 @@
     <ClInclude Include="Application\Event.h" />
     <ClInclude Include="Application\Platform.h" />
     <ClInclude Include="Application\Service.h" />
-    <ClInclude Include="Application\Task.h" />
     <ClInclude Include="Reflection\Declaration.h" />
     <ClInclude Include="Reflection\Enumerator.h" />
     <ClInclude Include="Reflection\Field.h" />
@@ -139,7 +138,6 @@
     <ClCompile Include="Application\Source\Application.cpp" />
     <ClCompile Include="Application\Source\Platform_Win32.cpp" />
     <ClCompile Include="Application\Source\Service.cpp" />
-    <ClCompile Include="Application\Source\Task.cpp" />
     <ClCompile Include="Reflection\Source\Member.cpp" />
     <ClCompile Include="Reflection\Source\Object.cpp" />
     <ClCompile Include="Reflection\Source\Type.cpp" />

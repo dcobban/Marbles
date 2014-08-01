@@ -35,11 +35,6 @@
 
 // We should not make these global includes if possible
 #include <boost/cstdint.hpp>
-//#include <boost/interprocess/detail/atomic.hpp>
-//namespace boost
-//{
-//	using namespace interprocess::ipcdetail;
-//}
 
 #include <Common/Function_Traits.h>
 #include <Common/Definitions.h>
@@ -82,40 +77,13 @@ template <typename A>
 inline const A& Min(const A& a, const A& b) { return a < b ? a : b; }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> struct expired 
-{ inline bool operator()(const std::tr1::weak_ptr<T>& p) const { return p.expired(); } };
-
-// --------------------------------------------------------------------------------------------------------------------
-inline void NoDelete(void*) {}
 template<typename T> inline void Destruct(void* p) { p->~T(); }
 template<typename T> inline void Delete(void* p) { delete reinterpret_cast<T*>(p); }
 
-#define CONSTRUCT_WITH_ARGS(N) \
-	template<typename T, FN_TYPENAME(N)> \
-	T* Construct(FN_PARAMETER(N)) { return new T(FN_ARGUMENTS(N)); } \
-	template<typename T, FN_TYPENAME(N)> \
-	T* Construct(void* p, FN_PARAMETER(N)) { return new (p) T(FN_ARGUMENTS(N)); } 
-
-// CONSTRUCT_WITH_ARGS(0)
-template<typename T>
-T* Construct() { return new T(); }
-template<typename T>
-T* Construct(void* p) { return new (p) T(); }
-
-CONSTRUCT_WITH_ARGS(1)
-CONSTRUCT_WITH_ARGS(2)
-CONSTRUCT_WITH_ARGS(3)
-CONSTRUCT_WITH_ARGS(4)
-CONSTRUCT_WITH_ARGS(5)
-CONSTRUCT_WITH_ARGS(6)
-CONSTRUCT_WITH_ARGS(7)
-CONSTRUCT_WITH_ARGS(8)
-CONSTRUCT_WITH_ARGS(9)
-CONSTRUCT_WITH_ARGS(10)
-CONSTRUCT_WITH_ARGS(11)
-CONSTRUCT_WITH_ARGS(12)
-
-#undef CONSTRUCT_WITH_ARGS
+template<typename T, typename... Args>
+T* Construct(Args&&... args) { return new T(std::forward<Args>(args)...)}
+template<typename T, typename... Args>
+T* Construct(void* p, Args&&... args) { return new (p) T(std::forward<Args>(args)...)}
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles

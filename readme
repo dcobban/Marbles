@@ -13,3 +13,5 @@ http://downloads.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.zip?r=h
 5) On the command line run '.\b2' to build the boot *.lib files.  These are required for boost threads and boost test.
 
 6) Now open the visual studio 2013 solution and build normally. 
+
+Todo: write a script to automate these steps

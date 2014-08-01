@@ -28,11 +28,6 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
-// --------------------------------------------------------------------------------------------------------------------
-class task;
-typedef std::shared_ptr<task> shared_task;
-typedef std::weak_ptr<task> weak_task;
-
 class service;
 typedef std::shared_ptr<service> shared_service;
 typedef std::weak_ptr<service> weak_service;
@@ -76,12 +71,16 @@ private:
 template<typename T, typename... ARG> 
 inline shared_service application::start(ARG&&... args)
 {
-	shared_service service = create_service();
-	if (service)
+	shared_service srv = create_service();
+	if (srv)
 	{
-		service->post([=]() { service->make_provider<T>(std::forward<ARG>(args)...); });
+		service* ptr = srv.get();
+		srv->post([ptr, args...]() 
+		{ 
+			ptr->make_provider<T>(std::forward<ARG>(args)...); 
+		});
 	}
-	return service;
+	return srv;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

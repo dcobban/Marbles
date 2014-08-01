@@ -23,151 +23,101 @@
 
 #pragma once
 
-#include <application\task.h>
 #include <application\service.h>
+#include <algorithm>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
 
-template<typename sig>
-class event;
-
 // --------------------------------------------------------------------------------------------------------------------
-template<typename _T>
-class event_base
+template<typename... Args>
+class event
 {
 public:
-	typedef typename _T				derived;
-	typedef typename event_base<_T>	base;
+	typedef std::function<void (Args...)> handler_fn;
+	typedef std::shared_ptr<handler_fn> shared_handler;
+	typedef std::weak_ptr<handler_fn> weak_handler;
 
-	inline void clear()
-	{
-		m_multiCast.clear();
-	}
-
-	inline task operator+=(const task& task)
-	{
-		event_task local;
-		local.action = task;
-		local.service = marbles::service::active();
-		m_multiCast.push_back(local);
-		return task;
-	}
-
-	inline task operator-=(const task& task)
-	{
-		m_multiCast.erase(	std::remove(m_multiCast.begin(), 
-										m_multiCast.end(), 
-										task), 
-							m_multiCast.end());
-		return task;
-	}
-
-	inline void operator()()
-	{
-		m_multiCast.erase(	std::remove_if(	m_multiCast.begin(), 
-											m_multiCast.end(), 
-											PostMessage), 
-							m_multiCast.end());
-	}
-
-	inline void operator()() const
-	{
-		std::for_each(m_multiCast.begin(), m_multiCast.end(), PostMessage);
-	}
+	weak_handler operator+=(const handler_fn& handler);
+	weak_handler operator+=(shared_handler handler);
+	shared_handler operator-=(const shared_handler& handler);
+	void operator()(const Args&&... args);
+	void clear();
 
 private:
-	struct event_task
+	struct mailbox
 	{
-		task action;
-		weak_service service;
-		const bool operator ==(const task& rhs)
-		{
-			return action == rhs;
-		}
+		shared_handler _handler;
+		weak_service _service;
 	};
-
-	static const bool PostMessage(const event_task& task)
-	{
-		shared_service provider = task.service.lock();
-		if (provider)
-		{
-			provider->post(task.action);
-			return false;
-		}
-
-		return true;
-	}
-
-	std::vector<event_task> m_multiCast;
+	std::vector<mailbox> _handlers;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-template<>
-class event<void ()> : public event_base< event<void ()> >
+template<typename... Args>
+inline typename event<Args...>::weak_handler event<Args...>::operator+=(const typename event<Args...>::handler_fn& handler) 
+{ 
+	return operator+=(std::make_shared<handler_fn>(handler));
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+inline typename event<Args...>::weak_handler event<Args...>::operator+=(typename event<Args...>::shared_handler handler) 
 {
-public:
-	task operator+=(const std::function<void()>& fn) 
+	mailbox box = { handler, service::active() };
+	auto result = std::find_if(_handlers.begin(), _handlers.end(), [](const mailbox& box)
 	{
-		task action;
-		action._fn = std::make_shared<task::fn>(fn);
-		return base::operator+=(action); 
+		return box._service.expired();
+	});
+	if (result != _handlers.end())
+	{
+		*result = std::move(box);
 	}
-};
+	else
+	{
+		_handlers.push_back(std::move(box));
+	}
 
+	return handler; 
+}
 
-// How will this work without allocating?  Tasks have a life span and 
-// parameters must last that life span.  
-
-// Maybe just allocate a parameter list, eg struct callback { std::funcition<sig> fn; shared_parameters params; }
-// therefore the final task is a callback containing the fn and ... no not going to work needs 2 allocs
-template<typename P0>
-class event<void (P0)> : public event_base< event<void (P0)> >
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+inline typename event<Args...>::shared_handler event<Args...>::operator-=(const typename event<Args...>::shared_handler& handler) 
 {
-public:
-	shared_task operator += (const std::function<void(P0)>& fn) 
-	{ 
-		shared_task pTask = std::make_shared<task>(fn, service::active());
-		return base::operator+=(pTask); 
-	}
-
-	inline void operator()()
-	{
-		for (std::vector<shared_task>::iterator i = m_multiCast.begin();
-			 i != m_multiCast.end();
-			 ++i)
+	_handlers.erase(
+		std::remove_if(_handlers.begin(), _handlers.end(), [&handler](const mailbox& box)
 		{
-			shared_service provider = (*i)->service.lock();
-			while (!provider && i != end)
-			{
-				--end;
-				std::swap(*end, *i);
-				provider = (*i)->service.lock();
-			}
-			if (provider)
-			{
-				provider->post(*i);
-			}
-			++i;
-		}
-		m_multiCast.erase(end, m_multiCast.end());
-	}
+			return handler == box._handler; 
+		}), 
+		_handlers.end());
+	return handler;
+}
 
-	inline void operator()() const
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+inline void event<Args...>::operator()(const Args&&... args) 
+{
+	for (auto& msg : _handlers)
 	{
-		for(std::vector<shared_task>::iterator i = m_multiCast.begin();
-			i != m_multiCast.end();
-			++i)
+		shared_service service = msg._service.lock();
+		if (service)
 		{
-			shared_service provider = (*i)->service.lock();
-			if (provider)
-			{
-				provider->post(*i);
-			}
+			service->post([msg]()
+			{ 
+				(*msg._handler)(std::forward<Args>(args)...); 
+			});
 		}
 	}
-};
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+inline void event<Args...>::clear() 
+{ 
+	_handlers.clear(); 
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles

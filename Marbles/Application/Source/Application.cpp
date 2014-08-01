@@ -49,7 +49,7 @@ struct application::implementation
 	, _next_service(0)
 	, _run_result(0)
 	{
-		_choose_service._fn = std::make_shared<task::fn>([]() { application::get()->choose_service(); });
+		_choose_service = std::make_shared<service::action>([]() { application::get()->choose_service(); });
 	}
 
 	~implementation()
@@ -62,7 +62,7 @@ struct application::implementation
 	service_list			_services;
 	thread_list				_threads;
 
-	task					_choose_service;
+	service::task			_choose_service;
 	ActiveService			_active_service;
 	std::atomic<unsigned>	_next_service;
 	int						_run_result;
@@ -117,9 +117,7 @@ int application::run(unsigned nu_threads)
 	}
 
 
-	// The _services to initialize first are the _kernels.
 	_implementation->_next_service = 0; // or random
-
 	{	// Initialize threads
 		shared_service primary = _implementation->_services.front().lock();
 		_implementation->_threads.resize(nu_threads - 1);
@@ -254,31 +252,22 @@ shared_service application::select_service()
 // --------------------------------------------------------------------------------------------------------------------
 void application::_register(const shared_service& service)
 {
-	weak_service serviceItem;
-	{	// If something has expired then reuse the slot
-		implementation::shared_lock lock(_implementation->_service_mutex);
-		implementation::service_list::iterator item = _implementation->_services.begin();
-		while(item != _implementation->_services.end() && !item->expired())
-		{
-			++item;
-		}
-		if (item != _implementation->_services.end())
-		{
-			*item = serviceItem = service;
-		}
-	}
-
-	if (serviceItem.expired())
+	auto is_expired = [](const weak_service& srv)
 	{
-		implementation::unique_lock lock(_implementation->_service_mutex);
-		_implementation->_services.erase(
-			std::remove_if(	_implementation->_services.begin(), 
-							_implementation->_services.end(), 
-							expired<marbles::service>()), 
-			_implementation->_services.end());
-		_implementation->_services.push_back(service);
+		return srv.expired();
+	};
+	implementation::service_list::iterator item;
+	{
+		implementation::shared_lock lock(_implementation->_service_mutex);
+		item = std::remove_if(	_implementation->_services.begin(), 
+								_implementation->_services.end(), 
+								is_expired);
 	}
 
+	// Cleanup stopped services and push new service
+	implementation::unique_lock lock(_implementation->_service_mutex);
+	_implementation->_services.erase(item, _implementation->_services.end());
+	_implementation->_services.push_back(service);
 	service->_state = service::queued;
 }
 
@@ -289,17 +278,20 @@ void application::unregister(const shared_service& service)
 	if (service_state != service::stopped)
 	{
 		implementation::shared_lock lock(_implementation->_service_mutex);
-		implementation::service_list::iterator item = _implementation->_services.begin();
-		while(item != _implementation->_services.end() && item->lock() != service)
+		auto item = std::find_if(_implementation->_services.begin(),
+								 _implementation->_services.end(),
+								 [&service](const weak_service& srv) 
 		{
-			++item;
-		}
+			return srv.lock() == service;
+		});
 		if (item != _implementation->_services.end())
 		{	
 			item->reset(); // Item is no longer a candidate
 		}
-
+		
 		service->_state = service::stopped;
+		service->_tasks.clear(); 
+		service->post(_implementation->_choose_service); 
 	}
 }
 
@@ -307,14 +299,15 @@ void application::unregister(const shared_service& service)
 void application::process_services()
 {
 	shared_service choosen;
-	implementation::sApplication.reset(this);
 	_implementation->_active_service.reset(&choosen);
+	implementation::sApplication.reset(this);
 	choose_service();
 	while(choosen) 
 	{
 		ASSERT(service::queued != choosen->state());
-		ASSERT(!choosen->_taskQueue.empty());
-		choosen->_taskQueue.pop().run();
+		ASSERT(!choosen->_tasks.empty());
+		service::task perform_action = choosen->_tasks.pop();
+		(*perform_action)();
 	}
 	_implementation->_active_service.reset();
 	implementation::sApplication.reset();
@@ -325,14 +318,9 @@ void application::choose_service()
 {
 	shared_service& active = *_implementation->_active_service;
 	if (active)
-	{	// Queue current service
+	{	// Requeue any service that has not been stopped
 		service::execution_state state = active->_state.load();
-		active->_state = service::queued;
-		if (service::stopped == state)
-		{	// Stopped _services require thier task queue to be emptied
-			active->_taskQueue.clear();
-			active->_state = service::stopped;
-		}
+		active->_state = service::stopped == state ? state : service::queued;
 		active.reset();
 	}
 

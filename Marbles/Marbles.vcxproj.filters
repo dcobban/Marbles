@@ -78,9 +78,6 @@
     <ClInclude Include="Application\Service.h">
       <Filter>Application</Filter>
     </ClInclude>
-    <ClInclude Include="Application\Task.h">
-      <Filter>Application</Filter>
-    </ClInclude>
     <ClInclude Include="Reflection\Declaration.h">
       <Filter>Reflection</Filter>
     </ClInclude>
@@ -151,9 +148,6 @@
       <Filter>Application\Source</Filter>
     </ClCompile>
     <ClCompile Include="Application\Source\Service.cpp">
-      <Filter>Application\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Application\Source\Task.cpp">
       <Filter>Application\Source</Filter>
     </ClCompile>
     <ClCompile Include="Reflection\Source\Member.cpp">
