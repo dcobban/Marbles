@@ -1,0 +1,8 @@
+Overview:
+The sequence sub-system is designed to manage and consume event timelines.  A 
+sequence is in itself a description of either how/when other events are to be 
+generated/raised or describing when an event is to be expected.  The basics of 
+a sequence is a series of nodes ordered on a timeline, each node defines the 
+duration of time between itself and the previous node.  Given a data stream 
+input nodes perform operations required for each update to detect if the 
+expected event has occured.  

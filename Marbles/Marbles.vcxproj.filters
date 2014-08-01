@@ -31,6 +31,9 @@
     <Filter Include="Serialization\Source">
       <UniqueIdentifier>{25fc171d-14d3-4c34-bb83-dec56572ecb2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sequencer">
+      <UniqueIdentifier>{fb193592-2de7-4786-b7fb-7258b3c20e8a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common\CircularBuffer.h">
@@ -163,5 +166,10 @@
       <Filter>Serialization\Source</Filter>
     </ClCompile>
     <ClCompile Include="Marbles.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Sequencer\readme">
+      <Filter>Sequencer</Filter>
+    </None>
   </ItemGroup>
 </Project>
