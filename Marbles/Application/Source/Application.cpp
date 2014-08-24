@@ -49,7 +49,6 @@ struct application::implementation
 	, _next_service(0)
 	, _run_result(0)
 	{
-		_choose_service = std::make_shared<service::action>([]() { application::get()->choose_service(); });
 	}
 
 	~implementation()
@@ -62,7 +61,6 @@ struct application::implementation
 	service_list			_services;
 	thread_list				_threads;
 
-	service::task			_choose_service;
 	ActiveService			_active_service;
 	std::atomic<unsigned>	_next_service;
 	int						_run_result;
@@ -128,7 +126,7 @@ int application::run(unsigned nu_threads)
 				std::thread worker([this](){ application::process_services(); });
 				this->_implementation->_threads[i].swap(worker);
 			};
-			primary->post(thread_start);
+			primary->post(std::move(thread_start));
 		}
 	}
 
@@ -291,7 +289,7 @@ void application::unregister(const shared_service& service)
 		
 		service->_state = service::stopped;
 		service->_tasks.clear(); 
-		service->post(_implementation->_choose_service); 
+		service->post([this]() { this->choose_service(); });
 	}
 }
 
@@ -301,14 +299,15 @@ void application::process_services()
 	shared_service choosen;
 	_implementation->_active_service.reset(&choosen);
 	implementation::sApplication.reset(this);
+	printf("start process_services\n");
 	choose_service();
 	while(choosen) 
 	{
 		ASSERT(service::queued != choosen->state());
 		ASSERT(!choosen->_tasks.empty());
-		service::task perform_action = choosen->_tasks.pop();
-		(*perform_action)();
+		choosen->_tasks.pop()();
 	}
+	printf("end process_services\n");
 	_implementation->_active_service.reset();
 	implementation::sApplication.reset();
 }
@@ -328,7 +327,7 @@ void application::choose_service()
 	active = select_service();
 	if (active)
 	{
-		active->post(_implementation->_choose_service); // Schedule the next attempt to switch _services
+		active->post([this]() { this->choose_service(); }); // Schedule the next attempt to switch _services
 	}
 }
 

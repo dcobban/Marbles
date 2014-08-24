@@ -34,10 +34,11 @@
 #include <type_traits>
 
 // We should not make these global includes if possible
-#include <boost/cstdint.hpp>
+#include <cstdint>
 
 #include <Common/Function_Traits.h>
 #include <Common/Definitions.h>
+#include <Common/Memory.h>
 
 #define TO_STRING2(constant) #constant
 #define TO_STRING(constant) TO_STRING2(constant)

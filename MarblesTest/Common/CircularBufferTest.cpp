@@ -24,14 +24,14 @@
 #include <Common/CircularBuffer.h>
 #include <thread>
 
-BOOST_AUTO_TEST_SUITE( CircularBuffer )
+BOOST_AUTO_TEST_SUITE( circular_buffer )
 
 BOOST_AUTO_TEST_CASE( basic_operations )
 {
-	BOOST_MESSAGE( "CircularBuffer.basic_operations" );
+	BOOST_MESSAGE( "circular_buffer.basic_operations" );
 
 	const int size = 10;
-	marbles::CircularBuffer<int, size> buffer;
+	marbles::circular_buffer<int, size> buffer;
 
 	int pop = 0;
 	int push = 0;
@@ -76,12 +76,12 @@ BOOST_AUTO_TEST_CASE( basic_operations )
 
 BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 {
-	BOOST_MESSAGE("CircularBuffer.multi_threaded_push");
+	BOOST_MESSAGE("circular_buffer.multi_threaded_push");
 	const int quantity = 150;
 	const int numProducers = 15;
 
-	marbles::CircularBuffer<int, numProducers*quantity> data;
-	marbles::CircularBuffer<int, numProducers*quantity> consumerData;
+	marbles::circular_buffer<int, numProducers*quantity> data;
+	marbles::circular_buffer<int, numProducers*quantity> consumerData;
 	std::array<std::thread, numProducers> producerThreads;
 	for (auto id = numProducers; id--;)
 	{
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 		BOOST_CHECK_EQUAL(sum, quantity);
 	}
 
-	BOOST_MESSAGE("CircularBuffer.multi_threaded_pop");
+	BOOST_MESSAGE("circular_buffer.multi_threaded_pop");
 	const int numConsumers = 6;
 	std::array<tally_t, numConsumers> tallySheet;
 	for (auto& tally : tallySheet)
@@ -174,13 +174,13 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 
 BOOST_AUTO_TEST_CASE(multi_thread_usage)
 {
-	BOOST_MESSAGE( "CircularBuffer.multi_thread_usage" );
+	BOOST_MESSAGE( "circular_buffer.multi_thread_usage" );
 	const int quantity = 150;
 	const int bufferSize = 10;
 	const int numProducers = 15;
 	const int numBuffers = numProducers >> 1;
 
-	typedef marbles::CircularBuffer<int, bufferSize> Buffer;
+	typedef marbles::circular_buffer<int, bufferSize> Buffer;
 	typedef std::array<Buffer, numProducers> BufferArray;
 	typedef std::array<std::thread, numProducers> ThreadArray;
 	typedef std::array<int, numProducers> TallyArray;

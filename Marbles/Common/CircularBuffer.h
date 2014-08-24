@@ -26,10 +26,10 @@ namespace marbles
 {
 
 // Lock-free circular buffer
-template<typename T, size_t N> class CircularBuffer
+template<typename T, unsigned N> class circular_buffer
 {
 public:
-	CircularBuffer()
+	circular_buffer()
 	: _items(reinterpret_cast<T*>(&_buffer[0]))
 	, _start(0)
 	, _end(0)
@@ -37,22 +37,31 @@ public:
 	, _clean(0)
 	{
 	}
-	CircularBuffer(const CircularBuffer<T, N>&) = delete;
-	~CircularBuffer(){}
+	circular_buffer(const circular_buffer<T, N>&) = delete;
+	~circular_buffer() {}
+
 	inline unsigned size() const
 	{
 		const unsigned start = _start.load();
 		const unsigned end = _end.load();
 		return start <= end ? end - start : end + N + 1 - start;
 	}
+
+	inline unsigned capacity() const
+	{
+		return N;
+	}
+
 	inline bool empty() const
 	{
 		return 0 == size();
 	}
+
 	inline bool full() const
 	{
 		return N == size();
 	}
+
 	void clear()
 	{
 		while (!empty())
@@ -60,6 +69,7 @@ public:
 			pop();
 		}
 	}
+
 	bool try_push(const T& value)
 	{
 		unsigned reserved;
@@ -134,7 +144,7 @@ public:
 	}
 private:
 	// Todo: We really should control construction and destruction
-	unsigned char			_buffer[sizeof(T)*(N + 1)]; 
+	unsigned char			_buffer[sizeof(T)*(N + 1)]; // we have some alignment problems here
 	T*						_items;
 	std::atomic<unsigned>	_start;
 	std::atomic<unsigned>	_end;
