@@ -137,9 +137,18 @@
     </ClInclude>
     <ClInclude Include="Marbles.h" />
     <ClInclude Include="Reflection.h" />
+    <ClInclude Include="Sequencer\Sequence.h">
+      <Filter>Sequencer</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Memory.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Application\Application.txt">
+      <Filter>Application</Filter>
+    </Text>
+    <Text Include="Application\readme">
       <Filter>Application</Filter>
     </Text>
   </ItemGroup>
