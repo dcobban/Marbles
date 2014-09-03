@@ -70,7 +70,7 @@ public:
 		}
 	}
 
-	bool try_push(const T& value)
+	bool try_push(T value)
 	{
 		unsigned reserved;
 		unsigned next;
@@ -85,7 +85,7 @@ public:
 		} while (!_init.compare_exchange_weak(reserved, next));
 		
 		// Element reserved, assign the value
-		new (&_items[reserved]) T(value);
+		new (&_items[reserved]) T(std::forward<T>(value));
 
 		// Syncronize the end position with the updated reserved position
 		const unsigned persist = reserved;
@@ -98,9 +98,9 @@ public:
 		return true;
 	}
 
-	void push(const T& value)
+	void push(T value)
 	{
-		while (!try_push(value))
+		while (!try_push(std::forward<T>(value)))
 		{
 			application::yield();
 		}
