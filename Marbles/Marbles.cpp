@@ -1,6 +1,11 @@
 // marbles.cpp : Defines the entry point for the console application.
 //
 
+namespace marbles
+{
+	int allocs = 0;
+}
+
 //#include "behaviour\Behaviour.h"
 
 //int UserTask(void* user)

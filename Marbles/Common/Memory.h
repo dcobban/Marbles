@@ -23,19 +23,20 @@
 
 namespace marbles
 {
+	extern int allocs; // = 0;
 } // namespace marbles
 
 inline void* operator new(size_t size/*, const char* filename = __FILE__, size_t line = __LINE__*/)
 {
 	void* p = malloc(size);
-//	printf("%s(%d): Alloc 0x%X\n", "", 0, (unsigned)(p));
+	printf("%s(%d): Alloc(%d) 0x%X\n", "", 0, ++marbles::allocs, (unsigned)(p));
 	return p;
 }
 
 inline void* operator new[](size_t size, size_t N/*, const char* filename = __FILE__, size_t line = __LINE__*/)
 {
 	void* p = malloc(size*N);
-//	printf("%s(%d): Alloc 0x%X\n", "", 0, (unsigned)(p));
+	printf("%s(%d): Alloc(%d) 0x%X\n", "", 0, ++marbles::allocs, (unsigned)(p));
 	return p;
 }
 

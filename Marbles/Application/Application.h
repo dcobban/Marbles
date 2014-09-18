@@ -29,6 +29,9 @@
 namespace marbles
 {
 class service;
+typedef std::function<void __cdecl ()> task;
+typedef std::shared_ptr<task> shared_task;
+typedef std::weak_ptr<task> weak_task;
 typedef std::shared_ptr<service> shared_service;
 typedef std::weak_ptr<service> weak_service;
 
@@ -38,17 +41,19 @@ class application
 public:
 	application();
 	~application();
-	void stop(int run_result);
-	int run(unsigned numThreads = 0); // The value given to application::stop() is returned by this function
 
-	template<typename T, typename... ARG> shared_service start(ARG&&... args);
+	template<typename T, typename... ARG> 
+	shared_service	start(ARG&&... args);
+	void			stop(int run_result);
+	// bool			post(const task& action);
+	bool			post(const shared_task& action);
+	int				run(unsigned numThreads = 0); // The value given to application::stop() is returned by this function
 
-	static application* get();
-	static void yield(); // Why do users need this?
-	static void sleep(int milliseconds); // Why do users need this?
-	static unsigned num_hardware_threads(); // Why is this needed?
+	static application*	get();
+	static void			yield(); // Why do users need this?
+	static void			sleep(int milliseconds); // Why do users need this?
+	static unsigned		num_hardware_threads(); // Why is this needed?
 private:
-	struct kernel;
 	struct implementation;
 	friend class service;
 
@@ -57,7 +62,6 @@ private:
 	shared_service active_service() const;
 	shared_service create_service();
 	shared_service select_service();
-
 
 	void _register(const shared_service& service);
 	void unregister(const shared_service& service);
@@ -75,10 +79,10 @@ inline shared_service application::start(ARG&&... args)
 	if (srv)
 	{
 		service* ptr = srv.get();
-		srv->post([ptr, args...]() 
+		srv->post(std::make_shared<task>([ptr, args...]() 
 		{ 
 			ptr->make_provider<T>(std::forward<ARG>(args)...); 
-		});
+		}));
 	}
 	return srv;
 }

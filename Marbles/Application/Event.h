@@ -25,6 +25,7 @@
 
 #include <application\service.h>
 #include <algorithm>
+#include <tuple>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
@@ -46,12 +47,15 @@ public:
 	void clear();
 
 private:
-	struct mailbox
+	struct receiver
 	{
 		shared_handler _handler;
 		weak_service _service;
 	};
-	std::vector<mailbox> _handlers;
+	typedef std::tuple<Args...> params;
+	typedef std::shared_ptr<params> shared_params;
+	std::vector<shared_params> _params;
+	std::vector<receiver> _handlers;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -65,8 +69,8 @@ inline typename event<Args...>::weak_handler event<Args...>::operator+=(const ty
 template<typename... Args>
 inline typename event<Args...>::weak_handler event<Args...>::operator+=(typename event<Args...>::shared_handler handler) 
 {
-	mailbox box = { handler, service::active() };
-	auto result = std::find_if(_handlers.begin(), _handlers.end(), [](const mailbox& box)
+	receiver box = { handler, service::active() };
+	auto result = std::find_if(_handlers.begin(), _handlers.end(), [](const receiver& box)
 	{
 		return box._service.expired();
 	});
@@ -87,7 +91,7 @@ template<typename... Args>
 inline typename event<Args...>::shared_handler event<Args...>::operator-=(const typename event<Args...>::shared_handler& handler) 
 {
 	_handlers.erase(
-		std::remove_if(_handlers.begin(), _handlers.end(), [&handler](const mailbox& box)
+		std::remove_if(_handlers.begin(), _handlers.end(), [&handler](const receiver& box)
 		{
 			return handler == box._handler; 
 		}), 
@@ -104,10 +108,12 @@ inline void event<Args...>::operator()(const Args&&... args)
 		shared_service service = msg._service.lock();
 		if (service)
 		{
-			service->post([msg]()
+			// TODO move make_shared<> call to operator+=
+			shared_handler handler = msg._handler;
+			service->post(std::make_shared<task>([handler, args...]()
 			{ 
-				(*msg._handler)(std::forward<Args>(args)...); 
-			});
+				(*handler)(std::forward<Args>(args)...);
+			}));
 		}
 	}
 }

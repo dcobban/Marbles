@@ -43,7 +43,7 @@ service::execution_state service::state() const
 void service::stop()
 {
 	shared_service self = _self.lock();
-	post([self](){ application::get()->unregister(self); });
+	post(std::make_shared<task>([self](){ application::get()->unregister(self); }));
 }
 
 // --------------------------------------------------------------------------------------------------------------------

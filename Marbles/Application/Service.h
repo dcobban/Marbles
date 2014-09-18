@@ -39,8 +39,6 @@ namespace marbles
 class service
 {
 public:
-	typedef void __cdecl action();
-	typedef std::function<action> task;
 	enum execution_state
 	{
 		uninitialized = -1,
@@ -58,7 +56,8 @@ public:
 
 	template<typename T>
 	T*						provider();
-	bool					post(task action);
+	// bool					post(const task& action);
+	bool					post(const shared_task& action);
 
 	bool					operator==(const service& rhs);
 
@@ -80,7 +79,7 @@ private:
 	static shared_service	create();
 
 
-	typedef circular_buffer<task, 128>	task_queue;
+	typedef circular_buffer<shared_task, 128>	task_queue;
 	typedef boost::mutex				mutex;
 	typedef boost::unique_lock<mutex>	mutex_lock;
 	typedef boost::condition_variable	condition;
@@ -113,9 +112,15 @@ inline T* service::provider()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline bool service::post(task action)
+//inline bool service::post(const task& action)
+//{
+//	return post(std::make_shared<task>(std::forward<task>(action)));
+//}
+
+// --------------------------------------------------------------------------------------------------------------------
+inline bool service::post(const shared_task& action)
 {
-	return _tasks.try_push(std::forward<task>(action));
+	return _tasks.try_push(action);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

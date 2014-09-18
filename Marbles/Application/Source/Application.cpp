@@ -61,6 +61,7 @@ struct application::implementation
 	service_list			_services;
 	thread_list				_threads;
 
+	shared_task				_choose_service;
 	ActiveService			_active_service;
 	std::atomic<unsigned>	_next_service;
 	int						_run_result;
@@ -75,6 +76,10 @@ application::implementation::ActiveApplication application::implementation::sApp
 application::application()
 : _implementation(new implementation())
 {
+	if (_implementation)
+	{
+		_implementation->_choose_service = std::make_shared<task>([this]() { this->choose_service(); });
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -114,19 +119,18 @@ int application::run(unsigned nu_threads)
 		nu_threads = num_hardware_threads();
 	}
 
-
 	_implementation->_next_service = 0; // or random
 	{	// Initialize threads
 		shared_service primary = _implementation->_services.front().lock();
 		_implementation->_threads.resize(nu_threads - 1);
 		for(int i = _implementation->_threads.size(); i--; )
 		{
-			auto thread_start = [this, i]() 
+			auto action = std::make_shared<task>([this, i]()
 			{
 				std::thread worker([this](){ application::process_services(); });
 				this->_implementation->_threads[i].swap(worker);
-			};
-			primary->post(std::move(thread_start));
+			});
+			primary->post(action);
 		}
 	}
 
@@ -140,6 +144,20 @@ int application::run(unsigned nu_threads)
 	_implementation->_services.clear();
 
 	return _implementation->_run_result;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+//bool application::post(const task& action)
+//{
+//	return post(std::make_shared<task>(action));
+//}
+
+// --------------------------------------------------------------------------------------------------------------------
+bool application::post(const shared_task& action)
+{
+	unsigned int next = _implementation->_next_service.load();
+	shared_service next_service = _implementation->_services[next].lock();
+	return next_service && next_service->post(action);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -289,7 +307,7 @@ void application::unregister(const shared_service& service)
 		
 		service->_state = service::stopped;
 		service->_tasks.clear(); 
-		service->post([this]() { this->choose_service(); });
+		service->post(_implementation->_choose_service);
 	}
 }
 
@@ -299,15 +317,13 @@ void application::process_services()
 	shared_service choosen;
 	_implementation->_active_service.reset(&choosen);
 	implementation::sApplication.reset(this);
-	printf("start process_services\n");
 	choose_service();
 	while(choosen) 
 	{
 		ASSERT(service::queued != choosen->state());
 		ASSERT(!choosen->_tasks.empty());
-		choosen->_tasks.pop()();
+		(*choosen->_tasks.pop())();
 	}
-	printf("end process_services\n");
 	_implementation->_active_service.reset();
 	implementation::sApplication.reset();
 }
@@ -327,7 +343,7 @@ void application::choose_service()
 	active = select_service();
 	if (active)
 	{
-		active->post([this]() { this->choose_service(); }); // Schedule the next attempt to switch _services
+		active->post(_implementation->_choose_service); // Schedule the next attempt to switch _services
 	}
 }
 
