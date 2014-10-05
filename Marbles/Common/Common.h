@@ -90,9 +90,9 @@ template<typename T> inline void Destruct(void* p) { p->~T(); }
 template<typename T> inline void Delete(void* p) { delete reinterpret_cast<T*>(p); }
 
 template<typename T, typename... Args>
-T* Construct(Args&&... args) { return new T(std::forward<Args>(args)...)}
+T* Construct(Args&&... args) { return new T(forward<Args>(args)...)}
 template<typename T, typename... Args>
-T* Construct(void* p, Args&&... args) { return new (p) T(std::forward<Args>(args)...)}
+T* Construct(void* p, Args&&... args) { return new (p) T(forward<Args>(args)...)}
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles

@@ -36,7 +36,7 @@ shared_type	declaration::typeInfo() const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-member::member(const std::string& name, const declaration& declaration, const char* usage)
+member::member(const string& name, const declaration& declaration, const char* usage)
 : mName(name)
 , mType(declaration.typeInfo())
 , mUsage(usage)
@@ -46,7 +46,7 @@ member::member(const std::string& name, const declaration& declaration, const ch
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-member::member(const std::string& name, const shared_type& type_info, const char* usage)
+member::member(const string& name, const shared_type& type_info, const char* usage)
 : mName(name)
 , mType(type_info)
 , mUsage(usage)

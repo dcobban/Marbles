@@ -41,8 +41,8 @@ struct application::implementation
 	typedef boost::shared_lock<shared_mutex>	shared_lock;
 	typedef boost::thread_specific_ptr<shared_service> ActiveService;
 	typedef boost::thread_specific_ptr<application> ActiveApplication;
-	typedef std::vector<weak_service>			service_list;
-	typedef std::vector<std::thread>			thread_list;
+	typedef vector<weak_service>			service_list;
+	typedef vector<thread>			thread_list;
 
 	implementation()
 	: _active_service(&do_nothing<shared_service>)
@@ -63,7 +63,7 @@ struct application::implementation
 
 	shared_task				_choose_service;
 	ActiveService			_active_service;
-	std::atomic<unsigned>	_next_service;
+	atomic<unsigned>	_next_service;
 	int						_run_result;
 
 	static ActiveApplication sApplication;
@@ -78,7 +78,7 @@ application::application()
 {
 	if (_implementation)
 	{
-		_implementation->_choose_service = std::make_shared<task>([this]() { this->choose_service(); });
+		_implementation->_choose_service = make_shared<task>([this]() { this->choose_service(); });
 	}
 }
 
@@ -125,9 +125,9 @@ int application::run(unsigned nu_threads)
 		_implementation->_threads.resize(nu_threads - 1);
 		for(int i = _implementation->_threads.size(); i--; )
 		{
-			auto action = std::make_shared<task>([this, i]()
+			auto action = make_shared<task>([this, i]()
 			{
-				std::thread worker([this](){ application::process_services(); });
+				thread worker([this](){ application::process_services(); });
 				this->_implementation->_threads[i].swap(worker);
 			});
 			primary->post(action);
@@ -149,7 +149,7 @@ int application::run(unsigned nu_threads)
 // --------------------------------------------------------------------------------------------------------------------
 //bool application::post(const task& action)
 //{
-//	return post(std::make_shared<task>(action));
+//	return post(make_shared<task>(action));
 //}
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -171,20 +171,20 @@ application* application::get()
 // --------------------------------------------------------------------------------------------------------------------
 void application::yield()
 {
-	std::this_thread::yield();
+	this_thread::yield();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 void application::sleep(int milliseconds)
 {
-	std::chrono::milliseconds duration(milliseconds);
-	std::this_thread::sleep_for(duration);
+	chrono::milliseconds duration(milliseconds);
+	this_thread::sleep_for(duration);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 unsigned application::num_hardware_threads()
 {
-	return std::thread::hardware_concurrency();
+	return thread::hardware_concurrency();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -212,7 +212,7 @@ shared_service application::create_service()
 {
 	shared_service service = service::create();
 	_register(service);
-	return std::move(service);
+	return move(service);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -275,7 +275,7 @@ void application::_register(const shared_service& service)
 	implementation::service_list::iterator item;
 	{
 		implementation::shared_lock lock(_implementation->_service_mutex);
-		item = std::remove_if(	_implementation->_services.begin(), 
+		item = remove_if(	_implementation->_services.begin(), 
 								_implementation->_services.end(), 
 								is_expired);
 	}
@@ -294,7 +294,7 @@ void application::unregister(const shared_service& service)
 	if (service_state != service::stopped)
 	{
 		implementation::shared_lock lock(_implementation->_service_mutex);
-		auto item = std::find_if(_implementation->_services.begin(),
+		auto item = find_if(_implementation->_services.begin(),
 								 _implementation->_services.end(),
 								 [&service](const weak_service& srv) 
 		{

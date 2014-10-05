@@ -33,8 +33,8 @@ namespace marbles
 namespace reflection
 {
 class type_info;
-typedef std::shared_ptr<const type_info> shared_type;
-typedef std::weak_ptr<const type_info> weak_type;
+typedef shared_ptr<const type_info> shared_type;
+typedef weak_ptr<const type_info> weak_type;
 typedef uint32_t hash;
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ template<typename T> struct remove_all_ptrs<T* const volatile>	{ typedef typenam
 
 // --------------------------------------------------------------------------------------------------------------------
 // Review(danc): should we create a 'Common\type_traits' for these?
-template<typename T> struct remove_all_cv						{ typedef typename std::remove_cv<T>::type type; };
+template<typename T> struct remove_all_cv						{ typedef typename remove_cv<T>::type type; };
 template<typename T> struct remove_all_cv<T*>					{ typedef typename remove_all_cv<T>::type* type; };
 template<typename T> struct remove_all_cv<T* const>				{ typedef typename remove_all_cv<T>::type* type; };
 template<typename T> struct remove_all_cv<T* volatile>			{ typedef typename remove_all_cv<T>::type* type; };
@@ -58,9 +58,9 @@ template<typename T>
 struct by_value
 {
 private:
-	typedef typename std::remove_reference<T>::type					ref_removed;
+	typedef typename remove_reference<T>::type					ref_removed;
 	typedef typename remove_all_ptrs<typename ref_removed>::type	ref_ptr_removed;
-	typedef typename std::remove_cv<typename ref_ptr_removed>::type	ref_ptr_cv_removed;
+	typedef typename remove_cv<typename ref_ptr_removed>::type	ref_ptr_cv_removed;
 public:
 	typedef typename ref_ptr_cv_removed type;
 };
@@ -97,8 +97,8 @@ struct HasIndexer
 	static const bool value = sizeof(IndexMethod<T>(0)) != sizeof(char);
 
 	// C++11 required
-	//typedef typename std::result_of< IndexMethod<T>(0) >::type result_type
-	//typedef typename std::conditional<value, void_signature, typename result_type>::type signature_traits;
+	//typedef typename result_of< IndexMethod<T>(0) >::type result_type
+	//typedef typename conditional<value, void_signature, typename result_type>::type signature_traits;
 	//typedef typename signature_traits::container_type container_type;
 	//typedef typename signature_traits::value_type value_type;
 	//typedef typename signature_traits::key_type key_type;

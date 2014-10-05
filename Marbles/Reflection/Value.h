@@ -34,9 +34,9 @@ template<typename T>
 class memberT : public member
 {
 public:
-	memberT(const std::string& name, const shared_type& type_info, const char* usage)
+	memberT(const string& name, const shared_type& type_info, const char* usage)
 	: member(name, type_info, usage) {}
-	memberT(const std::string& name, const declaration& declaration, const char* usage)
+	memberT(const string& name, const declaration& declaration, const char* usage)
 	: member(name, declaration, usage) {}
 
 	virtual shared_type	DeclaredType() const { return type_of<T>(); }
@@ -58,11 +58,11 @@ object memberT<T>::assign(object self, const object& rhs) const
 	}
 	//else if (self.isShared())
 	//{
-	//	self.as< std::shared_ptr<T> >() = rhs.as<T>();
+	//	self.as< shared_ptr<T> >() = rhs.as<T>();
 	//}
 	//else if (self.isWeak())
 	//{
-	//	self.as< std::weak_ptr<T> >() = rhs.as<T>();
+	//	self.as< weak_ptr<T> >() = rhs.as<T>();
 	//}
 	else if (self.isReference())
 	{

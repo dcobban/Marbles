@@ -82,14 +82,14 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 
 	marbles::circular_buffer<int, numProducers*quantity> data;
 	marbles::circular_buffer<int, numProducers*quantity> consumerData;
-	std::array<std::thread, numProducers> producerThreads;
+	array<thread, numProducers> producerThreads;
 	for (auto id = numProducers; id--;)
 	{
-		std::thread producer([&data, id, quantity]()
+		thread producer([&data, id, quantity]()
 		{
 			for (int i = quantity; i--;)
 			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				this_thread::sleep_for(chrono::milliseconds(1));
 				data.push(id);
 			}
 		});
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 		producerThreads[j].join();
 	}
 
-	typedef std::array<int, numProducers> tally_t;
+	typedef array<int, numProducers> tally_t;
 	tally_t tally;
 	for (auto& sum : tally)
 	{
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 
 	BOOST_MESSAGE("circular_buffer.multi_threaded_pop");
 	const int numConsumers = 6;
-	std::array<tally_t, numConsumers> tallySheet;
+	array<tally_t, numConsumers> tallySheet;
 	for (auto& tally : tallySheet)
 	{
 		for (auto& value : tally)
@@ -131,17 +131,17 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 		}
 	}
 
-	std::array<std::thread, numConsumers> consumerThreads;
+	array<thread, numConsumers> consumerThreads;
 	for (auto id = numConsumers; id--;)
 	{
 		tally_t& tally = tallySheet[id];
-		std::thread consumer([&tally, &consumerData]()
+		thread consumer([&tally, &consumerData]()
 		{
 			int value = 0;
 			while (consumerData.try_pop(value))
 			{
 				++tally[value];
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				this_thread::sleep_for(chrono::milliseconds(1));
 			}
 		});
 		consumerThreads[id].swap(consumer);
@@ -181,9 +181,9 @@ BOOST_AUTO_TEST_CASE(multi_thread_usage)
 	const int numBuffers = numProducers >> 1;
 
 	typedef marbles::circular_buffer<int, bufferSize> Buffer;
-	typedef std::array<Buffer, numProducers> BufferArray;
-	typedef std::array<std::thread, numProducers> ThreadArray;
-	typedef std::array<int, numProducers> TallyArray;
+	typedef array<Buffer, numProducers> BufferArray;
+	typedef array<thread, numProducers> ThreadArray;
+	typedef array<int, numProducers> TallyArray;
 
 	TallyArray tally;
 	ThreadArray threads;
@@ -208,20 +208,20 @@ BOOST_AUTO_TEST_CASE(multi_thread_usage)
 			{
 				accumulation.push(value);
 			}
-			std::this_thread::yield();
+			this_thread::yield();
 		} while (0 <= value);
 	};
 
-	std::thread accumulatorThread([accumulator]{ accumulator(1); });
-	std::thread accumulator2Thread([accumulator]{ accumulator(2); });
+	thread accumulatorThread([accumulator]{ accumulator(1); });
+	thread accumulator2Thread([accumulator]{ accumulator(2); });
 	for (unsigned id = 0; id < numProducers; ++id)
 	{
 		Buffer& buffer = buffers[id%numBuffers];
-		std::thread producer([&buffer, id, quantity]()
+		thread producer([&buffer, id, quantity]()
 		{
 			for (int i = quantity; i--;)
 			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				this_thread::sleep_for(chrono::milliseconds(1));
 				buffer.push(id);
 			}
 		});

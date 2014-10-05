@@ -32,13 +32,13 @@ namespace reflection
 {
 // --------------------------------------------------------------------------------------------------------------------
 class type_info;
-typedef std::shared_ptr<const type_info> shared_type;
-typedef std::weak_ptr<const type_info> weak_type;
+typedef shared_ptr<const type_info> shared_type;
+typedef weak_ptr<const type_info> weak_type;
 
 // --------------------------------------------------------------------------------------------------------------------
 class member;
-typedef std::shared_ptr<const member> shared_member;
-typedef std::weak_ptr<const member> weak_member;
+typedef shared_ptr<const member> shared_member;
+typedef weak_ptr<const member> weak_member;
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct instance_t 
