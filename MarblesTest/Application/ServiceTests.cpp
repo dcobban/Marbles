@@ -25,35 +25,33 @@ struct ExecutedService
 
 struct ApplicationStop
 {
+	typedef marbles::event<> UpdateEvent;
+	typedef UpdateEvent::shared_handler UpdateHandler;
 	int count;
 	int stop;
-	marbles::shared_task update;
-	//marbles::event<> update;
-	//marbles::event<>::shared_handler updateHandler;
+	UpdateEvent update;
+	UpdateHandler updateHandler;
 
 	ApplicationStop(const int end) 
 	: count(0)
 	, stop(end)
 	{
-		ApplicationStop* pThis = this;
-		update = std::make_shared<marbles::task>([pThis]() { pThis->OnUpdate(); });
-		//auto handler = update += std::move(fn);
-		//updateHandler = handler.lock();
-		//update();
-		OnUpdate() ;
+		updateHandler = update += [this]() { this->OnUpdate(); };
+		update();
 	}
 
 	~ApplicationStop() 
 	{
-		// update -= updateHandler;
-		// update.clear();
+		update -= updateHandler;
+		update.clear();
 	}
 
 	void OnUpdate() 
 	{
-		if (++count != stop)
+		++count;
+		if (count != stop)
 		{
-			marbles::service::active()->post(update); // update();
+			update();
 		}
 		else
 		{	// We have a winner stop the application

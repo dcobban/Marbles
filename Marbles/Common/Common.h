@@ -32,6 +32,7 @@
 #include <limits>
 #include <cassert>
 #include <type_traits>
+#include <tuple>
 
 // We should not make these global includes if possible
 #include <cstdint>
@@ -49,6 +50,13 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
+// --------------------------------------------------------------------------------------------------------------------
+using namespace std;
+
+// --------------------------------------------------------------------------------------------------------------------
+template<int ...> struct seq {};
+template<int N, int ...S> struct gens : gens<N - 1, N - 1, S...> {};
+template<int ...S> struct gens<0, S...> { typedef seq<S...> type; };
 
 // --------------------------------------------------------------------------------------------------------------------
 #define STATIC_ASSERT BOOST_STATIC_ASSERT

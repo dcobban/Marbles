@@ -36,66 +36,113 @@ template<typename... Args>
 class event
 {
 public:
+	event();
+
 	typedef std::function<void (Args...)> handler_fn;
 	typedef std::shared_ptr<handler_fn> shared_handler;
-	typedef std::weak_ptr<handler_fn> weak_handler;
 
-	weak_handler operator+=(const handler_fn& handler);
-	weak_handler operator+=(shared_handler handler);
-	shared_handler operator-=(const shared_handler& handler);
+	shared_handler operator+=(handler_fn handler);
+	shared_handler operator+=(shared_handler handler);
+	shared_handler operator-=(shared_handler& handler);
 	void operator()(const Args&&... args);
 	void clear();
 
 private:
-	struct receiver
+	struct event_info;
+	struct message_info
+	{
+		std::shared_ptr<event_info> _event;
+		std::tuple<Args...> _params;
+		shared_task _process_event;
+		
+		message_info();
+		template<int ...S> void message_task(seq<S...>);
+	};
+	struct handler_info
 	{
 		shared_handler _handler;
 		weak_service _service;
 	};
-	typedef std::tuple<Args...> params;
-	typedef std::shared_ptr<params> shared_params;
-	std::vector<shared_params> _params;
-	std::vector<receiver> _handlers;
+	struct event_info
+	{	// thread safety?  I don't see any.
+		std::vector<handler_info> _handlers;
+	};
+	std::vector<std::shared_ptr<message_info>> _pool; // pool could work for any event with these params
+	std::vector<weak_service> _services;
+	std::shared_ptr<event_info> _event;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event<Args...>::weak_handler event<Args...>::operator+=(const typename event<Args...>::handler_fn& handler) 
-{ 
-	return operator+=(std::make_shared<handler_fn>(handler));
+event<Args...>::event()
+{
+	clear();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event<Args...>::weak_handler event<Args...>::operator+=(typename event<Args...>::shared_handler handler) 
+inline typename event<Args...>::shared_handler event<Args...>::operator+=(typename event<Args...>::handler_fn handler)
+{ 
+	return operator+=(std::make_shared<handler_fn>(std::forward<handler_fn>(handler)));
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+inline typename event<Args...>::shared_handler event<Args...>::operator+=(typename event<Args...>::shared_handler handler)
 {
-	receiver box = { handler, service::active() };
-	auto result = std::find_if(_handlers.begin(), _handlers.end(), [](const receiver& box)
-	{
-		return box._service.expired();
-	});
-	if (result != _handlers.end())
-	{
-		*result = std::move(box);
-	}
-	else
-	{
-		_handlers.push_back(std::move(box));
-	}
+	auto active = service::active();
+	auto& handlers = _event->_handlers;
+
+	// Clear invalidated handlers
+	_services.push_back(active);
+	_services.erase(
+		std::unique(_services.begin(), _services.end(), [](weak_service& e1, weak_service& e2)
+		{   // We should be able to compare weak_ptr's?
+			return e1.lock() == e2.lock();
+		}),
+		_services.end());
+	handlers.erase(
+		std::remove_if(handlers.begin(), handlers.end(), [](const handler_info& info)
+		{
+			return info._service.expired();
+		}),
+		handlers.end());
+
+	// Add new handler
+	handler_info new_handler;
+	new_handler._handler = handler;
+	new_handler._service = active;
+	_event->_handlers.push_back(std::move(new_handler));
 
 	return handler; 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event<Args...>::shared_handler event<Args...>::operator-=(const typename event<Args...>::shared_handler& handler) 
-{
-	_handlers.erase(
-		std::remove_if(_handlers.begin(), _handlers.end(), [&handler](const receiver& box)
+inline typename event<Args...>::shared_handler event<Args...>::operator-=(typename event<Args...>::shared_handler& handler)
+{	
+	auto& handlers = _event->_handlers;
+
+	handlers.erase(
+		std::remove_if(handlers.begin(), handlers.end(), [&handler](const handler_info& info)
 		{
-			return handler == box._handler; 
+			return handler == info._handler; 
 		}), 
-		_handlers.end());
+		handlers.end());
+
+	// Push all dependent services
+	for (auto& info : handlers)
+	{
+		_services.push_back(info._service);
+	}
+	
+	// Only unique services are allowed
+	_services.erase(
+		std::unique(_services.begin(), _services.end(), [](weak_service& e1, weak_service& e2)
+		{	// We should be able to compare weak_ptr's?
+			return e1.lock() == e2.lock();
+		}),
+		_services.end());
 	return handler;
 }
 
@@ -103,17 +150,30 @@ inline typename event<Args...>::shared_handler event<Args...>::operator-=(const 
 template<typename... Args>
 inline void event<Args...>::operator()(const Args&&... args) 
 {
-	for (auto& msg : _handlers)
+	// Find usable item from pool
+	auto param = std::find_if(_pool.begin(), _pool.end(), [](const std::shared_ptr<message_info>& info)
 	{
-		shared_service service = msg._service.lock();
-		if (service)
+		return !info->_event;
+	});
+	if (param == _pool.end())
+	{
+		auto info = std::make_shared<message_info>();
+		info->_event = _event;
+		_pool.push_back(std::move(info));
+		param = _pool.begin() + _pool.size() - 1;
+	}
+	else
+	{
+		(*param)->_event = _event;
+	}
+	(*param)->_params = std::make_tuple(args...);
+
+	for (auto& srv : _services)
+	{
+		auto receiver = srv.lock();
+		if (receiver)
 		{
-			// TODO move make_shared<> call to operator+=
-			shared_handler handler = msg._handler;
-			service->post(std::make_shared<task>([handler, args...]()
-			{ 
-				(*handler)(std::forward<Args>(args)...);
-			}));
+			receiver->post((*param)->_process_event);
 		}
 	}
 }
@@ -122,7 +182,36 @@ inline void event<Args...>::operator()(const Args&&... args)
 template<typename... Args>
 inline void event<Args...>::clear() 
 { 
-	_handlers.clear(); 
+	_event = std::make_shared<event_info>();
+	_services.clear();
+	_pool.clear();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+event<Args...>::message_info::message_info()
+{
+	auto& fn = [this]() { this->message_task(gens<sizeof...(Args)>::type());	};
+	_process_event = std::make_shared<task>(std::move(fn));
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+template<int ...S>
+void event<Args...>::message_info::message_task(seq<S...>)
+{
+	if (_event)
+	{
+		shared_service& active = service::active();
+		for (auto& handler : _event->_handlers)
+		{
+			if (active == handler._service.lock() && handler._handler)
+			{
+				(*handler._handler)(std::get<S>(_params) ...);
+			}
+		}
+		_event.reset();
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
