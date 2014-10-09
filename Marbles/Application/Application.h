@@ -23,8 +23,6 @@
 
 #pragma once
 
-#include <memory>
-
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
@@ -43,16 +41,17 @@ public:
 	~application();
 
 	template<typename T, typename... ARG> 
-	shared_service	start(ARG&&... args);
-	void			stop(int run_result);
-	// bool			post(const task& action);
-	bool			post(const shared_task& action);
-	int				run(unsigned numThreads = 0); // The value given to application::stop() is returned by this function
+	shared_service		start(ARG&&... args);
+	void				stop(int run_result);
+	// bool				post(const task& action);
+	bool				post(const shared_task& action);
+	int					run(unsigned numThreads = 0); // The value given to application::stop() is returned by this function
 
 	static application*	get();
 	static void			yield(); // Why do users need this?
 	static void			sleep(int milliseconds); // Why do users need this?
 	static unsigned		num_hardware_threads(); // Why is this needed?
+
 private:
 	struct implementation;
 	friend class service;

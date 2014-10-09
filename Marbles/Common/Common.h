@@ -51,9 +51,6 @@
 namespace marbles
 {
 // --------------------------------------------------------------------------------------------------------------------
-using namespace std;
-
-// --------------------------------------------------------------------------------------------------------------------
 template<int ...> struct seq {};
 template<int N, int ...S> struct gens : gens<N - 1, N - 1, S...> {};
 template<int ...S> struct gens<0, S...> { typedef seq<S...> type; };
@@ -61,16 +58,6 @@ template<int ...S> struct gens<0, S...> { typedef seq<S...> type; };
 // --------------------------------------------------------------------------------------------------------------------
 #define STATIC_ASSERT BOOST_STATIC_ASSERT
 #define ASSERT assert
-
-// --------------------------------------------------------------------------------------------------------------------
-template <typename T>
-struct AlignOfT
-{
-	char base; T aligned; char tail;
-	static const int value = reinterpret_cast<int>(&aligned - &base);
-};
-template <typename T> 
-inline size_t AlignOf() { return AlignOfT<T>::value; }
 
 // --------------------------------------------------------------------------------------------------------------------
 template <typename T> 
@@ -86,8 +73,8 @@ template <typename A>
 inline const A& Min(const A& a, const A& b) { return a < b ? a : b; }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> inline void Destruct(void* p) { p->~T(); }
-template<typename T> inline void Delete(void* p) { delete reinterpret_cast<T*>(p); }
+template<typename T> inline void Destruct(T* p) { p->~T(); }
+template<typename T> inline void Delete(T* p) { delete p; }
 
 template<typename T, typename... Args>
 T* Construct(Args&&... args) { return new T(forward<Args>(args)...)}
@@ -96,11 +83,5 @@ T* Construct(void* p, Args&&... args) { return new (p) T(forward<Args>(args)...)
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles
-
-// --------------------------------------------------------------------------------------------------------------------
-namespace std 
-{ 
-	using namespace placeholders;
-}
 
 // End of file --------------------------------------------------------------------------------------------------------
