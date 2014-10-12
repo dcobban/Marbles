@@ -40,42 +40,42 @@ public:
 	bool					EndianSwap() const { return mEndianSwap; }
 
 	// Put put interface
-	virtual ostream&	Write(ostream& os, const bool& value) const = 0;
-	virtual ostream&	Write(ostream& os, const marbles::uint8_t& value) const = 0;
-	virtual ostream&	Write(ostream& os, const marbles::uint16_t& value) const = 0;
-	virtual ostream&	Write(ostream& os, const marbles::uint32_t& value) const = 0;
-	virtual ostream&	Write(ostream& os, const marbles::uint64_t& value) const = 0;
-	virtual ostream&	Write(ostream& os, const marbles::int8_t& value) const = 0;
-	virtual ostream&	Write(ostream& os, const marbles::int16_t& value) const = 0;
-	virtual ostream&	Write(ostream& os, const marbles::int32_t& value) const = 0;
-	virtual ostream&	Write(ostream& os, const marbles::int64_t& value) const = 0;
-	virtual ostream&	Write(ostream& os, const string& value) const = 0;
-	virtual ostream&	Write(ostream& os, const double& value) const = 0;
-	virtual ostream&	Write(ostream& os, const float& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const bool& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::uint8_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::uint16_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::uint32_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::uint64_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::int8_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::int16_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::int32_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const marbles::int64_t& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const std::string& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const double& value) const = 0;
+	virtual std::ostream&	Write(std::ostream& os, const float& value) const = 0;
 
-	virtual ostream&	typeInfo(ostream& os, const object& root) const = 0;
-	virtual ostream&	Label(ostream& os, const object& root) const = 0;
-	virtual ostream&	OpenEnumeration(ostream& os) const = 0;
-	virtual ostream&	CloseEnumeration(ostream& os) const = 0;
-	virtual ostream&	OpenMap(ostream& os) const = 0;
-	virtual ostream&	CloseMap(ostream& os) const = 0;
+	virtual std::ostream&	typeInfo(std::ostream& os, const object& root) const = 0;
+	virtual std::ostream&	Label(std::ostream& os, const object& root) const = 0;
+	virtual std::ostream&	OpenEnumeration(std::ostream& os) const = 0;
+	virtual std::ostream&	CloseEnumeration(std::ostream& os) const = 0;
+	virtual std::ostream&	OpenMap(std::ostream& os) const = 0;
+	virtual std::ostream&	CloseMap(std::ostream& os) const = 0;
 
-	virtual ostream&	Seperator(ostream& os) const = 0;
-	virtual ostream&	Indent(ostream& os) const = 0;
-	virtual ostream&	NewLine(ostream& os) const = 0;
+	virtual std::ostream&	Seperator(std::ostream& os) const = 0;
+	virtual std::ostream&	Indent(std::ostream& os) const = 0;
+	virtual std::ostream&	NewLine(std::ostream& os) const = 0;
 
 	// Read Interface
-	virtual bool			Read(istream& is, object& value) const = 0;
+	virtual bool			Read(std::istream& is, object& value) const = 0;
 
-	virtual bool			typeInfo(istream& is, object& value) const = 0;
-	virtual string		Label(istream& is) const = 0;
-	virtual bool			OpenEnumeration(istream& is) const = 0;
-	virtual bool			CloseEnumeration(istream& is) const = 0;
-	virtual bool			OpenMap(istream& is) const = 0;
-	virtual bool			CloseMap(istream& is) const = 0;
+	virtual bool			typeInfo(std::istream& is, object& value) const = 0;
+	virtual std::string		Label(std::istream& is) const = 0;
+	virtual bool			OpenEnumeration(std::istream& is) const = 0;
+	virtual bool			CloseEnumeration(std::istream& is) const = 0;
+	virtual bool			OpenMap(std::istream& is) const = 0;
+	virtual bool			CloseMap(std::istream& is) const = 0;
 
-	virtual bool			Consume(istream& is) const = 0;
-	virtual bool			Seperator(istream& is) const = 0;
+	virtual bool			Consume(std::istream& is) const = 0;
+	virtual bool			Seperator(std::istream& is) const = 0;
 };
 
 // --------------------------------------------------------------------------------------------------------------------

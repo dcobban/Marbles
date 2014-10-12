@@ -81,11 +81,11 @@ public:
 			const bool isFull = next == _clean.load();
 			if (isFull)
 				return false;
-			// Try again if another thread has modified the _init value before me.
+			// Try again if another std::thread has modified the _init value before me.
 		} while (!_init.compare_exchange_weak(reserved, next));
 		
 		// Element reserved, assign the value
-		new (&_items[reserved]) T(forward<T>(value));
+		new (&_items[reserved]) T(std::forward<T>(value));
 
 		// Syncronize the end position with the updated reserved position
 		const unsigned persist = reserved;
@@ -100,7 +100,7 @@ public:
 
 	void push(T value)
 	{
-		while (!try_push(forward<T>(value)))
+		while (!try_push(std::forward<T>(value)))
 		{
 			application::yield();
 		}
@@ -119,7 +119,7 @@ public:
 			next = (start + 1) % (N + 1);
 		} while(!_start.compare_exchange_weak(start, next));
 		
-		out = move(_items[start]);
+		out = std::move(_items[start]);
 		_items[start].~T();
 
 		// Syncronize the clean position with the updated start position
@@ -146,10 +146,10 @@ private:
 	// Todo: We really should control construction and destruction
 	unsigned char			_buffer[sizeof(T)*(N + 1)]; // we have some alignment problems here
 	T*						_items;
-	atomic<unsigned>	_start;
-	atomic<unsigned>	_end;
-	atomic<unsigned>	_init;
-	atomic<unsigned>	_clean;
+	std::atomic<unsigned>	_start;
+	std::atomic<unsigned>	_end;
+	std::atomic<unsigned>	_init;
+	std::atomic<unsigned>	_clean;
 };
 
 } // namespace marbles

@@ -35,22 +35,22 @@ BOOST_AUTO_TEST_CASE( text_serialization )
 	foo.z = 1;
 
 	foo.bar.reference_foo = &foo;
-	foo.bar.shared_foo = make_shared<Foo>();
+	foo.bar.shared_foo = std::make_shared<Foo>();
 	foo.bar.shared_foo->x = 1;
 	foo.bar.shared_foo->y = 2;
 	foo.bar.shared_foo->z = 3;
 	foo.bar.weak_foo = foo.bar.shared_foo;
 
 	// Serialize same data should yield same result
-	stringstream ss1;
-	stringstream ss2;
+	std::stringstream ss1;
+	std::stringstream ss2;
 	BOOST_CHECK(marbles::serialization::serializer::text(ss1, foo));
 	BOOST_CHECK(marbles::serialization::serializer::text(ss2, foo));
 	BOOST_CHECK_EQUAL(ss1.str(), ss2.str());
 	
 	// Serialize different should yield different result
 	foo.x = 1;
-	stringstream ss3;
+	std::stringstream ss3;
 	BOOST_CHECK(marbles::serialization::serializer::text(ss3, foo));
 	BOOST_CHECK_NE(ss1.str(), ss3.str());
 
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE( text_serialization )
 		foo2.bar.reference_zero = NULL;
 		foo2.bar.reference_foo = &foo;
 		foo2.bar.reference2_foo = &foo_ref;
-		foo2.bar.shared_foo = make_shared<Foo>();
+		foo2.bar.shared_foo = std::make_shared<Foo>();
 		foo2.bar.weak_foo = foo2.bar.shared_foo;
 
 		BOOST_CHECK(marbles::serialization::serializer::from(ss1, foo2));
@@ -89,8 +89,8 @@ BOOST_AUTO_TEST_CASE( text_serialization )
 
 	// Sub element serialization
 	// 
-	stringstream sub;
-	shared_ptr<Foo> org = make_shared<Foo>();
+	std::stringstream sub;
+	std::shared_ptr<Foo> org = std::make_shared<Foo>();
 
 	// Intialize data 
 	foo.bar.reference_foo = &foo;

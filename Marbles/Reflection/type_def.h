@@ -24,7 +24,7 @@
 #pragma once
 
 #include <type_traits>
-#include <ios>
+#include <std::ios>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
@@ -38,13 +38,13 @@ struct type_def_base
 	virtual bool			valid() const							{ return 0 != size(); }
 	virtual size_t			number_of_parameters() const			{ return 0; }
 	virtual type_def_base	parameter_at(size_t /*index*/) const	{ return type_def_base; }
-	virtual ostream&	signature(ostream& name) const		{ return name; }
+	virtual std::ostream&	signature(std::ostream& name) const		{ return name; }
 
 	virtual shared_type		type_info() const	{ return shared_type(); }
 	virtual const bool		is_constant() const	{ return false; } 
 	virtual const bool		is_volatile() const	{ return false; } 
-	virtual const bool		is_function() const	{ return false; }
-	virtual const size_t	alignment() const	{ return alignment_of<type_def_base>::value; }
+	virtual const bool		std::is_function() const	{ return false; }
+	virtual const size_t	alignment() const	{ return std::alignment_of<type_def_base>::value; }
 	virtual const size_t	size() const		{ return 0; }
 	virtual const size_t	rank() const		{ return 0; }
 };
@@ -52,13 +52,13 @@ struct type_def_base
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_def : public type_def_base
 {
-	ostream&	signature(ostream& name) const { return name << type_info()->name(); }
+	std::ostream&	signature(std::ostream& name) const { return name << type_info()->name(); }
 
 	shared_type		type_info() const	{ return type_of<T>(); }
-	const size_t	alignment() const	{ return alignment_of<remove_reference<T>::value>::value; }
+	const size_t	alignment() const	{ return std::alignment_of<std::remove_reference<T>::value>::value; }
 	const size_t	size() const		{ return sizeof(T); }
 
-	const bool		is_constant() const	{ return is_const<T>::value; }
+	const bool		is_constant() const	{ return std::is_const<T>::value; }
 private:
 	static const size_t rank_value = 0;
 };
@@ -66,10 +66,10 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_def<T*> : public type_def_base
 {
-	ostream&	signature(ostream& os) const { return os << type_info()->name() << "*"; }
+	std::ostream&	signature(std::ostream& os) const { return os << type_info()->name() << "*"; }
 
 	shared_type		type_info() const	{ return type_of<T>(); }
-	const size_t	alignment() const	{ return alignment_of<T*>::value; }
+	const size_t	alignment() const	{ return std::alignment_of<T*>::value; }
 	const size_t	size() const		{ return sizeof(T*); }
 	const size_t	rank() const		{ return rank_value; }
 
@@ -80,10 +80,10 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_def<T* const> : public type_def_base
 {
-	ostream&	signature(ostream& os) const { return os << type_info()->name() << "* const"; }
+	std::ostream&	signature(std::ostream& os) const { return os << type_info()->name() << "* const"; }
 
 	shared_type		type_info() const	{ return type_of<T>(); }
-	const size_t	alignment() const	{ return alignment_of<T* const>::value; }
+	const size_t	alignment() const	{ return std::alignment_of<T* const>::value; }
 	const size_t	size() const		{ return sizeof(T* const); }
 	const size_t	rank() const		{ return rank_value; }
 
@@ -95,10 +95,10 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_def<T* volatile> : public type_def_base
 {
-	ostream&	signature(ostream& os) const { return os << type_info()->name() << "* volatile"; }
+	std::ostream&	signature(std::ostream& os) const { return os << type_info()->name() << "* volatile"; }
 
 	shared_type		type_info() const	{ return type_of<T>(); }
-	const size_t	alignment() const	{ return alignment_of<T* volatile>::value; }
+	const size_t	alignment() const	{ return std::alignment_of<T* volatile>::value; }
 	const size_t	size() const		{ return sizeof(T* volatile); }
 	const size_t	rank() const		{ return rank_value; }
 
@@ -110,10 +110,10 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct type_def<T* const volatile> : public type_def_base
 {
-	ostream&	signature(ostream& os) const { return os << type_info()->name() << "* const volatile"; }
+	std::ostream&	signature(std::ostream& os) const { return os << type_info()->name() << "* const volatile"; }
 
 	shared_type		type_info() const	{ return type_of<T>(); }
-	const size_t	alignment() const	{ return alignment_of<T* const volatile>::value; }
+	const size_t	alignment() const	{ return std::alignment_of<T* const volatile>::value; }
 	const size_t	size() const		{ return sizeof(T* const volatile); }
 	const size_t	rank() const		{ return rank_value; }
 
@@ -143,7 +143,7 @@ private:
 			type_def_base parameters[N] = { BUILD_PARAMETER_LIST(N) }; \
 			return (0 <= index && index < N) ? parameters[index] : type_def_base(); \
 		} \
-		static ostream&	signature(ostream& os) const \
+		static std::ostream&	signature(std::ostream& os) const \
 		{ \
 			os << sName << '<'; \
 			os << BUILD_TYPE_DEF_LIST(N); \

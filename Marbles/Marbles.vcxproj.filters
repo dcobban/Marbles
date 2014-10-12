@@ -143,6 +143,9 @@
     <ClInclude Include="Common\Memory.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="Rendering\Renderer.h">
+      <Filter>Rendering</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Application\Application.txt">

@@ -33,7 +33,7 @@ namespace serialization
 // Writer<TextFormat> writer ( root ); // if no sub call is made all will be serialized
 // writer.Include( root.a ); // only sub elements serialized
 // writer.Exclude( root.b.c.g );
-// ostringstream oss;
+// ostd::stringstream oss;
 // writer.write( oss );
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F> 
@@ -44,21 +44,21 @@ public:
 
 	void			Include(const object& obj);
 	void			Exclude(const object& obj);
-	bool			Write(ostream& os);
+	bool			Write(std::ostream& os);
 
 private:
 	const ObjectList& Context() const;
 	void			PathWritten();
 
-	bool			Write(ostream& os, const object& obj);
-	template <typename T> bool Translate(ostream& os, const object& obj);
-	bool			WriteReference(ostream& os, const object& obj);
-	bool			WriteEnumerable(ostream& os, const object& obj);
-	bool			WriteMembers(ostream& os, const object& obj);
-	void			WriteNewLine(ostream& os) const;
+	bool			Write(std::ostream& os, const object& obj);
+	template <typename T> bool Translate(std::ostream& os, const object& obj);
+	bool			WriteReference(std::ostream& os, const object& obj);
+	bool			WriteEnumerable(std::ostream& os, const object& obj);
+	bool			WriteMembers(std::ostream& os, const object& obj);
+	void			WriteNewLine(std::ostream& os) const;
 	bool			ExtendPathTo(ObjectList& route, const object& obj);
 
-	typedef map<hash_t, string> PathMap;
+	typedef std::map<hash_t, std::string> PathMap;
 	F				mFormat;
 	ObjectList		mPath;
 	PathMap			mWritten;
@@ -104,7 +104,7 @@ void Writer<F>::PathWritten()
 	PathMap::const_iterator written = mWritten.find(hashName);
 	if (written == mWritten.end())
 	{
-		stringstream ss;
+		std::stringstream ss;
 		for (ObjectList::const_iterator i = mPath.begin() + 1; i != mPath.end(); ++i)
 		{
 			ss << "." << i->memberInfo()->name();
@@ -129,9 +129,9 @@ void Writer<F>::PathWritten()
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F> 
-bool Writer<F>::WriteReference(ostream& os, const object& obj)
+bool Writer<F>::WriteReference(std::ostream& os, const object& obj)
 {
-	ios::pos_type pos = os.tellp();
+	std::ios::pos_type pos = os.tellp();
 	bool write = obj.isValid() && obj.isReference();
 	if (write)
 	{
@@ -158,7 +158,7 @@ bool Writer<F>::WriteReference(ostream& os, const object& obj)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F> 
-bool Writer<F>::WriteEnumerable(ostream& os, const object& obj)
+bool Writer<F>::WriteEnumerable(std::ostream& os, const object& obj)
 {
 	bool write = obj.IsEnumerable();
 	if (write)
@@ -166,7 +166,7 @@ bool Writer<F>::WriteEnumerable(ostream& os, const object& obj)
 		PathWritten();
 
 		mFormat.OpenEnumeration(os);
-		ios::pos_type pos = os.tellp();
+		std::ios::pos_type pos = os.tellp();
 		mPath.push_back(obj);
 
 		mPath.pop_back();
@@ -181,7 +181,7 @@ bool Writer<F>::WriteEnumerable(ostream& os, const object& obj)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F> 
-bool Writer<F>::WriteMembers(ostream& os, const object& obj)
+bool Writer<F>::WriteMembers(std::ostream& os, const object& obj)
 {
 	bool write = obj.isValid() && 0 != obj.members().size();
 	if (write)
@@ -189,7 +189,7 @@ bool Writer<F>::WriteMembers(ostream& os, const object& obj)
 		PathWritten();
 
 		mFormat.OpenMap(os);
-		ios::pos_type pos = os.tellp();
+		std::ios::pos_type pos = os.tellp();
 		
 		bool first = true;
 		type_info::member_list::const_iterator end = obj.members().end();
@@ -220,7 +220,7 @@ bool Writer<F>::WriteMembers(ostream& os, const object& obj)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F> 
-void Writer<F>::WriteNewLine(ostream& os) const
+void Writer<F>::WriteNewLine(std::ostream& os) const
 {
 	mFormat.NewLine(os);
 	for (type_info::member_list::size_type i = 1; i < mPath.size(); ++i)
@@ -268,7 +268,7 @@ bool Writer<F>::ExtendPathTo(ObjectList& path, const object& obj)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F> template <typename T> 
-bool Writer<F>::Translate(ostream& os, const object& obj)
+bool Writer<F>::Translate(std::ostream& os, const object& obj)
 {
 	bool canWrite = type_of<T>() == obj.typeInfo();
 	if (canWrite)
@@ -281,9 +281,9 @@ bool Writer<F>::Translate(ostream& os, const object& obj)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F>
-bool Writer<F>::Write(ostream& os)
+bool Writer<F>::Write(std::ostream& os)
 {
-	ios::pos_type pos = os.tellp();
+	std::ios::pos_type pos = os.tellp();
 	for(ObjectList::iterator i = mIncludes.begin(); i != mIncludes.end(); ++i)
 	{
 		PathMap::iterator written = mWritten.find(i->hashName());
@@ -297,10 +297,10 @@ bool Writer<F>::Write(ostream& os)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F>
-bool Writer<F>::Write(ostream& os, const object& value)
+bool Writer<F>::Write(std::ostream& os, const object& value)
 {
 	ASSERT(0 < mPath.size() && mPath.back().isValid());
-	ios::pos_type pos = os.tellp();
+	std::ios::pos_type pos = os.tellp();
 	if (1 == mPath.size() && !mPath.back().isReference())
 	{	// The first element should always output type_info info.
 		mFormat.typeInfo(os, mPath.back());
@@ -363,7 +363,7 @@ bool Writer<F>::Write(ostream& os, const object& value)
 	else if (Translate<marbles::int64_t>(os, value))	{}
 	else if (Translate<float>(os, value))				{}
 	else if (Translate<double>(os, value))				{}
-	else if (Translate<string>(os, value))			{}
+	else if (Translate<std::string>(os, value))			{}
 	else if (WriteReference(os, value))					{}
 	else if (WriteEnumerable(os, value))				{}
 	else if (WriteMembers(os, value))					{}

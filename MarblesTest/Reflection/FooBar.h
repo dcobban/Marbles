@@ -31,9 +31,9 @@ struct Bar
 	Foo*					reference_zero;
 	Foo*					reference_foo;
 	Foo**					reference2_foo;
-	// unique_ptr<Foo>	unique_foo;
-	shared_ptr<Foo>	shared_foo;
-	weak_ptr<Foo>		weak_foo;
+	// std::unique_ptr<Foo>	unique_foo;
+	std::shared_ptr<Foo>	shared_foo;
+	std::weak_ptr<Foo>		weak_foo;
 
 private:
 	friend struct Foo;
@@ -56,8 +56,8 @@ struct Foo
 	void				SetX(const float val)		{ x = static_cast<int>(val); }
 	unsigned			GetY() const				{ return static_cast<unsigned>(y); }
 	void				SetY(const unsigned val)	{ y = static_cast<float>(val); }
-	string			GetZ() const				{ stringstream ss; ss << z; return ss.str(); }
-	void				SetZ(const string val)	{ stringstream ss(val); ss >> z; }
+	std::string			GetZ() const				{ std::stringstream ss; ss << z; return ss.str(); }
+	void				SetZ(const std::string val)	{ std::stringstream ss(val); ss >> z; }
 
 	Foo*				GetFooBarFoo() const		{ return bar.reference_foo; }
 };

@@ -50,18 +50,18 @@ REFLECT_TYPE(marbles::int32_t,	REFLECT_CREATOR())
 REFLECT_TYPE(marbles::int64_t,	REFLECT_CREATOR())
 REFLECT_TYPE(marbles::float32_t, REFLECT_CREATOR())
 REFLECT_TYPE(marbles::float64_t, REFLECT_CREATOR())
-REFLECT_TYPE(marbles::string,	REFLECT_CREATOR())
+REFLECT_TYPE(std::string,		REFLECT_CREATOR())
 REFLECT_TYPE(marbles::reflection::object,REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
-REFLECT_TEMPLATE_TYPE(template<typename T>, marbles::char_traits<T>, )
-REFLECT_TEMPLATE_TYPE(template<typename T>, marbles::allocator<T>, REFLECT_CREATOR())
-REFLECT_TEMPLATE_TYPE(template<typename T>, marbles::shared_ptr<T>, REFLECT_CREATOR())
-REFLECT_TEMPLATE_TYPE(template<typename T>, marbles::weak_ptr<T>, REFLECT_CREATOR())
+REFLECT_TEMPLATE_TYPE(template<typename T>, std::char_traits<T>, )
+REFLECT_TEMPLATE_TYPE(template<typename T>, std::allocator<T>, REFLECT_CREATOR())
+REFLECT_TEMPLATE_TYPE(template<typename T>, std::shared_ptr<T>, REFLECT_CREATOR())
+REFLECT_TEMPLATE_TYPE(template<typename T>, std::weak_ptr<T>, REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
 REFLECT_TEMPLATE_TYPE(template<typename T REFLECT_COMMA typename A>, 
-                      marbles::vector<T REFLECT_COMMA A>,
+                      std::vector<T REFLECT_COMMA A>,
 					  REFLECT_CREATOR())
 
 // End of file --------------------------------------------------------------------------------------------------------

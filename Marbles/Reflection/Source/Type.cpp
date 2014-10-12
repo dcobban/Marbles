@@ -36,7 +36,7 @@ namespace
 } // namespace <>
 
 // --------------------------------------------------------------------------------------------------------------------
-map<hash_t, shared_type> type_info::sRegistrar;
+std::map<hash_t, shared_type> type_info::sRegistrar;
 
 // --------------------------------------------------------------------------------------------------------------------
 type_info::type_info()
@@ -51,7 +51,7 @@ type_info::~type_info()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-const string& type_info::name() const
+const std::string& type_info::name() const
 { 
 	return mByValue.memberInfo()->name(); 
 }
@@ -89,6 +89,7 @@ type_info::member_list::size_type type_info::memberIndex(hash_t hashName) const
 // --------------------------------------------------------------------------------------------------------------------
 object type_info::create(const char* name) const
 {
+	(void)name;
 	ASSERT(NULL == name); // usage of name not implemented
 	object obj;
 	if (mCreateFn)
@@ -125,7 +126,7 @@ shared_type	type_info::find(const char* name)
 // --------------------------------------------------------------------------------------------------------------------
 shared_type	type_info::find(hash_t hashName)
 {
-	map<hash_t, shared_type>::iterator i = sRegistrar.find(hashName);
+	std::map<hash_t, shared_type>::iterator i = sRegistrar.find(hashName);
 	return i != sRegistrar.end() ? i->second : shared_type();
 }
 
@@ -159,12 +160,12 @@ type_info::builder::builder()
 // --------------------------------------------------------------------------------------------------------------------
 shared_type type_info::builder::create(const char* name)
 {
-	shared_ptr<type_info> candidate = shared_ptr<type_info>(new type_info());
-	shared_type type = const_pointer_cast<const type_info>(candidate);
+	std::shared_ptr<type_info> candidate = std::shared_ptr<type_info>(new type_info());
+	shared_type type = std::const_pointer_cast<const type_info>(candidate);
 
 	// Creates a circular reference type_info->member->type_info
-	shared_ptr<member> mem = make_shared<member>(name, type, "Default by value type_info member");
-	candidate->mByValue = const_pointer_cast<const member>(mem); 
+	std::shared_ptr<member> mem = std::make_shared<member>(name, type, "Default by value type_info member");
+	candidate->mByValue = std::const_pointer_cast<const member>(mem); 
 
 	if (type_info::_register(type))
 	{

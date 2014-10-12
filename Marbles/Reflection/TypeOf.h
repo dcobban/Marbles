@@ -32,13 +32,13 @@ namespace reflection
 {
 // --------------------------------------------------------------------------------------------------------------------
 class type_info;
-typedef shared_ptr<const type_info> shared_type;
-typedef weak_ptr<const type_info> weak_type;
+typedef std::shared_ptr<const type_info> shared_type;
+typedef std::weak_ptr<const type_info> weak_type;
 
 // --------------------------------------------------------------------------------------------------------------------
 class member;
-typedef shared_ptr<const member> shared_member;
-typedef weak_ptr<const member> weak_member;
+typedef std::shared_ptr<const member> shared_member;
+typedef std::weak_ptr<const member> weak_member;
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> struct instance_t 
@@ -104,7 +104,7 @@ template<typename T> shared_type type_of(T* obj)
 #define REFLECT_TEMPLATE_TYPE(_template,T,REFLECT_DEFINITION) \
 	REFLECT_COMMON_TYPE(_template,T,REFLECT_DEFINITION)
 
-// Todo: Ensure that builders are the only object that internally references a shared_ptr to a type_info!
+// Todo: Ensure that builders are the only object that internally references a std::shared_ptr to a type_info!
 #define REFLECT_COMMON_TYPE(_template,T,REFLECT_DEFINITION) \
 	_template struct ::marbles::reflection::type_of_t<T> \
 	: public ::marbles::reflection::instance_t< ::marbles::reflection::type_of_t<T> > \

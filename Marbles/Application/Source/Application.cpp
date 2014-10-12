@@ -41,8 +41,8 @@ struct application::implementation
 	typedef boost::shared_lock<shared_mutex>	shared_lock;
 	typedef boost::thread_specific_ptr<shared_service> ActiveService;
 	typedef boost::thread_specific_ptr<application> ActiveApplication;
-	typedef vector<weak_service>			service_list;
-	typedef vector<thread>			thread_list;
+	typedef std::vector<weak_service>			service_list;
+	typedef std::vector<std::thread>			thread_list;
 
 	implementation()
 	: _active_service(&do_nothing<shared_service>)
@@ -63,7 +63,7 @@ struct application::implementation
 
 	shared_task				_choose_service;
 	ActiveService			_active_service;
-	atomic<unsigned>	_next_service;
+	std::atomic<unsigned>	_next_service;
 	int						_run_result;
 
 	static ActiveApplication sApplication;
@@ -78,7 +78,7 @@ application::application()
 {
 	if (_implementation)
 	{
-		_implementation->_choose_service = make_shared<task>([this]() { this->choose_service(); });
+		_implementation->_choose_service = std::make_shared<task>([this]() { this->choose_service(); });
 	}
 }
 
@@ -125,9 +125,9 @@ int application::run(unsigned nu_threads)
 		_implementation->_threads.resize(nu_threads - 1);
 		for(int i = _implementation->_threads.size(); i--; )
 		{
-			auto action = make_shared<task>([this, i]()
+			auto action = std::make_shared<task>([this, i]()
 			{
-				thread worker([this](){ application::process_services(); });
+				std::thread worker([this](){ application::process_services(); });
 				this->_implementation->_threads[i].swap(worker);
 			});
 			primary->post(action);
@@ -149,7 +149,7 @@ int application::run(unsigned nu_threads)
 // --------------------------------------------------------------------------------------------------------------------
 //bool application::post(const task& action)
 //{
-//	return post(make_shared<task>(action));
+//	return post(std::make_shared<task>(action));
 //}
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -164,27 +164,27 @@ bool application::post(const shared_task& action)
 application* application::get() 
 { 
 	application* app = implementation::sApplication.get();
-	ASSERT(app || !"You must call application::run before calling this function."); 
+	ASSERT(app || !"You must call application::run before calling this std::function."); 
 	return app; 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 void application::yield()
 {
-	this_thread::yield();
+	std::this_thread::yield();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 void application::sleep(int milliseconds)
 {
-	chrono::milliseconds duration(milliseconds);
-	this_thread::sleep_for(duration);
+	std::chrono::milliseconds duration(milliseconds);
+	std::this_thread::sleep_for(duration);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 unsigned application::num_hardware_threads()
 {
-	return thread::hardware_concurrency();
+	return std::thread::hardware_concurrency();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -212,7 +212,7 @@ shared_service application::create_service()
 {
 	shared_service service = service::create();
 	_register(service);
-	return move(service);
+	return std::move(service);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

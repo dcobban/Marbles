@@ -33,12 +33,12 @@ class hash
 {
 public:
 	// http://www.cse.yorku.ca/~oz/hash.html
-	static inline hash_t sdbm(const char* string)
+	static inline hash_t sdbm(const char* str)
 	{
         hash_t hash = 0;
         int c;
 
-        while (c = *string++)
+        while (c = *str++)
 		{
             hash = c + (hash << 6) + (hash << 16) - hash;
 		}
@@ -62,12 +62,12 @@ public:
 	}
 
 	// http://www.cse.yorku.ca/~oz/hash.html
-    static inline hash_t djb2(const char *string)
+    static inline hash_t djb2(const char *str)
     {
         hash_t hash = 5381;
         int c;
 
-        while (c = *string++)
+		while (c = *str++)
 		{
             hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 		}

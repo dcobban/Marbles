@@ -31,29 +31,29 @@ namespace marbles
 namespace reflection
 {
 // --------------------------------------------------------------------------------------------------------------------
-template<typename _Hash, _Hash (*_HashFn)(const char*) = &type_info::hash, typename _Ax = allocator<_Hash> >
-class PathT : public vector<_Hash, _Ax>
+template<typename _Hash, _Hash (*_HashFn)(const char*) = &type_info::hash, typename _Ax = std::allocator<_Hash> >
+class PathT : public std::vector<_Hash, _Ax>
 {
 public:
 	PathT(const char* path = "");
-	PathT(const string& path);
+	PathT(const std::string& path);
 	PathT(const PathT& path);
 
 	_Hash HashName() const;
 
 	void push_back(const _Hash& value);
 	void push_back(const char* value);
-	void push_back(const string& value);
+	void push_back(const std::string& value);
 	void push_back(const PathT& path);
 
 	PathT& operator=(const _Hash& value);
 	PathT& operator=(const char* path);
-	PathT& operator=(const string& path);
+	PathT& operator=(const std::string& path);
 	PathT& operator=(const PathT& path);
 
 	static const char Seperator = '.';
 private:
-	typedef vector<_Hash, _Ax> base_type;
+	typedef std::vector<_Hash, _Ax> base_type;
 	static base_type Parse(const char* path);
 };
 
@@ -70,7 +70,7 @@ PathT<_Hash, _HashFn, _Ax>::PathT(const char* path)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename _Hash, _Hash (*_HashFn)(const char*), typename _Ax>
-PathT<_Hash, _HashFn, _Ax>::PathT(const string& path)
+PathT<_Hash, _HashFn, _Ax>::PathT(const std::string& path)
 : base_type(Parse(path.c_str()))
 {
 }
@@ -109,7 +109,7 @@ void PathT<_Hash, _HashFn, _Ax>::push_back(const char* value)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename _Hash, _Hash (*_HashFn)(const char*), typename _Ax>
-void PathT<_Hash, _HashFn, _Ax>::push_back(const string& value)
+void PathT<_Hash, _HashFn, _Ax>::push_back(const std::string& value)
 {
 	base_type::push_back((*_HashFn)(value.c_str()));
 }
@@ -144,7 +144,7 @@ PathT<_Hash, _HashFn, _Ax>& PathT<_Hash, _HashFn, _Ax>::operator=(const char* pa
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename _Hash, _Hash (*_HashFn)(const char*), typename _Ax>
-PathT<_Hash, _HashFn, _Ax>& PathT<_Hash, _HashFn, _Ax>::operator=(const string& path)
+PathT<_Hash, _HashFn, _Ax>& PathT<_Hash, _HashFn, _Ax>::operator=(const std::string& path)
 {
 	base_type::operator=(Parse(path.c_str()));
 	return *this;
@@ -190,7 +190,7 @@ typename PathT<_Hash, _HashFn, _Ax>::base_type PathT<_Hash, _HashFn, _Ax>::Parse
 //inline path HashPath(const object& root, const object& child)
 //{
 //	typedef type_info::member_list::const_iterator iterator;
-//	typedef vector<pair<iterator, iterator> > Stack;
+//	typedef std::vector<pair<iterator, iterator> > Stack;
 //	
 //	Stack stack;
 //	stack.push_back(make_pair(root.members().begin(), root.members().end()));

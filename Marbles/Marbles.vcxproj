@@ -125,6 +125,7 @@
     <ClInclude Include="Reflection\type_def.h" />
     <ClInclude Include="Reflection\TypeOf.h" />
     <ClInclude Include="Reflection\Value.h" />
+    <ClInclude Include="Rendering\Renderer.h" />
     <ClInclude Include="Sequencer\Sequence.h" />
     <ClInclude Include="Serialization\Format.h" />
     <ClInclude Include="Serialization\Reader.h" />

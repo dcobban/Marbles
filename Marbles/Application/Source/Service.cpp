@@ -43,7 +43,7 @@ service::execution_state service::state() const
 void service::stop()
 {
 	shared_service self = _self.lock();
-	post(make_shared<task>([self](){ application::get()->unregister(self); }));
+	post(std::make_shared<task>([self](){ application::get()->unregister(self); }));
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -83,9 +83,9 @@ shared_service service::active()
 // --------------------------------------------------------------------------------------------------------------------
 shared_service service::create()
 {
-	shared_service service(new service()); // would like to use make_shared<service>() but service::service() is private
+	shared_service service(new service()); // would like to use std::make_shared<service>() but service::service() is private
 	service->_self = service;
-	return move(service);
+	return std::move(service);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

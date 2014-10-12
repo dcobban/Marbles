@@ -1,6 +1,6 @@
 // This source file is part of marbles library.
 //
-// Copyright (c) 2013 Dan Cobban
+// Copyright (c) 2014 Dan Cobban
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,36 +26,12 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename T>
-struct keyable
-{
-	template<typename U, typename E, typename K, E (U::*Sig)(K)> struct signature
-	{
-		typedef U container_type;
-		typedef E value_type;
-		typedef K key_type;
-	};
-	//struct void_signature
-	//{
-	//	typedef void container_type;
-	//	typedef void value_type;
-	//	typedef void key_type;
-	//};
-	struct empty {};
-	struct base { void operator[](int); };
-	typedef typename std::conditional<std::is_class<T>::value, T, empty>::type user_base;
-	struct join : public user_base, public base {}; // does not work with basic types
-	template<typename U, U> struct checker;
-
-	template<typename U> 
-	static char check_base(U*, checker<void (base::*)(int), &U::operator[]>* = 0);
-	static int check_base(...);
-	static const bool value = sizeof(check_base(reinterpret_cast<join*>(0))) != sizeof(char);
-};
-
+	class scene; // the scene graph
+	class entity; // a location in space associtated with geometry
+	class panel; // a image container
+	class shader; // a GPU program
+	
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles
 
-// End of file --------------------------------------------------------------------------------------------------------
+// End of File --------------------------------------------------------------------------------------------------------

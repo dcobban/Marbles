@@ -58,7 +58,7 @@ object::object(const declaration& declaration, void* pointee)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-object::object(const declaration& declaration, const shared_ptr<void>& pointee)
+object::object(const declaration& declaration, const std::shared_ptr<void>& pointee)
 : mInfo(declaration)
 , mPointee(pointee) 
 {
@@ -97,7 +97,7 @@ object&	object::operator=(const object& rhs)
 		{
 			if (mInfo.isShared())
 			{	
-				shared_ptr<void>* self = To<shared_ptr<void>*>::from(*this);
+				std::shared_ptr<void>* self = To<std::shared_ptr<void>*>::from(*this);
 				if (0 != rhsValue.mPointee.use_count())
 				{
 					*self = rhsValue.mPointee;
@@ -109,7 +109,7 @@ object&	object::operator=(const object& rhs)
 			}
 			else if (mInfo.isWeak())
 			{	
-				weak_ptr<void>* self = To<weak_ptr<void>*>::from(*this);
+				std::weak_ptr<void>* self = To<std::weak_ptr<void>*>::from(*this);
 				if (0 != rhsValue.mPointee.use_count())
 				{
 					*self = rhsValue.mPointee;
@@ -244,15 +244,15 @@ object& object::_AssignReference(const object& rhs)
 	T& self_ptr = *To<T*>::from(*this);
 	if (rhs.mInfo.isShared())
 	{
-		self_ptr = *To<shared_ptr<void>*>::from(rhs);
+		self_ptr = *To<std::shared_ptr<void>*>::from(rhs);
 	}
 	else if (rhs.mInfo.isWeak())
 	{
-		self_ptr = To<weak_ptr<void>*>::from(rhs)->lock();
+		self_ptr = To<std::weak_ptr<void>*>::from(rhs)->lock();
 	}
 	else if (rhs.mInfo.isReference())
 	{   // not good wrong deleter!
-		self_ptr = shared_ptr<void>(*reinterpret_cast<void**>(rhs.address()));
+		self_ptr = std::shared_ptr<void>(*reinterpret_cast<void**>(rhs.address()));
 	}
 	return *this;
 }
@@ -262,11 +262,11 @@ inline object& object::_AssignZero(const object& zero)
 {
 	if (mInfo.isShared())
 	{
-		To<shared_ptr<void>*>::from(*this)->reset();
+		To<std::shared_ptr<void>*>::from(*this)->reset();
 	}
 	else if (mInfo.isWeak())
 	{
-		To<weak_ptr<void>*>::from(*this)->reset();
+		To<std::weak_ptr<void>*>::from(*this)->reset();
 	}
 	else if (mInfo.isReference())
 	{

@@ -69,8 +69,8 @@ public:
 	static shared_service	active();
 private:
 	friend class application;
-	typedef shared_ptr<boost::any> shared_provider;
-	typedef weak_ptr<boost::any> weak_provider;
+	typedef std::shared_ptr<boost::any> shared_provider;
+	typedef std::weak_ptr<boost::any> weak_provider;
 
 							service();
 
@@ -86,7 +86,7 @@ private:
 
 	task_queue						_tasks;
 
-	atomic<execution_state>	_state;
+	std::atomic<execution_state>	_state;
 
 	boost::any						_provider;
 	weak_service					_self;
@@ -108,13 +108,13 @@ inline bool	service::hasStopped() const
 template<typename T>
 inline T* service::provider()
 {
-	return boost::any_cast< shared_ptr<T> >(_provider).get();
+	return boost::any_cast< std::shared_ptr<T> >(_provider).get();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 //inline bool service::post(const task& action)
 //{
-//	return post(make_shared<task>(forward<task>(action)));
+//	return post(std::make_shared<task>(std::forward<task>(action)));
 //}
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -127,7 +127,7 @@ inline bool service::post(const shared_task& action)
 template<typename T, typename... ARGS>
 inline void service::make_provider(ARGS&&... args)
 {
-	_provider = make_shared<T>(forward<ARGS>(args)...);
+	_provider = std::make_shared<T>(std::forward<ARGS>(args)...);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

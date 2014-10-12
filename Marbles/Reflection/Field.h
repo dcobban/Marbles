@@ -37,7 +37,7 @@ public:
 	typedef C member_type;
 	typedef T C::*field_type;
 
-	memberT(const string& name, field_type field, const char* usage)
+	memberT(const std::string& name, field_type field, const char* usage)
 	: memberT<T>(name, declarationT<T>(), usage)
 	, mField(field)
 	{
