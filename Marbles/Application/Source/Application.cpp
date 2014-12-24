@@ -250,10 +250,10 @@ shared_service application::select_service()
 			// If we have looped over all _services and their is no possible selection then exit loop.
 			const bool accepted = NULL != candidate;
 			const bool atEnd	= next == start;
-			const bool yield	= atEnd & isSelectionPossible;
-			const bool exit		= atEnd & !isSelectionPossible;
-			isSelectionPossible = (atEnd & accepted) | (!atEnd & (isSelectionPossible | accepted));
-			selected = accepted | exit;
+			const bool yield	= atEnd && isSelectionPossible;
+			const bool exit		= atEnd && !isSelectionPossible;
+			isSelectionPossible = (atEnd && accepted) || (!atEnd && (isSelectionPossible || accepted));
+			selected = accepted || exit;
 			if (yield)
 			{
 				application::yield();

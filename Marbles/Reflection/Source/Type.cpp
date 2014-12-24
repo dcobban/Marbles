@@ -207,6 +207,17 @@ void type_info::builder::setAlignment(size_t alignment)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+type_info::member_list::size_type type_info::builder::memberIndex(hash_t hashname)
+{
+	member_list::size_type index = static_cast<member_list::size_type>(-1);
+	if (mBuild)
+	{
+		index = mBuild->memberIndex(hashname);
+	}
+	return index;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 } // namespace reflection
 } // namespace marbles
 

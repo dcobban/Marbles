@@ -21,22 +21,28 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
+#if defined CONFIG_DEBUG
 namespace marbles
 {
 	extern int allocs; // = 0;
 } // namespace marbles
+#endif // defined CONFIG_DEBUG
 
 inline void* operator new(size_t size/*, const char* filename = __FILE__, size_t line = __LINE__*/)
 {
 	void* p = malloc(size);
+#if defined CONFIG_DEBUG
 	printf("%s(%d): Alloc(%d) 0x%X\n", "", 0, ++marbles::allocs, (unsigned)(p));
+#endif // defined CONFIG_DEBUG
 	return p;
 }
 
 inline void* operator new[](size_t size, size_t N/*, const char* filename = __FILE__, size_t line = __LINE__*/)
 {
 	void* p = malloc(size*N);
+#if defined CONFIG_DEBUG
 	printf("%s(%d): Alloc(%d) 0x%X\n", "", 0, ++marbles::allocs, (unsigned)(p));
+#endif // defined CONFIG_DEBUG
 	return p;
 }
 

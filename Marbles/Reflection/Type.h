@@ -116,6 +116,8 @@ public:
 	template<typename T> void addMember(const char* name, const char* description = NULL);
 	template<typename T> void addMember(const char* name, T member, const char* description = NULL);
 	void addMember(const char* name, shared_type type_info, const char* description = NULL);
+	member_list::size_type memberIndex(const char* name) { return memberIndex(type_info::hash(name)); }
+	member_list::size_type memberIndex(hash_t hashname);
 
 private:
 	void setAlignment(size_t alignment);

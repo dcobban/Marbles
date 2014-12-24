@@ -143,7 +143,7 @@
     <ClInclude Include="Common\Memory.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="Rendering\Renderer.h">
+    <ClInclude Include="Renderer\Renderer.h">
       <Filter>Rendering</Filter>
     </ClInclude>
   </ItemGroup>
@@ -178,6 +178,9 @@
       <Filter>Serialization\Source</Filter>
     </ClCompile>
     <ClCompile Include="Marbles.cpp" />
+    <ClCompile Include="Renderer\Renderer.cpp">
+      <Filter>Rendering</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Sequencer\readme">

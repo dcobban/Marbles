@@ -1,10 +1,12 @@
 // marbles.cpp : Defines the entry point for the console application.
 //
 
+#if defined CONFIG_DEBUG
 namespace marbles
 {
 	int allocs = 0;
 }
+#endif // defined CONFIG_DEBUG
 
 //#include "behaviour\Behaviour.h"
 

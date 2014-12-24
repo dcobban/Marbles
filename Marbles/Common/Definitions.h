@@ -39,6 +39,7 @@ typedef unsigned int		uint32_t;
 typedef unsigned __int64	uint64_t;
 typedef float				float32_t;
 typedef double				float64_t;
+typedef void*				handle;
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles
