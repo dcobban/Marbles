@@ -90,7 +90,7 @@ private:
 	// EnumeratorFn
 	// AppendFn
 
-	typedef std::map<hash_t, shared_type> TypeMap;
+	typedef std::map<hash_t, shared_type> TypeMap; // remove std::map
 	static TypeMap sRegistrar;
 };
 

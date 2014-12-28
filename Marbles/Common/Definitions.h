@@ -23,23 +23,44 @@
 
 #pragma once
 
-#include <memory>
+#include <cstdint>
+
+// --------------------------------------------------------------------------------------------------------------------
+#define TO_STRING2(label) #label
+#define TO_STRING(label) TO_STRING2(label)
+#define SOURCE_LOCATION(label) __FILE__ "(" TO_STRING(__LINE__) "): " label "- "
+#define TODO(txt) SOURCE_LOCATION("Todo") txt
+#define MESSAGE(label, msg) message (SOURCE_LOCATION(label) msg)
+#define TRACE_INFO(label, x, ...) printf("[%s] " x, label, __VA_ARGS__)
+
+// --------------------------------------------------------------------------------------------------------------------
+#define STATIC_ASSERT BOOST_STATIC_ASSERT
+#if defined NDEBUG
+#define ASSERT
+#define VERIFY(x) (x)
+#else
+#define ASSERT assert
+#define VERIFY(x) ASSERT(x)
+#endif 
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
 // --------------------------------------------------------------------------------------------------------------------
-typedef __int8				int8_t;
-typedef __int16				int16_t;
-typedef __int32				int32_t;
-typedef __int64				int64_t;
-typedef unsigned char		uint8_t;
-typedef unsigned short		uint16_t;
-typedef unsigned int		uint32_t;
-typedef unsigned __int64	uint64_t;
-typedef float				float32_t;
-typedef double				float64_t;
-typedef void*				handle;
+using	std::int8_t;
+using	std::int16_t;
+using	std::int32_t;
+using	std::int64_t;
+using	std::uint8_t;
+using	std::uint16_t;
+using	std::uint32_t;
+using	std::uint64_t;
+
+typedef char	byte_t;
+typedef uint8_t	ubyte_t;
+typedef float	float32_t;
+typedef double	float64_t;
+typedef void*	handle;
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles

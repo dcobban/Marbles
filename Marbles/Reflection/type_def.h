@@ -43,7 +43,7 @@ struct type_def_base
 	virtual shared_type		type_info() const	{ return shared_type(); }
 	virtual const bool		is_constant() const	{ return false; } 
 	virtual const bool		is_volatile() const	{ return false; } 
-	virtual const bool		std::is_function() const	{ return false; }
+	virtual const bool		is_function() const	{ return false; }
 	virtual const size_t	alignment() const	{ return std::alignment_of<type_def_base>::value; }
 	virtual const size_t	size() const		{ return 0; }
 	virtual const size_t	rank() const		{ return 0; }

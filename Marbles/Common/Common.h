@@ -34,18 +34,9 @@
 #include <type_traits>
 #include <tuple>
 
-// We should not make these global includes if possible
-#include <cstdint>
-
 #include <Common/Function_Traits.h>
 #include <Common/Definitions.h>
 #include <Common/Memory.h>
-
-#define TO_STRING2(constant) #constant
-#define TO_STRING(constant) TO_STRING2(constant)
-#define Location(label) __FILE__ "(" TO_STRING(__LINE__) ") " label ": "
-#define TODO(txt) Location("Todo") txt
-#define Message(label, msg) message (Location(label) msg)
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
@@ -54,10 +45,6 @@ namespace marbles
 template<int ...> struct seq {};
 template<int N, int ...S> struct gens : gens<N - 1, N - 1, S...> {};
 template<int ...S> struct gens<0, S...> { typedef seq<S...> type; };
-
-// --------------------------------------------------------------------------------------------------------------------
-#define STATIC_ASSERT BOOST_STATIC_ASSERT
-#define ASSERT assert
 
 // --------------------------------------------------------------------------------------------------------------------
 template <typename T> 
@@ -71,6 +58,8 @@ template <typename A>
 inline const A& Max(const A& a, const A& b) { return a > b ? a : b; }
 template <typename A>
 inline const A& Min(const A& a, const A& b) { return a < b ? a : b; }
+template <typename A>
+inline const A& Select(const bool condition, const A& a, const A& b) { return condition ? a : b; }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> inline void Destruct(T* p) { p->~T(); }
