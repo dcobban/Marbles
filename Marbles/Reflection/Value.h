@@ -40,9 +40,44 @@ public:
 	: member(name, declaration, usage) {}
 
 	virtual shared_type	DeclaredType() const { return type_of<T>(); }
+	virtual object		dereference(const object& self) const
+	{
+		declaration info(typeInfo()->valueDeclaration(), self.isConstant());
+		object value(info, *reinterpret_cast<void**>(self.address()));
+		return value;
+	}
+	virtual object		append(object& /*self*/) const
+	{
+		ASSERT(!"Not implemented");
+		return object();
+	}
 	virtual object		assign(object self, const object& rhs) const;
-	virtual object		dereference(const object& /*self*/) const;
-	virtual object		append(object& self) const;
+private:
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename T, int N>
+class memberT<T[N]> : public member
+{
+public:
+	memberT(const std::string& name, const shared_type& type_info, const char* usage)
+		: member(name, type_info, usage) {}
+	memberT(const std::string& name, const declaration& declaration, const char* usage)
+		: member(name, declaration, usage) {}
+
+	virtual shared_type	DeclaredType() const { return type_of<T>(); }
+	virtual object		dereference(const object& self) const
+	{
+		declaration info(typeInfo()->valueDeclaration(), self.isConstant());
+		object value(info, *reinterpret_cast<void**>(self.address()));
+		return value;
+	}
+	virtual object		append(object& /*self*/) const
+	{
+		ASSERT(!"Not implemented");
+		return object();
+	}
+	virtual object		assign(object self, const object& rhs) const;
 private:
 };
 
@@ -72,20 +107,33 @@ object memberT<T>::assign(object self, const object& rhs) const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> 
-object memberT<T>::dereference(const object& self) const
-{ 
-	declaration info(typeInfo()->valueDeclaration(), self.isConstant());
-	object value(info, *reinterpret_cast<void**>(self.address()));
-	return value; 
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename T> 
-object memberT<T>::append(object& /*self*/) const
+template<typename T, int N>
+object memberT<T[N]>::assign(object self, const object& rhs) const
 {
-	ASSERT(!"Not implemented");
-	return object();
+	ASSERT(self.isValid());
+	ASSERT(self.typeInfo()->implements(rhs.typeInfo()));
+	if (self.isValue())
+	{
+		T* selfArray = self.as<T*>();
+		T* rhsArray = rhs.as<T*>();
+		for (int element = 0; element < N; ++element)
+		{
+			selfArray[element] = rhsArray[element];
+		}
+	}
+	//else if (self.isShared())
+	//{
+	//	self.as< std::shared_ptr<T> >() = rhs.as<T>();
+	//}
+	//else if (self.isWeak())
+	//{
+	//	self.as< std::weak_ptr<T> >() = rhs.as<T>();
+	//}
+	else if (self.isReference())
+	{
+		self.as<T**>() = rhs.as<T**>();
+	}
+	return self;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -56,6 +56,7 @@ using	std::uint16_t;
 using	std::uint32_t;
 using	std::uint64_t;
 
+typedef char	char_t;
 typedef char	byte_t;
 typedef uint8_t	ubyte_t;
 typedef float	float32_t;

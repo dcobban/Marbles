@@ -116,6 +116,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application\ServiceTests.cpp" />
+    <ClCompile Include="Common\ArgumentTest.cpp" />
     <ClCompile Include="Reflection\ObjectTest.cpp" />
     <ClCompile Include="Reflection\SerializationTest.cpp" />
     <ClCompile Include="Common\CircularBufferTest.cpp" />

@@ -39,7 +39,7 @@ public:
 	PathT(const std::string& path);
 	PathT(const PathT& path);
 
-	_Hash HashName() const;
+	_Hash hashName() const;
 
 	void push_back(const _Hash& value);
 	void push_back(const char* value);
@@ -83,7 +83,7 @@ PathT<_Hash, _HashFn, _Ax>::PathT(const PathT& path)
 }
 
 template<typename _Hash, _Hash (*_HashFn)(const char*), typename _Ax>
-_Hash PathT<_Hash, _HashFn, _Ax>::HashName() const
+_Hash PathT<_Hash, _HashFn, _Ax>::hashName() const
 {
 	_Hash hashName = 0;
 	for (iterator i = begin(); i != end(); ++i)
@@ -194,7 +194,7 @@ typename PathT<_Hash, _HashFn, _Ax>::base_type PathT<_Hash, _HashFn, _Ax>::Parse
 //	
 //	Stack stack;
 //	stack.push_back(make_pair(root.members().begin(), root.members().end()));
-//	while (!stack.empty() && stack.back().first->Identical(child))
+//	while (!stack.empty() && stack.back().first->identical(child))
 //	{
 //		type_info::member_list& backMembers = stack.back().first->members();
 //		if (backMembers.empty())
@@ -216,14 +216,14 @@ typename PathT<_Hash, _HashFn, _Ax>::base_type PathT<_Hash, _HashFn, _Ax>::Parse
 //	path.reserve(stack.size());
 //	for (Stack::iterator i = stack.begin(); i != stack.end(); ++i)
 //	{
-//		path.push_back(i->first->HashName());
+//		path.push_back(i->first->hashName());
 //	}
 //	return path;
 //
 //	// from SerializationWrite.inl(142) -- ExtendPathTo
 //	//serializer::PathT::size_type depth = path.size();
 //	//for (	type_info::member_list::const_iterator i = obj.members().begin();
-//	//		i != members.end() && !path.back().Identical(obj);
+//	//		i != members.end() && !path.back().identical(obj);
 //	//		++i)
 //	//{
 //	//	path.push_back(path.back().at(*i));

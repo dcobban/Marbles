@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Marbles", "Marbles\Marbles.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MarblesTest", "MarblesTest\MarblesTest.vcxproj", "{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Smash", "Smash\Smash.vcxproj", "{9B5BA19B-B5DA-49DA-8DFF-7726A2047802}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -21,6 +23,10 @@ Global
 		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Debug|Win32.Build.0 = Debug|Win32
 		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Release|Win32.ActiveCfg = Release|Win32
 		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Release|Win32.Build.0 = Release|Win32
+		{9B5BA19B-B5DA-49DA-8DFF-7726A2047802}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9B5BA19B-B5DA-49DA-8DFF-7726A2047802}.Debug|Win32.Build.0 = Debug|Win32
+		{9B5BA19B-B5DA-49DA-8DFF-7726A2047802}.Release|Win32.ActiveCfg = Release|Win32
+		{9B5BA19B-B5DA-49DA-8DFF-7726A2047802}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

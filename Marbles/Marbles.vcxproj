@@ -107,6 +107,7 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Common\Argument.h" />
     <ClInclude Include="Common\CircularBuffer.h" />
     <ClInclude Include="Common\Common.h" />
     <ClInclude Include="Common\Concept.h" />

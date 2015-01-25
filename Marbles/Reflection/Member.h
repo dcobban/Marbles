@@ -41,7 +41,7 @@ public:
 	member(const std::string& name, const shared_type& type_info, const char* usage);
 
 	const std::string&	name() const		{ return mName; }
-	hash_t				hashname() const	{ return mHashName; }
+	hash_t				hashName() const	{ return mHashName; }
 	declaration			declare_info() const{ return declaration(shared_from_this(), mDeclaration); }
 	const char*			usage() const		{ return mUsage; }
 

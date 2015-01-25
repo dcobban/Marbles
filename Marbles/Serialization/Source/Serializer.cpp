@@ -135,16 +135,16 @@ struct TextFormat : public format
 		}
 		else if ('-' == peek || isdigit(peek, mReadStop))
 		{	// Read a number
-			if (*type_info == *type_of<marbles::uint8_t>())		is >> value.as<marbles::uint8_t>();
+			if (*type_info == *type_of<marbles::uint8_t>())			is >> value.as<marbles::uint8_t>();
 			else if (*type_info == *type_of<marbles::uint16_t>())	is >> value.as<marbles::uint16_t>();
 			else if (*type_info == *type_of<marbles::uint32_t>())	is >> value.as<marbles::uint32_t>();
 			else if (*type_info == *type_of<marbles::uint64_t>())	is >> value.as<marbles::uint64_t>();
-			else if (*type_info == *type_of<marbles::int8_t>())	is >> value.as<marbles::int8_t>();
+			else if (*type_info == *type_of<marbles::int8_t>())		is >> value.as<marbles::int8_t>();
 			else if (*type_info == *type_of<marbles::int16_t>())	is >> value.as<marbles::int16_t>();
 			else if (*type_info == *type_of<marbles::int32_t>())	is >> value.as<marbles::int32_t>();
 			else if (*type_info == *type_of<marbles::int64_t>())	is >> value.as<marbles::int64_t>();
-			else if (*type_info == *type_of<float>())				is >> value.as<float>();
-			else if (*type_info == *type_of<double>())			is >> value.as<double>();
+			else if (*type_info == *type_of<float>())				is >> value.as<float>();           
+			else if (*type_info == *type_of<double>())				is >> value.as<double>();
 			else { ASSERT(!"Unknown numeric type_info!"); }
 		}
 		else if ('t' == tolower(peek, prev) || 'f' == tolower(peek, prev))
@@ -162,7 +162,7 @@ struct TextFormat : public format
 			//hash_t hashName = 0;
 			//for (ObjectList::iterator i = mPath.begin(); i != mPath.end(); ++i)
 			//{
-			//	hashName += i->HashName();
+			//	hashName += i->hashName();
 			//}
 			//mElements[hashName] = value;
 		}
@@ -445,17 +445,17 @@ bool serializer::text(std::ostream& os, const object& root, const object& sub)
 bool serializer::from(std::istream& is, object& root)
 {
 	uint32_t header;
-	bool littleEndian = false;
+	bool endianSwap = false;
 	std::ios::pos_type pos = is.tellg();
 	is.read(reinterpret_cast<char*>(&header), sizeof(header));
 
 	switch(header)
 	{
 	case 'epyt': 
-		littleEndian = true;
+		endianSwap = true;
 	case 'type':
 		{	// text format
-			Reader<TextFormat> reader(littleEndian);
+			Reader<TextFormat> reader(endianSwap);
 			is.seekg(0, std::ios::beg);
 			reader.Read(is, root);
 		}

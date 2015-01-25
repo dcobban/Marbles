@@ -237,14 +237,14 @@ bool Writer<F>::ExtendPathTo(ObjectList& path, const object& obj)
 	const type_info::member_list& members = parent.members();
 	const ObjectList::size_type depth = path.size();
 	for (	type_info::member_list::const_iterator i = members.begin();
-			!parent.Identical(obj) && i != members.end();
+			!parent.identical(obj) && i != members.end();
 			++i)
 	{
 		object member = parent.at(*i);
 		if (member.isValid())
 		{
 			ObjectList::const_reverse_iterator j = path.rbegin(); 
-			while(j != path.rend() && !j->Identical(member))
+			while(j != path.rend() && !j->identical(member))
 			{
 				++j;
 			}
@@ -252,7 +252,7 @@ bool Writer<F>::ExtendPathTo(ObjectList& path, const object& obj)
 			{
 				path.push_back(member);
 			//		PathWritten();
-				if (!member.Identical(obj) && !ExtendPathTo(path, obj))
+				if (!member.identical(obj) && !ExtendPathTo(path, obj))
 				{
 					path.pop_back();
 				}

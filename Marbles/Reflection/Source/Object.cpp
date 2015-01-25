@@ -231,10 +231,10 @@ object object::append(const object& obj)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-bool object::Equal(const object& obj) const
+bool object::equal(const object& obj) const
 {
 	// TODO: member by member comparison is required to determine if two objects are equivalant
-	return Identical(obj);
+	return identical(obj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

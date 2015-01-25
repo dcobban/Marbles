@@ -109,7 +109,6 @@ template<typename T> shared_type type_of(T* obj)
 	_template struct ::marbles::reflection::type_of_t<T> \
 	: public ::marbles::reflection::instance_t< ::marbles::reflection::type_of_t<T> > \
 	{	\
-		typedef T type; \
 		static ::marbles::reflection::shared_type typeInfo() \
 		{ \
 			::marbles::reflection::shared_type typeInfo = get().reflect_type.lock(); \

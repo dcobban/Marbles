@@ -57,8 +57,33 @@ REFLECT_TYPE(marbles::reflection::object,REFLECT_CREATOR())
 // --------------------------------------------------------------------------------------------------------------------
 REFLECT_TEMPLATE_TYPE(template<typename T>, std::char_traits<T>, )
 REFLECT_TEMPLATE_TYPE(template<typename T>, std::allocator<T>, REFLECT_CREATOR())
+REFLECT_TEMPLATE_TYPE(template<typename T>, std::unique_ptr<T>, REFLECT_CREATOR())
 REFLECT_TEMPLATE_TYPE(template<typename T>, std::shared_ptr<T>, REFLECT_CREATOR())
 REFLECT_TEMPLATE_TYPE(template<typename T>, std::weak_ptr<T>, REFLECT_CREATOR())
+//REFLECT_TEMPLATE_TYPE(template<int N>, char[N], )
+template<int N>
+struct ::marbles::reflection::type_of_t<char[N]> 
+: public ::marbles::reflection::instance_t< ::marbles::reflection::type_of_t<char[N]> > 
+{	
+	static ::marbles::reflection::shared_type typeInfo() 
+	{ 
+		::marbles::reflection::shared_type typeInfo = get().reflect_type.lock(); 
+		if (!typeInfo) 
+			typeInfo = get().create(); 
+		return typeInfo; 
+	} 
+private: 
+	::marbles::reflection::weak_type reflect_type; 
+public: 
+	::marbles::reflection::shared_type create() 
+	{ 
+		typedef char self_type[N];
+		::marbles::reflection::type_info::builder build; 
+		reflect_type = build.create<char[N]>("char[" TO_STRING(N) "]");
+		// REFLECT_DEFINITION 
+		return build.typeInfo(); 
+	} 
+}; 
 
 // --------------------------------------------------------------------------------------------------------------------
 REFLECT_TEMPLATE_TYPE(template<typename T REFLECT_COMMA typename A>, 

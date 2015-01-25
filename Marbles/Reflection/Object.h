@@ -42,7 +42,7 @@ public:
 	object();
 	~object();
 	object(const object& obj);
-	object(object& obj); // Second copy constructor such that the template<> constructor does not apply
+	object(object& obj);	// Second copy constructor such that the template<> constructor does not apply
 
 							explicit object(const declaration& declaration, 
 											void* pointee);
@@ -51,31 +51,30 @@ public:
 	template<typename T>	explicit object(T& obj);
 
 	object&					operator=(const object& obj);
-	//object&					operator=(const object& obj);
 	template<typename T>	object&	operator=(const T& obj);
 
 	bool					isValid() const;
-	bool					IsEnumerable() const{ return false; }
-	bool					isCallable() const	{ return mInfo.isCallable(); }
-	bool					isConstant() const	{ return mInfo.isConstant(); }
-	bool					isValue() const		{ return mInfo.isValue(); }
-	bool					isReference() const	{ return mInfo.isReference(); }
-	bool					isShared() const	{ return mInfo.isShared(); }
-	bool					isWeak() const		{ return mInfo.isWeak(); }
+	bool					IsEnumerable() const	{ return false; }
+	bool					isCallable() const		{ return mInfo.isCallable(); }
+	bool					isConstant() const		{ return mInfo.isConstant(); }
+	bool					isValue() const			{ return mInfo.isValue(); }
+	bool					isReference() const		{ return mInfo.isReference(); }
+	bool					isShared() const		{ return mInfo.isShared(); }
+	bool					isWeak() const			{ return mInfo.isWeak(); }
 
 	object&					swap(object& obj);
-	void					reset()				{ mPointee.reset(); }
-	void*					address() const		{ return mPointee.get(); }
+	void					reset()					{ mPointee.reset(); }
+	void*					address() const			{ return mPointee.get(); }
 	hash_t					hashName() const;
 
-	shared_type				_type_info() const	{ return mInfo.typeInfo(); }
-	shared_type				typeInfo() const	{ return _type_info(); }
-	shared_member			memberInfo() const	{ return mInfo.memberInfo(); }
+	shared_type				_type_info() const		{ return mInfo.typeInfo(); }
+	shared_type				typeInfo() const		{ return _type_info(); }
+	shared_member			memberInfo() const		{ return mInfo.memberInfo(); }
 	shared_member			memberInfo(const char* name) const;
 	shared_member			memberInfo(const std::string& name) const;
 	shared_member			memberInfo(const path& route) const;
 	shared_member			memberInfo(hash_t hashName) const;
-	const type_info::member_list& members() const		{ return typeInfo()->members(); }
+	const type_info::member_list& members() const	{ return typeInfo()->members(); }
 
 	template<typename T>	T& as();
 	template<typename T>	T& as() const;
@@ -88,10 +87,10 @@ public:
 	object					append();
 	object					append(const object& obj);
 
-	bool					Equal(const object& obj) const;
-	bool					Identical(const object& obj) const;
+	bool					equal(const object& obj) const;
+	bool					identical(const object& obj) const;
 
-	bool					operator==(const object& obj) const { return Equal(obj); }
+	bool					operator==(const object& obj) const { return equal(obj); }
 	bool					operator!=(const object& obj) const { return !operator==(obj); }
 
 	object					operator*() const;
@@ -184,7 +183,7 @@ inline bool object::isValid() const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline bool object::Identical(const object& obj) const
+inline bool object::identical(const object& obj) const
 {
 	return	obj.typeInfo() == typeInfo() &&
 			obj.address() == address();

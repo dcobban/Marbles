@@ -31,6 +31,9 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="MarblesTest.cpp" />
+    <ClCompile Include="Common\ArgumentTest.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Reflection\FooBar.h">

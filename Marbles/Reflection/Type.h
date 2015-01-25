@@ -49,14 +49,14 @@ public:
 	~type_info();
 
 	const std::string&		name() const;
-	hash_t					hashname() const;
+	hash_t					hashName() const;
 	size_t					size() const						{ return mSize; }
 	size_t					alignment() const					{ return static_cast<size_t>(1) << mAlignment; }
 	const declaration&		valueDeclaration() const			{ return mByValue; }
 	const declaration_list&	parameters() const					{ return mParameters; }
 	const member_list&		members() const						{ return mMembers; }
 	member_list::size_type	memberIndex(const char* name) const	{ return memberIndex(hash(name)); }
-	member_list::size_type	memberIndex(hash_t hashname) const;
+	member_list::size_type	memberIndex(hash_t hashName) const;
 
 	const bool				implements(const shared_type& type) const;
 	object					create(const char* name = NULL) const;
@@ -66,7 +66,7 @@ public:
 	static hash_t			hash(const char* str);
 	static hash_t			hash(const void* obj, size_t size);
 	static shared_type		find(const char* name);
-	static shared_type		find(hash_t hashname);
+	static shared_type		find(hash_t hashName);
 	static void				clear_registrar();
 
 private:
@@ -117,7 +117,7 @@ public:
 	template<typename T> void addMember(const char* name, T member, const char* description = NULL);
 	void addMember(const char* name, shared_type type_info, const char* description = NULL);
 	member_list::size_type memberIndex(const char* name) { return memberIndex(type_info::hash(name)); }
-	member_list::size_type memberIndex(hash_t hashname);
+	member_list::size_type memberIndex(hash_t hashName);
 
 private:
 	void setAlignment(size_t alignment);

@@ -146,6 +146,9 @@
     <ClInclude Include="Renderer\Renderer.h">
       <Filter>Rendering</Filter>
     </ClInclude>
+    <ClInclude Include="Common\Argument.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Application\Application.txt">

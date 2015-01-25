@@ -57,9 +57,9 @@ const std::string& type_info::name() const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-hash_t type_info::hashname() const
+hash_t type_info::hashName() const
 { 
-	return mByValue.memberInfo()->hashname(); 
+	return mByValue.memberInfo()->hashName(); 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -79,7 +79,7 @@ const bool type_info::implements(const shared_type& type_info) const
 type_info::member_list::size_type type_info::memberIndex(hash_t hashName) const
 {	// A binary search would be good!
 	member_list::size_type i = 0; 
-	while (i < mMembers.size() && hashName != mMembers[i]->hashname())
+	while (i < mMembers.size() && hashName != mMembers[i]->hashName())
 	{
 		++i;
 	}
@@ -102,7 +102,7 @@ object type_info::create(const char* name) const
 // --------------------------------------------------------------------------------------------------------------------
 const bool type_info::operator==(const type_info& type_info) const
 {
-	return hashname() == type_info.hashname();
+	return hashName() == type_info.hashName();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -144,10 +144,10 @@ void type_info::clear_registrar()
 // --------------------------------------------------------------------------------------------------------------------
 bool type_info::_register(shared_type type_info)
 {
-	const bool registered = sRegistrar.end() != sRegistrar.find(type_info->hashname());
+	const bool registered = sRegistrar.end() != sRegistrar.find(type_info->hashName());
 	if (!registered)
 	{
-		sRegistrar[type_info->hashname()] = type_info;
+		sRegistrar[type_info->hashName()] = type_info;
 	}
 	return !registered;
 }
@@ -207,12 +207,12 @@ void type_info::builder::setAlignment(size_t alignment)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-type_info::member_list::size_type type_info::builder::memberIndex(hash_t hashname)
+type_info::member_list::size_type type_info::builder::memberIndex(hash_t hashName)
 {
 	member_list::size_type index = static_cast<member_list::size_type>(-1);
 	if (mBuild)
 	{
-		index = mBuild->memberIndex(hashname);
+		index = mBuild->memberIndex(hashName);
 	}
 	return index;
 }
