@@ -26,10 +26,6 @@
 #include <Common/CircularBuffer.h>
 #include <Common/Common.h>
 #include <boost/thread/mutex.hpp>
-#include <boost/thread/condition.hpp>
-#include <boost/any.hpp>
-
-#include <memory>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
@@ -69,8 +65,8 @@ public:
 	static shared_service	active();
 private:
 	friend class application;
-	typedef std::shared_ptr<boost::any> shared_provider;
-	typedef std::weak_ptr<boost::any> weak_provider;
+	typedef std::shared_ptr<void> shared_provider;
+	typedef std::weak_ptr<void> weak_provider;
 
 							service();
 
@@ -78,17 +74,11 @@ private:
 	void					make_provider(ARGS&&... args);
 	static shared_service	create();
 
-
 	typedef circular_buffer<shared_task, 128>	task_queue;
-	typedef boost::mutex				mutex;
-	typedef boost::unique_lock<mutex>	mutex_lock;
-	typedef boost::condition_variable	condition;
 
 	task_queue						_tasks;
-
 	std::atomic<execution_state>	_state;
-
-	boost::any						_provider;
+	shared_provider					_provider;
 	weak_service					_self;
 };
 
@@ -108,7 +98,7 @@ inline bool	service::hasStopped() const
 template<typename T>
 inline T* service::provider()
 {
-	return boost::any_cast< std::shared_ptr<T> >(_provider).get();
+	return std::static_pointer_cast<T>(_provider).get();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -127,7 +117,7 @@ inline bool service::post(const shared_task& action)
 template<typename T, typename... ARGS>
 inline void service::make_provider(ARGS&&... args)
 {
-	_provider = std::make_shared<T>(std::forward<ARGS>(args)...);
+	_provider = std::static_pointer_cast<void>(std::make_shared<T>(std::forward<ARGS>(args)...));
 }
 
 // --------------------------------------------------------------------------------------------------------------------
