@@ -31,8 +31,6 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
-namespace serialization
-{
 namespace 
 {
 // --------------------------------------------------------------------------------------------------------------------
@@ -53,7 +51,7 @@ static const uint32_t memory_big	= 'rsm0';
 static const uint32_t memory_little	= '0msr';
 
 // --------------------------------------------------------------------------------------------------------------------
-struct TextFormat : public format
+struct TextFormat : public serialization::format
 {
 	std::ostream& Write(std::ostream& os, const bool& value) const
 	{ return os << std::ios::boolalpha << value; } 
@@ -436,7 +434,7 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 bool serializer::text(std::ostream& os, const object& root, const object& sub)
 {	// start serialization
-	Writer<TextFormat> writer(root);
+	serialization::Writer<TextFormat> writer(root);
 	writer.Include(sub);
 	return writer.Write(os);
 }
@@ -445,18 +443,23 @@ bool serializer::text(std::ostream& os, const object& root, const object& sub)
 bool serializer::from(std::istream& is, object& root)
 {
 	uint32_t header;
-	bool endianSwap = false;
+	const bool endianSwap = false;
+	serialization::Reader<TextFormat> reader(endianSwap);
+
 	std::ios::pos_type pos = is.tellg();
 	is.read(reinterpret_cast<char*>(&header), sizeof(header));
+	is.seekg(0, std::ios::beg);
 
 	switch(header)
 	{
 	case 'epyt': 
-		endianSwap = true;
 	case 'type':
 		{	// text format
-			Reader<TextFormat> reader(endianSwap);
-			is.seekg(0, std::ios::beg);
+			reader.Read(is, root);
+		}
+		break;
+	default:
+		{
 			reader.Read(is, root);
 		}
 		break;
@@ -466,7 +469,6 @@ bool serializer::from(std::istream& is, object& root)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace serialization
 } // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

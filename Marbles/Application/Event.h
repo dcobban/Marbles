@@ -191,7 +191,7 @@ inline void event<Args...>::clear()
 template<typename... Args>
 event<Args...>::message_info::message_info()
 {
-	auto& fn = [this]() { this->message_task(gens<sizeof...(Args)>::type());	};
+	auto fn = [this]() { this->message_task(gens<sizeof...(Args)>::type()); };
 	_process_event = std::make_shared<task>(std::move(fn));
 }
 
@@ -202,7 +202,7 @@ void event<Args...>::message_info::message_task(seq<S...>)
 {
 	if (_event)
 	{
-		shared_service& active = service::active();
+		shared_service active = service::active();
 		for (auto& handler : _event->_handlers)
 		{
 			if (active == handler._service.lock() && handler._handler)

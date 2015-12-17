@@ -30,11 +30,11 @@ BOOST_AUTO_TEST_CASE( basic_operations )
 {
 	BOOST_MESSAGE( "circular_buffer.basic_operations" );
 
-	const int size = 10;
-	marbles::circular_buffer<int, size> buffer;
+	const size_t size = 10;
+	marbles::circular_buffer<size_t, size> buffer;
 
-	int pop = 0;
-	int push = 0;
+	size_t pop = 0;
+	size_t push = 0;
 
 	BOOST_CHECK(buffer.empty());
 
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE( basic_operations )
 
 	BOOST_CHECK(buffer.full());
 
-	int dummy;
+	size_t dummy;
 	while (buffer.try_pop(dummy))
 	{
 		BOOST_CHECK_EQUAL(++pop, dummy);
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 
 	for (auto& tally : tallySheet)
 	{
-		for (int i = tally.size(); i--;)
+		for (size_t i = tally.size(); i--;)
 		{
 			finalTally[i] += tally[i];
 		}

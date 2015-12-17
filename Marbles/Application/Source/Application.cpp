@@ -123,7 +123,7 @@ int application::run(unsigned nu_threads)
 	{	// Initialize threads
 		shared_service primary = _implementation->_services.front().lock();
 		_implementation->_threads.resize(nu_threads - 1);
-		for(int i = _implementation->_threads.size(); i--; )
+		for(size_t i = _implementation->_threads.size(); i--; )
 		{
 			auto action = std::make_shared<task>([this, i]()
 			{

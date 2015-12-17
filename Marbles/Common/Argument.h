@@ -52,7 +52,7 @@ public:
 		for (auto& option : _arguments)
 		{
 			hash_t hashName = reflection::type_info::hash(option._name);
-			uint32_t memberIndex = type->memberIndex(hashName);
+			size_t memberIndex = type->memberIndex(hashName);
 			if (0 <= memberIndex && memberIndex < type->members().size())
 			{
 				option._member = type->members()[memberIndex];
@@ -80,7 +80,7 @@ private:
 		reflection::shared_member _member;
 	};
 
-	const option* findOption(int position, int argc, char** argv) const
+	const option* findOption(int position, int , char** argv) const
 	{
 		auto arg = std::find_if(std::begin(_arguments), std::end(_arguments), [=](const option& arg)
 		{
@@ -89,7 +89,7 @@ private:
 			const bool isLong = 0 == _strnicmp(&argv[position][0], arg._name, max_argument_length);
 			const bool canTranslate = isMapped && (isShort || isLong);
 
-			return isMapped && (isShort || isLong);
+			return canTranslate;
 		});
 		return arg != _arguments.end() ? &(*arg) : NULL;
 	}

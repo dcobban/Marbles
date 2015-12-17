@@ -67,8 +67,8 @@ BOOST_AUTO_TEST_CASE(parse_basic_arguments)
 		"-s", "\"Happy hunting.\"",
 		//"-a", "\"Continue hunting.\"",
 	};
-	const int argc = sizeof(argv) / sizeof(argv[0]);
-	const int count = args.parse(results, argc, argv);
+	const size_t argc = sizeof(argv) / sizeof(argv[0]);
+	const size_t count = args.parse(results, argc, argv);
 
 	BOOST_CHECK_EQUAL(count, info->members().size());
 	BOOST_CHECK(results.flagTest);

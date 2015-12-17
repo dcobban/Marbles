@@ -44,14 +44,14 @@ BOOST_AUTO_TEST_CASE( text_serialization )
 	// Serialize same data should yield same result
 	std::stringstream ss1;
 	std::stringstream ss2;
-	BOOST_CHECK(marbles::serialization::serializer::text(ss1, foo));
-	BOOST_CHECK(marbles::serialization::serializer::text(ss2, foo));
+	BOOST_CHECK(marbles::serializer::text(ss1, foo));
+	BOOST_CHECK(marbles::serializer::text(ss2, foo));
 	BOOST_CHECK_EQUAL(ss1.str(), ss2.str());
 	
 	// Serialize different should yield different result
 	foo.x = 1;
 	std::stringstream ss3;
-	BOOST_CHECK(marbles::serialization::serializer::text(ss3, foo));
+	BOOST_CHECK(marbles::serializer::text(ss3, foo));
 	BOOST_CHECK_NE(ss1.str(), ss3.str());
 
 	// Reading outputed data should yield same results
@@ -66,11 +66,11 @@ BOOST_AUTO_TEST_CASE( text_serialization )
 		foo2.bar.shared_foo = std::make_shared<Foo>();
 		foo2.bar.weak_foo = foo2.bar.shared_foo;
 
-		BOOST_CHECK(marbles::serialization::serializer::from(ss1, foo2));
+		BOOST_CHECK(marbles::serializer::from(ss1, foo2));
 		BOOST_CHECK_NE(foo2.bar.reference_foo, &foo);
 		BOOST_CHECK_EQUAL(foo2.bar.reference_foo, &foo2);
 
-		BOOST_CHECK(marbles::serialization::serializer::from(ss2, foo_ref));
+		BOOST_CHECK(marbles::serializer::from(ss2, foo_ref));
 		BOOST_CHECK_NE(static_cast<Foo*>(NULL), foo_ref);
 		if (NULL != foo_ref)
 		{
@@ -100,9 +100,9 @@ BOOST_AUTO_TEST_CASE( text_serialization )
 	foo.bar.shared_foo->z = 3;
 	foo.bar.weak_foo = foo.bar.shared_foo;
 
-	BOOST_CHECK(marbles::serialization::serializer::text(sub, foo, foo.bar.shared_foo));
+	BOOST_CHECK(marbles::serializer::text(sub, foo, foo.bar.shared_foo));
 	foo.bar.shared_foo.reset();
-	BOOST_CHECK(marbles::serialization::serializer::from(sub, foo));
+	BOOST_CHECK(marbles::serializer::from(sub, foo));
 
 	BOOST_CHECK_NE(foo.bar.shared_foo, org);
 	BOOST_CHECK_EQUAL(foo.bar.shared_foo->x, org->x);

@@ -37,7 +37,7 @@ struct Bar
 
 private:
 	friend struct Foo;
-	Bar(Foo* foo)
+	Bar(Foo* )
 	: reference_zero(NULL)
 	, reference_foo(NULL) 
 	, reference2_foo(NULL)

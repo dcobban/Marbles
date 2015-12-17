@@ -68,13 +68,15 @@ public:
 
 	bool		connect(handle khWnd, const PIXELFORMATDESCRIPTOR& pf = _defaultPixelFormat);
 	bool		disconnect();
+	void		swapBuffer();
 	void		pixelFormat(PIXELFORMATDESCRIPTOR* pPixelFormat) const;
 
+	static void	clear(uint16_t flags);
 	static void	clearColour(float red, float green, float blue, float alpha = 1.0f);
 	// Perspective
 	static void setViewport(int32_t left, int32_t bottom, int32_t width, int32_t height);
 	// static void setFrustum(TBox& kBox);
-	static void enable(uint16_t dwFlags, bool kbEnable = true);
+	static void enable(uint16_t flags, bool kbEnable = true);
 
 	// Draw
 	//static void setVertexBuffer(CVertex3* kpVertices);
@@ -89,10 +91,10 @@ private:
 	static const PIXELFORMATDESCRIPTOR _defaultPixelFormat;
 	static uint32_t _lastError;
 
-	handle			_windowHandle;		// Handle to the rendering Window
-	handle			_deviceContext;		// Handle to the device context
-	handle			_renderingContext;	// Handle to the OpenGL rendering context
-	uint32_t		_pixelFormatId;		// Pixel format identification
+	handle		_windowHandle;		// Handle to the rendering Window
+	handle		_deviceContext;		// Handle to the device context
+	handle		_renderingContext;	// Handle to the OpenGL rendering context
+	uint32_t	_pixelFormatId;		// Pixel format identification
 };
 
 // --------------------------------------------------------------------------------------------------------------------

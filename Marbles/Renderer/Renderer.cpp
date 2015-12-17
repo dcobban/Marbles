@@ -78,12 +78,18 @@ renderer::renderer()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+renderer::~renderer()
+{
+	disconnect();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 void renderer::tracePixelFormat(const PIXELFORMATDESCRIPTOR& pixelFormat)
 {
 	bool append = false;
 	uint16_t flags = 1;
 	TRACE_INFO("Renderer", "\tFlags: ");
-	while (PFD_STEREO_DONTCARE > flags)
+	while (0 != flags && PFD_STEREO_DONTCARE > flags)
 	{
 		if (append && (pixelFormat.dwFlags & flags)) TRACE_INFO("Renderer", " | ");
 		switch (pixelFormat.dwFlags & flags)
@@ -201,15 +207,61 @@ bool renderer::setPixelFormat(const PIXELFORMATDESCRIPTOR& pixelFormat)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+void renderer::pixelFormat(PIXELFORMATDESCRIPTOR* pPixelFormat) const
+{
+	if (pPixelFormat)
+	{
+		::DescribePixelFormat(	reinterpret_cast<HDC>(_deviceContext), 
+								_pixelFormatId, 
+								sizeof(PIXELFORMATDESCRIPTOR), 
+								pPixelFormat);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void renderer::swapBuffer()
+{
+	if (NULL != _deviceContext)
+	{
+		::SwapBuffers(reinterpret_cast<HDC&>(_deviceContext));
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void renderer::clear(uint16_t flags)
+{
+	glClear( flags ); 
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void renderer::clearColour(float red, float green, float blue, float alpha)
+{
+	glClearColor(red, green, blue, alpha);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void renderer::enable(uint16_t flags, bool kbEnable)
+{
+	if(kbEnable)
+	{
+		glEnable(flags);
+	}
+	else
+	{
+		glDisable(flags);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 bool renderer::connect(const handle hWindow, const PIXELFORMATDESCRIPTOR& pixelFormat)
 {
 	if (hWindow != NULL)
 	{
 		disconnect();
-		TRACE_INFO("Renderer", "Connecting Window (0x%08x) to marbles::renderer(0x%08x).\n", hWindow, this);
+		TRACE_INFO("Renderer", "Connecting Window (0x%08x) to marbles::renderer(0x%08x).\n", reinterpret_cast<size_t>(hWindow), reinterpret_cast<size_t>(this));
 		_windowHandle = hWindow;
 		reinterpret_cast<HDC&>(_deviceContext) = ::GetDC(reinterpret_cast<HWND>(_windowHandle));
-		if (NULL == _deviceContext && setPixelFormat(pixelFormat))
+		if (NULL != _deviceContext && setPixelFormat(pixelFormat))
 		{
 			reinterpret_cast<HGLRC&>(_renderingContext) = wglCreateContext(reinterpret_cast<HDC>(_deviceContext));
 			if (NULL != _renderingContext && wglMakeCurrent(reinterpret_cast<HDC>(_deviceContext), reinterpret_cast<HGLRC>(_renderingContext)))
@@ -223,7 +275,7 @@ bool renderer::connect(const handle hWindow, const PIXELFORMATDESCRIPTOR& pixelF
 	}
 
 	disconnect();
-	TRACE_INFO("Renderer", "Unable to connect window(0x%08x) to marbles::renderer(0x%08x).\n", hWindow, this);
+	TRACE_INFO("Renderer", "Unable to connect window(0x%08x) to marbles::renderer(0x%08x).\n", reinterpret_cast<size_t>(hWindow), reinterpret_cast<size_t>(this));
 	return false;
 }
 
@@ -232,7 +284,7 @@ bool renderer::disconnect()
 	const bool renderingContextEnabled = NULL != _deviceContext && NULL != _renderingContext;
 	if (renderingContextEnabled)
 	{
-		TRACE_INFO("Renderer", "Disconnecting Window (0x%08x) from marbles::renderer(0x%08x).\n", _windowHandle, this);
+		TRACE_INFO("Renderer", "Disconnecting Window (0x%08x) from marbles::renderer(0x%08x).\n", reinterpret_cast<size_t>(_windowHandle), reinterpret_cast<size_t>(this));
 		wglMakeCurrent(reinterpret_cast<HDC>(_deviceContext), NULL);
 		wglDeleteContext(reinterpret_cast<HGLRC>(_renderingContext));
 		VERIFY(::ReleaseDC(reinterpret_cast<HWND>(_windowHandle), reinterpret_cast<HDC>(_deviceContext)));
