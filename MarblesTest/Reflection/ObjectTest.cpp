@@ -73,6 +73,11 @@ BOOST_AUTO_TEST_CASE( reflection_object_field )
 	object bar_obj = foo_obj.at("Bar");
 	bar_obj.at("reference_foo") = &foo;
 	BOOST_CHECK_EQUAL(foo.bar.reference_foo, &foo);
+
+//	object getFooBarFoo = foo_obj.at("GetFooBarFoo");
+//	Foo* callTest = getFooBarFoo().as<Foo*>();
+//	BOOST_CHECK_EQUAL(callTest, &foo);
+
 	object new_foo_obj = type_of<Foo>()->create();
 	bar_obj.at("shared_foo") = new_foo_obj.as<Foo*>();
 	Foo* test1 = new_foo_obj.as<Foo*>();
@@ -81,7 +86,6 @@ BOOST_AUTO_TEST_CASE( reflection_object_field )
 	bar_obj.at("weak_foo") = bar_obj.at("shared_foo");
 	Foo* test3 = bar_obj.at("weak_foo").as<Foo*>();
 	BOOST_CHECK_EQUAL(test1, test3);
-
 	
 	marbles::reflection::type_info::clear_registrar();
 }

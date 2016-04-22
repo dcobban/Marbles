@@ -88,6 +88,22 @@ public:
 // --------------------------------------------------------------------------------------------------------------------
 REFLECT_TEMPLATE_TYPE(template<typename T REFLECT_COMMA typename A>, 
                       std::vector<T REFLECT_COMMA A>,
-					  REFLECT_CREATOR())
+                      REFLECT_CREATOR())
+
+// --------------------------------------------------------------------------------------------------------------------
+//REFLECT_TEMPLATE_TYPE(template<typename sig>, 
+//                      std::function<sig>,
+//                      REFLECT_CREATOR())
+template<typename sig> struct ::marbles::reflection::type_of_t< std::function<sig> > 
+: public ::marbles::reflection::instance_t< 
+            ::marbles::reflection::type_of_t< 
+                typename ::marbles::reflection::function_return<sig>::type > > 
+{
+	typedef void type_info; 
+	static ::marbles::reflection::shared_type typeInfo() 
+	{ 
+		return type_of<typename ::marbles::reflection::function_return<sig>::type >(); 
+	} 
+}; 
 
 // End of file --------------------------------------------------------------------------------------------------------

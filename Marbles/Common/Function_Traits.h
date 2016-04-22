@@ -79,106 +79,117 @@ namespace marbles
 namespace reflection
 {
 // --------------------------------------------------------------------------------------------------------------------
-template<typename sig>
-struct function_traits;
+template<typename sig> struct function_return;
+template<typename R> struct function_return<R ()>												{ typedef R type; };
+template<typename R, typename ...P> struct function_return<R (P...)>							{ typedef R type; };
+template<typename R, typename C, typename ...P> struct function_return<R (C::*)(P...)>			{ typedef R type; };
+template<typename R, typename C, typename ...P> struct function_return<R (C::*)(P...) const>	{ typedef R type; };
 
-template<typename R>
-struct function_traits<R ()>
-{
-	static const size_t count = 0;
-	typedef R return_type;
-};
+template<typename sig, int index> struct function_parameter;
+template<typename R, int index> struct function_parameter<R (), index> { typedef void type; };
+template<typename R, typename ...P, int index> struct function_parameter<R (P...), index> { typedef R type; };
+template<typename R, typename C, typename ...P, int index> struct function_parameter<R (C::*)(P...), index> { typedef R type; };
 
-// --------------------------------------------------------------------------------------------------------------------
-#define FN_SIG_TRAITS(N) \
-	template<typename R, FN_TYPENAME(N)> \
-	struct function_traits<R (FN_TYPES(N))> \
-	{ \
-		static const size_t count = N; \
-		typedef R return_type; \
-		FN_TYPEDEF(N) \
-	};
-
-FN_SIG_TRAITS(1)
-FN_SIG_TRAITS(2)
-FN_SIG_TRAITS(3)
-FN_SIG_TRAITS(4)
-FN_SIG_TRAITS(5)
-FN_SIG_TRAITS(6)
-FN_SIG_TRAITS(7)
-FN_SIG_TRAITS(8)
-FN_SIG_TRAITS(9)
-FN_SIG_TRAITS(10)
-FN_SIG_TRAITS(11)
-FN_SIG_TRAITS(12)
-
-#undef FN_SIG_TRAITS
+//template<typename sig>
+//struct function_traits;
+//
+//template<typename R>
+//struct function_traits<R ()>
+//{
+//	static const size_t count = 0;
+//	typedef R return_type;
+//};
 
 // --------------------------------------------------------------------------------------------------------------------
-#define FN_MEMBER_TRAITS(N) \
-	template<typename R, typename C, FN_TYPENAME(N)> \
-	struct function_traits<R (C::*)(FN_TYPES(N))> \
-	{ \
-		static const size_t count = N; \
-		typedef C member_type; \
-		typedef R return_type; \
-		FN_TYPEDEF(N) \
-	};
-
-template<typename R, typename C>
-struct function_traits<R (C::*)()>
-{
-	static const size_t count = 0;
-	typedef C member_type;
-	typedef R return_type;
-};
-
-FN_MEMBER_TRAITS(1)
-FN_MEMBER_TRAITS(2)
-FN_MEMBER_TRAITS(3)
-FN_MEMBER_TRAITS(4)
-FN_MEMBER_TRAITS(5)
-FN_MEMBER_TRAITS(6)
-FN_MEMBER_TRAITS(7)
-FN_MEMBER_TRAITS(8)
-FN_MEMBER_TRAITS(9)
-FN_MEMBER_TRAITS(10)
-FN_MEMBER_TRAITS(11)
-FN_MEMBER_TRAITS(12)
-
-#undef FN_MEMBER_TRAITS
-
-// --------------------------------------------------------------------------------------------------------------------
-#define FN_TRAITS(N) \
-	template<typename R, FN_TYPENAME(N)> \
-	struct function_traits<R (*)(FN_TYPES(N))> \
-	{ \
-		static const size_t count = N; \
-		typedef R return_type; \
-		FN_TYPEDEF(N) \
-	};
-
-template<typename R>
-struct function_traits<R (*)()>
-{
-	static const size_t count = 0;
-	typedef R return_type;
-};
-
-FN_TRAITS(1)
-FN_TRAITS(2)
-FN_TRAITS(3)
-FN_TRAITS(4)
-FN_TRAITS(5)
-FN_TRAITS(6)
-FN_TRAITS(7)
-FN_TRAITS(8)
-FN_TRAITS(9)
-FN_TRAITS(10)
-FN_TRAITS(11)
-FN_TRAITS(12)
-
-#undef FN_TRAITS
+//#define FN_SIG_TRAITS(N) \
+//	template<typename R, FN_TYPENAME(N)> \
+//	struct function_traits<R (FN_TYPES(N))> \
+//	{ \
+//		static const size_t count = N; \
+//		typedef R return_type; \
+//		FN_TYPEDEF(N) \
+//	};
+//
+//FN_SIG_TRAITS(1)
+//FN_SIG_TRAITS(2)
+//FN_SIG_TRAITS(3)
+//FN_SIG_TRAITS(4)
+//FN_SIG_TRAITS(5)
+//FN_SIG_TRAITS(6)
+//FN_SIG_TRAITS(7)
+//FN_SIG_TRAITS(8)
+//FN_SIG_TRAITS(9)
+//FN_SIG_TRAITS(10)
+//FN_SIG_TRAITS(11)
+//FN_SIG_TRAITS(12)
+//
+//#undef FN_SIG_TRAITS
+//
+//// --------------------------------------------------------------------------------------------------------------------
+//#define FN_MEMBER_TRAITS(N) \
+//	template<typename R, typename C, FN_TYPENAME(N)> \
+//	struct function_traits<R (C::*)(FN_TYPES(N))> \
+//	{ \
+//		static const size_t count = N; \
+//		typedef C member_type; \
+//		typedef R return_type; \
+//		FN_TYPEDEF(N) \
+//	};
+//
+//template<typename R, typename C>
+//struct function_traits<R (C::*)()>
+//{
+//	static const size_t count = 0;
+//	typedef C member_type;
+//	typedef R return_type;
+//};
+//
+//FN_MEMBER_TRAITS(1)
+//FN_MEMBER_TRAITS(2)
+//FN_MEMBER_TRAITS(3)
+//FN_MEMBER_TRAITS(4)
+//FN_MEMBER_TRAITS(5)
+//FN_MEMBER_TRAITS(6)
+//FN_MEMBER_TRAITS(7)
+//FN_MEMBER_TRAITS(8)
+//FN_MEMBER_TRAITS(9)
+//FN_MEMBER_TRAITS(10)
+//FN_MEMBER_TRAITS(11)
+//FN_MEMBER_TRAITS(12)
+//
+//#undef FN_MEMBER_TRAITS
+//
+//// --------------------------------------------------------------------------------------------------------------------
+//#define FN_TRAITS(N) \
+//	template<typename R, FN_TYPENAME(N)> \
+//	struct function_traits<R (*)(FN_TYPES(N))> \
+//	{ \
+//		static const size_t count = N; \
+//		typedef R return_type; \
+//		FN_TYPEDEF(N) \
+//	};
+//
+//template<typename R>
+//struct function_traits<R (*)()>
+//{
+//	static const size_t count = 0;
+//	typedef R return_type;
+//};
+//
+//FN_TRAITS(1)
+//FN_TRAITS(2)
+//FN_TRAITS(3)
+//FN_TRAITS(4)
+//FN_TRAITS(5)
+//FN_TRAITS(6)
+//FN_TRAITS(7)
+//FN_TRAITS(8)
+//FN_TRAITS(9)
+//FN_TRAITS(10)
+//FN_TRAITS(11)
+//FN_TRAITS(12)
+//
+//#undef FN_TRAITS
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace reflection

@@ -28,6 +28,99 @@ namespace marbles
 {
 namespace reflection
 {
+// --------------------------------------------------------------------------------------------------------------------
+template<typename R, typename T> 
+class memberT<R (T::*)()> : public memberT<R>
+{
+public:
+	typedef R return_type;
+	typedef R (T::*member_type)();
+	typedef R (T::*signature_type)();
+
+	memberT(const std::string& name, signature_type method, const char* usage)
+	: memberT<typename return_type>(name, declarationT<typename return_type>(), usage)
+	, mMethod(method)
+	{
+	}
+
+	virtual bool		callable() const { return true; }
+	virtual bool		readOnly() const { return true; }
+
+	virtual object		dereference(const object& self) const
+	{
+		declaration info(this->shared_from_this(), declarationT<typename member_type>());
+		object value(info, self.address());
+		return value;
+	}
+	virtual object		assign(object& self, const object& rhs) const
+	{
+		return member::assign(self, rhs);
+	}
+	virtual object		call(object& self, object* pObjs, unsigned count) const
+	{
+		object result;
+		// if (count == function_traits<
+		validateParameters(pObjs, count);
+		// validate each parameter
+		// execute callback
+	}
+
+private:
+	member_type mMethod;
+};
+
+template<typename R, typename T> struct type_of_t<R (T::*)()>
+{ 
+	static shared_type typeInfo() { return type_of< std::function<R ()> >(); } 
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename R, typename T> 
+class memberT<R (T::*)() const> : public memberT<R>
+{
+public:
+	typedef R return_type;
+	typedef R (T::*member_type)() const;
+	typedef R (T::*signature_type)() const;
+
+	memberT(const std::string& name, signature_type method, const char* usage)
+	: memberT<typename return_type>(name, declarationT<typename return_type>(), usage)
+	, mMethod(method)
+	{
+	}
+
+	virtual bool		callable() const { return true; }
+	virtual bool		readOnly() const { return true; }
+
+	virtual object		dereference(const object& self) const
+	{
+		declaration info(this->shared_from_this(), declarationT<typename member_type>());
+		object value(info, self.address());
+		return value;
+	}
+	virtual object		assign(object& self, const object& rhs) const
+	{
+		return member::assign(self, rhs);
+	}
+	virtual object		call(object& self, object* pObjs, unsigned count) const
+	{
+		(void)count; (void)pObjs; (void)self;
+		object result;
+		// if (count == function_traits<
+		// validateParameters(pObjs, count);
+		// validate each parameter
+		// execute callback
+		return result;
+	}
+
+private:
+	member_type mMethod;
+};
+
+template<typename R, typename T> struct type_of_t<R (T::*)() const>
+{ 
+	static shared_type typeInfo() { return type_of< std::function<R ()> >(); } 
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace reflection

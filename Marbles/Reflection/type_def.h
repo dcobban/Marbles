@@ -40,7 +40,7 @@ struct type_def_base
 	virtual type_def_base	parameter_at(size_t /*index*/) const	{ return type_def_base; }
 	virtual std::ostream&	signature(std::ostream& name) const		{ return name; }
 
-	virtual shared_type		type_info() const	{ return shared_type(); }
+	virtual shared_type		type_info() const	{ return TypeOf<void>(); }
 	virtual const bool		is_constant() const	{ return false; } 
 	virtual const bool		is_volatile() const	{ return false; } 
 	virtual const bool		is_function() const	{ return false; }
@@ -135,15 +135,15 @@ private:
 #define BUILD_PARAMETER_LIST(N) FN_LIST(N,BUILD_PARAMETERS_PREFIX,BUILD_PARAMETERS_POSTFIX,FN_COMMA)
 #define BUILD_TYPE_DEF(N) \
 	template<template<FN_LIST(N,typename B,,FN_COMMA)> class T, FN_TYPENAME(N)> \
-	struct type_def< T<FN_TYPES(N)> > \
+	struct type_def< T<FN_TYPES(N)> > : public type_def_base \
 	{ \
-		static size_t			number_of_parameters() const		{ return N; } \
-		static type_def_base	parameter_at(size_t index) const	{ return type_def_base; } \
+		size_t			number_of_parameters() const { return N; } \
+		type_def_base	parameter_at(size_t index) const \
 		{ \
 			type_def_base parameters[N] = { BUILD_PARAMETER_LIST(N) }; \
 			return (0 <= index && index < N) ? parameters[index] : type_def_base(); \
 		} \
-		static std::ostream&	signature(std::ostream& os) const \
+		std::ostream&	signature(std::ostream& os) const \
 		{ \
 			os << sName << '<'; \
 			os << BUILD_TYPE_DEF_LIST(N); \

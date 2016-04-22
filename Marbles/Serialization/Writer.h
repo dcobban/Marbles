@@ -196,17 +196,20 @@ bool Writer<F>::WriteMembers(std::ostream& os, const object& obj)
 		type_info::member_list::const_iterator begin = obj.members().begin();
 		for (type_info::member_list::const_iterator i = begin; i != end; ++i)
 		{
-			object member(obj.at(*i));
-			mPath.push_back(member);
-			if (!first)
+			if (!(*i)->callable())
 			{
-				mFormat.Seperator(os);
+				object member(obj.at(*i));
+				mPath.push_back(member);
+				if (!first)
+				{
+					mFormat.Seperator(os);
+				}
+				first = false;
+				WriteNewLine(os);
+				mFormat.Label(os, member);
+				Write(os, member);
+				mPath.pop_back();
 			}
-			first = false;
-			WriteNewLine(os);
-			mFormat.Label(os, member);
-			Write(os, member);
-			mPath.pop_back();
 		}
 
 		if (pos != os.tellp())

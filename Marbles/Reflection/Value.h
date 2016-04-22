@@ -39,7 +39,8 @@ public:
 	memberT(const std::string& name, const declaration& declaration, const char* usage)
 	: member(name, declaration, usage) {}
 
-	virtual shared_type	DeclaredType() const { return type_of<T>(); }
+	virtual bool		isConstant() const { return std::is_const<T>::value; }
+	virtual shared_type	declaredType() const { return type_of<T>(); }
 	virtual object		dereference(const object& self) const
 	{
 		declaration info(typeInfo()->valueDeclaration(), self.isConstant());
@@ -51,13 +52,13 @@ public:
 		ASSERT(!"Not implemented");
 		return object();
 	}
-	virtual object		assign(object self, const object& rhs) const;
+	virtual object		assign(object& self, const object& rhs) const;
 private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T, int N>
-class memberT<T[N]> : public member
+class memberT<T[N]> : public memberT<T>
 {
 public:
 	memberT(const std::string& name, const shared_type& type_info, const char* usage)
@@ -65,7 +66,6 @@ public:
 	memberT(const std::string& name, const declaration& declaration, const char* usage)
 		: member(name, declaration, usage) {}
 
-	virtual shared_type	DeclaredType() const { return type_of<T>(); }
 	virtual object		dereference(const object& self) const
 	{
 		declaration info(typeInfo()->valueDeclaration(), self.isConstant());
@@ -77,13 +77,13 @@ public:
 		ASSERT(!"Not implemented");
 		return object();
 	}
-	virtual object		assign(object self, const object& rhs) const;
+	virtual object		assign(object& self, const object& rhs) const;
 private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> 
-object memberT<T>::assign(object self, const object& rhs) const
+object memberT<T>::assign(object& self, const object& rhs) const
 {
 	ASSERT(self.isValid());
 	ASSERT(self.typeInfo()->implements(rhs.typeInfo()));
@@ -108,7 +108,7 @@ object memberT<T>::assign(object self, const object& rhs) const
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T, int N>
-object memberT<T[N]>::assign(object self, const object& rhs) const
+object memberT<T[N]>::assign(object& self, const object& rhs) const
 {
 	ASSERT(self.isValid());
 	ASSERT(self.typeInfo()->implements(rhs.typeInfo()));

@@ -107,12 +107,12 @@ class declarationT : public declaration
 		static const reference_semantic value = 
 			std::is_function<T>::value || std::is_member_function_pointer<T>::value ? Function : Value; 
 	};
-	template<typename T> struct get_semantic< T* > { static const reference_semantic value = Reference; };
-	template<typename T> struct get_semantic< std::shared_ptr<T> > { static const reference_semantic value = Shared; };
-	template<typename T> struct get_semantic< std::weak_ptr<T> > { static const reference_semantic value = Weak; };
+	template<typename T> struct get_semantic< T* >                  { static const reference_semantic value = Reference; };
+	template<typename T> struct get_semantic< std::shared_ptr<T> >  { static const reference_semantic value = Shared; };
+	template<typename T> struct get_semantic< std::weak_ptr<T> >    { static const reference_semantic value = Weak; };
 
-	template<typename T> struct get_deref_count			{ static const int value = 0; };
-	template<typename T> struct get_deref_count< T* >	{ static const int value = get_deref_count<T>::value + 1; };
+	template<typename T> struct get_deref_count         { static const int value = 0; };
+	template<typename T> struct get_deref_count< T* >   { static const int value = get_deref_count<T>::value + 1; };
 
 public:
 	declarationT()

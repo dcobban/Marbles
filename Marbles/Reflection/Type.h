@@ -115,6 +115,8 @@ public:
 	template<typename T> shared_type create(const char* name);
 	template<typename T> void addMember(const char* name, const char* description = NULL);
 	template<typename T> void addMember(const char* name, T member, const char* description = NULL);
+	template<typename R, typename T> void addMember(const char* name, R (T::*member)(), const char* description = NULL);
+	template<typename R, typename T> void addMember(const char* name, R (T::*member)() const, const char* description = NULL);
 	void addMember(const char* name, shared_type type_info, const char* description = NULL);
 	member_list::size_type memberIndex(const char* name) { return memberIndex(type_info::hash(name)); }
 	member_list::size_type memberIndex(hash_t hashName);
@@ -236,6 +238,26 @@ template<typename T> void type_info::builder::addMember(const char* name, const 
 template<typename T> void type_info::builder::addMember(const char* name, T member, const char* description)
 {
 	shared_member memberInfo = std::make_shared< memberT<T> >(name, member, description);
+	if (memberInfo)
+	{
+		mBuild->mMembers.push_back(memberInfo);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename R, typename T> void type_info::builder::addMember(const char* name, R (T::*member)(), const char* description)
+{
+	shared_member memberInfo = std::make_shared< memberT<R (T::*)()> >(name, member, description);
+	if (memberInfo)
+	{
+		mBuild->mMembers.push_back(memberInfo);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename R, typename T> void type_info::builder::addMember(const char* name, R (T::*member)() const, const char* description)
+{
+	shared_member memberInfo = std::make_shared< memberT<R (T::*)() const> >(name, member, description);
 	if (memberInfo)
 	{
 		mBuild->mMembers.push_back(memberInfo);

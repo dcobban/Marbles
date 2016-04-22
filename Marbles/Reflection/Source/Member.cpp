@@ -55,7 +55,7 @@ member::member(const std::string& name, const shared_type& type_info, const char
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-object member::assign(object self, const object& rhs) const
+object member::assign(object& self, const object& rhs) const
 {
 	ASSERT(self.isValid());
 	ASSERT(rhs.typeInfo()->implements(self.typeInfo()));
@@ -70,12 +70,21 @@ object member::assign(object self, const object& rhs) const
 // --------------------------------------------------------------------------------------------------------------------
 object member::dereference(const object& /*self*/) const
 {
+	ASSERT(!"Object cannot be dereferened.");
 	return object();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 object member::append(object& /*self*/) const
 {
+	ASSERT(!"Object cannot perform append default object.");
+	return object();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+object member::call(object& /*self*/, object* /*pObjs*/, unsigned /*count*/) const
+{
+	ASSERT(!"Object cannot perform call operation.");
 	return object();
 }
 

@@ -123,9 +123,9 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 	BOOST_MESSAGE("circular_buffer.multi_threaded_pop");
 	const int numConsumers = 6;
 	std::array<tally_t, numConsumers> tallySheet;
-	for (auto& tally : tallySheet)
+	for (auto& sheetTally : tallySheet)
 	{
-		for (auto& value : tally)
+		for (auto& value : sheetTally)
 		{
 			value = 0;
 		}
@@ -134,13 +134,13 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 	std::array<std::thread, numConsumers> consumerThreads;
 	for (auto id = numConsumers; id--;)
 	{
-		tally_t& tally = tallySheet[id];
-		std::thread consumer([&tally, &consumerData]()
+		tally_t& sheetTally = tallySheet[id];
+		std::thread consumer([&sheetTally, &consumerData]()
 		{
 			int value = 0;
 			while (consumerData.try_pop(value))
 			{
-				++tally[value];
+				++sheetTally[value];
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
 		});
@@ -158,11 +158,11 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 		value = 0;
 	}
 
-	for (auto& tally : tallySheet)
+	for (auto& sheetTally : tallySheet)
 	{
-		for (size_t i = tally.size(); i--;)
+		for (size_t i = sheetTally.size(); i--;)
 		{
-			finalTally[i] += tally[i];
+			finalTally[i] += sheetTally[i];
 		}
 	}
 

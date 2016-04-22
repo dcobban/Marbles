@@ -94,8 +94,7 @@ public:
 	bool					operator!=(const object& obj) const { return !operator==(obj); }
 
 	object					operator*() const;
-	//object operator()() const;
-	//object operator()(object );
+	template<typename ...T> object operator()(T... args) const;
 
 	template<typename T>	static void create(object& obj);
 	template<typename T>	static void createShared(object& obj);
@@ -245,6 +244,25 @@ inline object object::operator*() const
 	return result; 
 }
 
+template<int a, int b> struct max 
+{
+	static const int value = a < b ? b : a;
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename ...T> inline object object::operator()(T... args) const
+{
+	object result;
+	if (mInfo.isCallable())
+	{
+		// review(danc): Passing a local array into a function like this is a security risk!
+		object objs[max<sizeof...(T), 1>::value] = { object(args)... }; 
+		object* pObjs = &objs[0];
+		mInfo.memberInfo()->call(result, pObjs, sizeof...(T));
+	}
+	return result;
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 template<> inline void object::create<void>(object& obj) { object invalid; obj.swap(invalid); }
 template<typename T> inline void object::create(object& obj)
@@ -271,15 +289,8 @@ inline bool object::_IsZero() const
 
 // --------------------------------------------------------------------------------------------------------------------
 inline void object::_SetAddress(void* p) 
-{	// std::shared_ptr<> does not allow us to set a raw pointer without allocating managed data.
-	// Since std::shared_ptr<> uses only the allocated managed data to perform deletion operations 
-	// setting the raw pointer does not put the std::shared_ptr<> into an invalid state.
-	
-	// TODO using the C++11 aliasing constructor std::shared_ptr::std::shared_ptr(std::shared_ptr<T>& base, T* alias)
-	// will remove this need.
-	// mPointee = std::shared_ptr<void>(std::shared_ptr<void>(), p);
-	mPointee.reset();
-	*reinterpret_cast<void**>(&mPointee) = p;
+{	
+	mPointee = std::shared_ptr<void>(std::shared_ptr<void>(), p);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

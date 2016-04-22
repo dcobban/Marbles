@@ -35,9 +35,9 @@ class memberT<T C::*> : public memberT<T>
 public:
 	typedef T return_type;
 	typedef C member_type;
-	typedef T C::*field_type;
+	typedef T C::*signature_type;
 
-	memberT(const std::string& name, field_type field, const char* usage)
+	memberT(const std::string& name, signature_type field, const char* usage)
 	: memberT<T>(name, declarationT<T>(), usage)
 	, mField(field)
 	{
@@ -51,7 +51,7 @@ public:
 	}
 
 private:
-	field_type mField;
+	signature_type mField;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
