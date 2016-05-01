@@ -24,10 +24,10 @@
 #include <application\application.h>
 #include <application\service.h>
 #include <common\common.h>
-#include <boost\any.hpp>
-#include <boost\thread.hpp>
 #include <chrono>
 #include <thread>
+#include <mutex>
+#include <shared_mutex>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
@@ -36,45 +36,40 @@ namespace marbles
 // --------------------------------------------------------------------------------------------------------------------
 struct application::implementation
 {
-	typedef boost::shared_mutex					shared_mutex;
-	typedef boost::unique_lock<shared_mutex>	unique_lock;
-	typedef boost::shared_lock<shared_mutex>	shared_lock;
-	typedef boost::thread_specific_ptr<shared_service> ActiveService;
-	typedef boost::thread_specific_ptr<application> ActiveApplication;
-	typedef std::vector<weak_service>			service_list;
-	typedef std::vector<std::thread>			thread_list;
+	typedef std::shared_mutex				shared_mutex;
+	typedef std::unique_lock<shared_mutex>	unique_lock;
+	typedef std::shared_lock<shared_mutex>	shared_lock;
+	typedef shared_service*					ActiveService;
+	typedef application*					ActiveApplication;
+	typedef std::vector<weak_service>		service_list;
+	typedef std::vector<std::thread>		thread_list;
 
 	implementation()
-	: _active_service(&do_nothing<shared_service>)
-	, _next_service(0)
+	: _next_service(0)
 	, _run_result(0)
-	{
-	}
+	{}
 
-	~implementation()
-	{
-	}
+	template<typename T> static void        do_nothing(T*) {};
 
-	template<typename T> static void do_nothing(T*) {};
+	shared_mutex                            _service_mutex;
+	service_list                            _services;
+	thread_list                             _threads;
 
-	shared_mutex			_service_mutex;
-	service_list			_services;
-	thread_list				_threads;
+	shared_task                             _choose_service;
+	std::atomic<unsigned>                   _next_service;
+	int                                     _run_result;
 
-	shared_task				_choose_service;
-	ActiveService			_active_service;
-	std::atomic<unsigned>	_next_service;
-	int						_run_result;
-
-	static ActiveApplication sApplication;
+	thread_local static ActiveApplication	sApplication;
+	thread_local static ActiveService		sActiveService;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-application::implementation::ActiveApplication application::implementation::sApplication(&application::implementation::do_nothing<application>);
+thread_local application::implementation::ActiveApplication application::implementation::sApplication = NULL;
+thread_local application::implementation::ActiveService application::implementation::sActiveService;
 
 // --------------------------------------------------------------------------------------------------------------------
 application::application()
-: _implementation(new implementation())
+: _implementation(std::make_unique<implementation>())
 {
 	if (_implementation)
 	{
@@ -108,7 +103,7 @@ void application::stop(int run_result)
 // --------------------------------------------------------------------------------------------------------------------
 int application::run(unsigned nu_threads)
 {
-	bool isRunning = NULL != implementation::sApplication.get();
+	bool isRunning = NULL != implementation::sApplication;
 	if (isRunning || _implementation->_services.empty())
 	{
 		return -1;
@@ -123,7 +118,7 @@ int application::run(unsigned nu_threads)
 	{	// Initialize threads
 		shared_service primary = _implementation->_services.front().lock();
 		_implementation->_threads.resize(nu_threads - 1);
-		for(int i = _implementation->_threads.size(); i--; )
+		for(size_t i = _implementation->_threads.size(); i--; )
 		{
 			auto action = std::make_shared<task>([this, i]()
 			{
@@ -163,7 +158,7 @@ bool application::post(const shared_task& action)
 // --------------------------------------------------------------------------------------------------------------------
 application* application::get() 
 { 
-	application* app = implementation::sApplication.get();
+	application* app = implementation::sApplication;
 	ASSERT(app || !"You must call application::run before calling this std::function."); 
 	return app; 
 }
@@ -204,7 +199,7 @@ shared_service application::service_at(size_t index)
 // --------------------------------------------------------------------------------------------------------------------
 shared_service application::active_service() const
 {
-	return NULL == _implementation.get() ? shared_service() : *_implementation->_active_service;
+	return *implementation::sActiveService;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -295,8 +290,8 @@ void application::unregister(const shared_service& service)
 	{
 		implementation::shared_lock lock(_implementation->_service_mutex);
 		auto item = find_if(_implementation->_services.begin(),
-								 _implementation->_services.end(),
-								 [&service](const weak_service& srv) 
+							_implementation->_services.end(),
+							[&service](const weak_service& srv) 
 		{
 			return srv.lock() == service;
 		});
@@ -315,8 +310,8 @@ void application::unregister(const shared_service& service)
 void application::process_services()
 {
 	shared_service choosen;
-	_implementation->_active_service.reset(&choosen);
-	implementation::sApplication.reset(this);
+	implementation::sActiveService = &choosen;
+	implementation::sApplication = this;
 	choose_service();
 	while(choosen) 
 	{
@@ -324,14 +319,14 @@ void application::process_services()
 		ASSERT(!choosen->_tasks.empty());
 		(*choosen->_tasks.pop())();
 	}
-	_implementation->_active_service.reset();
-	implementation::sApplication.reset();
+	implementation::sActiveService->reset();
+	implementation::sApplication = NULL;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 void application::choose_service()
 {
-	shared_service& active = *_implementation->_active_service;
+	shared_service& active = *implementation::sActiveService;
 	if (active)
 	{	// Requeue any service that has not been stopped
 		service::execution_state state = active->_state.load();

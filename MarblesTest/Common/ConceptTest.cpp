@@ -23,8 +23,6 @@
 
 #include <common/concept.h>
 
-BOOST_AUTO_TEST_SUITE(serialization)
-
 // --------------------------------------------------------------------------------------------------------------------
 struct nonKeyable { int list[1024]; };
 struct nonconstKeyable : public nonKeyable
@@ -40,18 +38,14 @@ struct keyable : public constKeyable
 	int operator[](const int index) { return list[index]; }
 };
 
-BOOST_AUTO_TEST_CASE( keyable_test )
+TEST( serialization, keyable_test )
 {
-	BOOST_MESSAGE( "concept.keyable" );
-	
-	BOOST_CHECK_EQUAL(marbles::keyable<int>::value, false);
-	BOOST_CHECK_EQUAL(marbles::keyable<nonKeyable>::value, false);
-	BOOST_CHECK_EQUAL(marbles::keyable<nonconstKeyable>::value, true);
-	BOOST_CHECK_EQUAL(marbles::keyable<constKeyable>::value, true);
-	BOOST_CHECK_EQUAL(marbles::keyable<keyable>::value, true);
+	EXPECT_EQ(marbles::keyable<int>::value, false);
+	EXPECT_EQ(marbles::keyable<nonKeyable>::value, false);
+	EXPECT_EQ(marbles::keyable<nonconstKeyable>::value, true);
+	EXPECT_EQ(marbles::keyable<constKeyable>::value, true);
+	EXPECT_EQ(marbles::keyable<keyable>::value, true);
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-BOOST_AUTO_TEST_SUITE_END()
 
 // End of file --------------------------------------------------------------------------------------------------------

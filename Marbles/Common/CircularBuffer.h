@@ -22,16 +22,18 @@
 // --------------------------------------------------------------------------------------------------------------------
 #pragma once
 
+#include <type_traits> 
+
 namespace marbles
 {
 
 // Lock-free circular buffer
-template<typename T, unsigned N> class circular_buffer
+template<typename T, size_t N> 
+class alignas(std::alignment_of<T>::value) circular_buffer
 {
 public:
 	circular_buffer()
-	: _items(reinterpret_cast<T*>(&_buffer[0]))
-	, _start(0)
+	: _start(0)
 	, _end(0)
 	, _init(0)
 	, _clean(0)
@@ -85,7 +87,7 @@ public:
 		} while (!_init.compare_exchange_weak(reserved, next));
 		
 		// Element reserved, assign the value
-		new (&_items[reserved]) T(std::forward<T>(value));
+		new (items() + reserved) T(std::forward<T>(value));
 
 		// Syncronize the end position with the updated reserved position
 		const unsigned persist = reserved;
@@ -119,8 +121,8 @@ public:
 			next = (start + 1) % (N + 1);
 		} while(!_start.compare_exchange_weak(start, next));
 		
-		out = std::move(_items[start]);
-		_items[start].~T();
+		out = std::move(*(items() + start));
+		(items() + start)->~T();
 
 		// Syncronize the clean position with the updated start position
 		const unsigned persist = start;
@@ -143,9 +145,9 @@ public:
 		return tmp;
 	}
 private:
-	// Todo: We really should control construction and destruction
-	unsigned char			_buffer[sizeof(T)*(N + 1)]; // we have some alignment problems here
-	T*						_items;
+	T*                      items()       { return reinterpret_cast<T*>(&_reserve[0]); }
+	const T*                items() const { return reinterpret_cast<const T*>(&_reserve[0]); }
+	char					_reserve[sizeof(T) * (N + 1)];
 	std::atomic<unsigned>	_start;
 	std::atomic<unsigned>	_end;
 	std::atomic<unsigned>	_init;

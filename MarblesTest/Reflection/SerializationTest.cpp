@@ -24,11 +24,8 @@
 #include "FooBar.h"
 #include <serialization/serializer.h>
 
-BOOST_AUTO_TEST_SUITE( serialization )
-
-BOOST_AUTO_TEST_CASE( text_serialization )
+TEST(serialization, text_serialization )
 {
-	BOOST_MESSAGE( "serialization.format.text" );
 	Foo foo;
 	foo.x = 3;
 	foo.y = 2;
@@ -44,15 +41,15 @@ BOOST_AUTO_TEST_CASE( text_serialization )
 	// Serialize same data should yield same result
 	std::stringstream ss1;
 	std::stringstream ss2;
-	BOOST_CHECK(marbles::serialization::serializer::text(ss1, foo));
-	BOOST_CHECK(marbles::serialization::serializer::text(ss2, foo));
-	BOOST_CHECK_EQUAL(ss1.str(), ss2.str());
+	EXPECT_EQ(true, marbles::serialization::serializer::text(ss1, foo));
+	EXPECT_EQ(true, marbles::serialization::serializer::text(ss2, foo));
+	EXPECT_EQ(ss1.str(), ss2.str());
 	
 	// Serialize different should yield different result
 	foo.x = 1;
 	std::stringstream ss3;
-	BOOST_CHECK(marbles::serialization::serializer::text(ss3, foo));
-	BOOST_CHECK_NE(ss1.str(), ss3.str());
+	EXPECT_EQ(true, marbles::serialization::serializer::text(ss3, foo));
+	EXPECT_NE(ss1.str(), ss3.str());
 
 	// Reading outputed data should yield same results
 	{
@@ -66,22 +63,22 @@ BOOST_AUTO_TEST_CASE( text_serialization )
 		foo2.bar.shared_foo = std::make_shared<Foo>();
 		foo2.bar.weak_foo = foo2.bar.shared_foo;
 
-		BOOST_CHECK(marbles::serialization::serializer::from(ss1, foo2));
-		BOOST_CHECK_NE(foo2.bar.reference_foo, &foo);
-		BOOST_CHECK_EQUAL(foo2.bar.reference_foo, &foo2);
+		EXPECT_EQ(true, marbles::serialization::serializer::from(ss1, foo2));
+		EXPECT_NE(foo2.bar.reference_foo, &foo);
+		EXPECT_EQ(foo2.bar.reference_foo, &foo2);
 
-		BOOST_CHECK(marbles::serialization::serializer::from(ss2, foo_ref));
-		BOOST_CHECK_NE(static_cast<Foo*>(NULL), foo_ref);
+		EXPECT_EQ(true, marbles::serialization::serializer::from(ss2, foo_ref));
+		EXPECT_NE(static_cast<Foo*>(NULL), foo_ref);
 		if (NULL != foo_ref)
 		{
-			BOOST_CHECK_EQUAL(foo_ref->x, foo2.x);
-			BOOST_CHECK_EQUAL(foo_ref->y, foo2.y);
-			BOOST_CHECK_EQUAL(foo_ref->z, foo2.z);
-			BOOST_CHECK_EQUAL(foo_ref->bar.reference_foo, foo_ref);
-			BOOST_CHECK_EQUAL(foo2.bar.reference_foo, &foo2);
-			BOOST_CHECK_EQUAL(foo_ref->bar.shared_foo->x, foo2.bar.shared_foo->x);
-			BOOST_CHECK_EQUAL(foo_ref->bar.shared_foo->y, foo2.bar.shared_foo->y);
-			BOOST_CHECK_EQUAL(foo_ref->bar.shared_foo->z, foo2.bar.shared_foo->z);
+			EXPECT_EQ(foo_ref->x, foo2.x);
+			EXPECT_EQ(foo_ref->y, foo2.y);
+			EXPECT_EQ(foo_ref->z, foo2.z);
+			EXPECT_EQ(foo_ref->bar.reference_foo, foo_ref);
+			EXPECT_EQ(foo2.bar.reference_foo, &foo2);
+			EXPECT_EQ(foo_ref->bar.shared_foo->x, foo2.bar.shared_foo->x);
+			EXPECT_EQ(foo_ref->bar.shared_foo->y, foo2.bar.shared_foo->y);
+			EXPECT_EQ(foo_ref->bar.shared_foo->z, foo2.bar.shared_foo->z);
 			delete foo_ref;
 			foo_ref = NULL;
 		}
@@ -100,16 +97,14 @@ BOOST_AUTO_TEST_CASE( text_serialization )
 	foo.bar.shared_foo->z = 3;
 	foo.bar.weak_foo = foo.bar.shared_foo;
 
-	BOOST_CHECK(marbles::serialization::serializer::text(sub, foo, foo.bar.shared_foo));
+	EXPECT_EQ(true, marbles::serialization::serializer::text(sub, foo, foo.bar.shared_foo));
 	foo.bar.shared_foo.reset();
-	BOOST_CHECK(marbles::serialization::serializer::from(sub, foo));
+	EXPECT_EQ(true, marbles::serialization::serializer::from(sub, foo));
 
-	BOOST_CHECK_NE(foo.bar.shared_foo, org);
-	BOOST_CHECK_EQUAL(foo.bar.shared_foo->x, org->x);
-	BOOST_CHECK_EQUAL(foo.bar.shared_foo->y, org->y);
-	BOOST_CHECK_EQUAL(foo.bar.shared_foo->z, org->z);
+	EXPECT_NE(foo.bar.shared_foo, org);
+	EXPECT_EQ(foo.bar.shared_foo->x, org->x);
+	EXPECT_EQ(foo.bar.shared_foo->y, org->y);
+	EXPECT_EQ(foo.bar.shared_foo->z, org->z);
 
 	marbles::reflection::type_info::clear_registrar();
 }
-
-BOOST_AUTO_TEST_SUITE_END()

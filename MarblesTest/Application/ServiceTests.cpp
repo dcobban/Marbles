@@ -2,8 +2,6 @@
 #include <application/service.h>
 #include <application/application.h>
 
-BOOST_AUTO_TEST_SUITE( service )
-
 struct ExecutedService
 {
 	bool executed;
@@ -29,12 +27,14 @@ struct ApplicationStop
 	typedef UpdateEvent::shared_handler UpdateHandler;
 	int count;
 	int stop;
+	int label;
 	UpdateEvent update;
 	UpdateHandler updateHandler;
 
-	ApplicationStop(const int end) 
+	ApplicationStop(const int id, const int end) 
 	: count(0)
 	, stop(end)
+	, label(id)
 	{
 		updateHandler = update += [this]() { this->OnUpdate(); };
 		update();
@@ -60,26 +60,27 @@ struct ApplicationStop
 	}
 };
 
-BOOST_AUTO_TEST_CASE( single_thread_test )
+TEST(service, single_thread_test)
 {
-	BOOST_MESSAGE( "service.single_thread_test" );
-
 	const int numCyclesToStop = 1000;
 	bool randomTask = false;
+	int label = 0;
 	marbles::application app;
 	marbles::shared_service service = app.start<ExecutedService>();
 	std::vector<marbles::shared_service> racers;
-	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
-	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
-	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
-	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
-	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(label++, numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(label++, numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(label++, numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(label++, numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(label++, numCyclesToStop));
 
-	app.post(std::make_shared<marbles::task>([&randomTask]() { randomTask = true; }));
+	app.post(std::make_shared<marbles::task>([&randomTask]() { 
+		randomTask = true; 
+	}));
 	app.run(1);
 
-	BOOST_CHECK(randomTask);
-	BOOST_CHECK(service->provider<ExecutedService>()->executed);
+	EXPECT_EQ(true, randomTask);
+	EXPECT_EQ(true, service->provider<ExecutedService>()->executed);
 	marbles::shared_service winner = *racers.begin();
 	for(auto i : racers)
 	{
@@ -89,28 +90,29 @@ BOOST_AUTO_TEST_CASE( single_thread_test )
 		}
 	}
 	const int stopCount = winner->provider<ApplicationStop>()->count;
-	BOOST_CHECK_EQUAL(numCyclesToStop, stopCount);
+	EXPECT_EQ(numCyclesToStop, stopCount);
 }
 
-BOOST_AUTO_TEST_CASE( multiple_thread_test )
+TEST(service, multiple_thread_test)
 {
-	BOOST_MESSAGE( "service.multiple_thread_test" );
 	const int numCyclesToStop = 1000;
 	bool randomTask = false;
 	marbles::application app;
 	marbles::shared_service service = app.start<ExecutedService>();
 	std::vector<marbles::shared_service> racers;
-	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
-	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
-	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
-	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
-	racers.push_back(app.start<ApplicationStop>(numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(0, numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(1, numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(2, numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(3, numCyclesToStop));
+	racers.push_back(app.start<ApplicationStop>(4, numCyclesToStop));
 
-	app.post(std::make_shared<marbles::task>([&randomTask]() { randomTask = true; }));
+	app.post(std::make_shared<marbles::task>([&randomTask]() { 
+		randomTask = true; 
+	}));
 	app.run();
 
-	BOOST_CHECK(randomTask);
-	BOOST_CHECK(service->provider<ExecutedService>()->executed);
+	EXPECT_EQ(true, randomTask);
+	EXPECT_EQ(true, service->provider<ExecutedService>()->executed);
 	marbles::shared_service winner = *racers.begin();
 	for(auto i : racers)
 	{
@@ -120,7 +122,5 @@ BOOST_AUTO_TEST_CASE( multiple_thread_test )
 		}
 	}
 	const int stopCount = winner->provider<ApplicationStop>()->count;
-	BOOST_CHECK_EQUAL(numCyclesToStop, stopCount);
+	EXPECT_EQ(numCyclesToStop, stopCount);
 }
-
-BOOST_AUTO_TEST_SUITE_END()

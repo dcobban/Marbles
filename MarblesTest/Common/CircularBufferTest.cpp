@@ -24,70 +24,65 @@
 #include <Common/CircularBuffer.h>
 #include <thread>
 
-BOOST_AUTO_TEST_SUITE( circular_buffer )
-
-BOOST_AUTO_TEST_CASE( basic_operations )
+TEST(circular_buffer, basic_operations)
 {
-	BOOST_MESSAGE( "circular_buffer.basic_operations" );
-
 	const int size = 10;
 	marbles::circular_buffer<int, size> buffer;
 
 	int pop = 0;
 	int push = 0;
 
-	BOOST_CHECK(buffer.empty());
+	EXPECT_EQ(true, buffer.empty());
 
 	while (buffer.try_push(push))
 	{
 		++push;
-		BOOST_CHECK_EQUAL(push, buffer.size());
+		EXPECT_EQ(push, buffer.size());
 	}
 
-	BOOST_CHECK(buffer.full());
-	BOOST_CHECK_EQUAL(push, size);
+	EXPECT_EQ(true, buffer.full());
+	EXPECT_EQ(push, size);
 
 	while (buffer.try_pop(pop))
 	{
-		BOOST_CHECK_EQUAL(pop, size - buffer.size() - 1);
+		EXPECT_EQ(pop, size - buffer.size() - 1);
 	}
 
-	BOOST_CHECK(buffer.empty());
+	EXPECT_EQ(true, buffer.empty());
 
 	while (buffer.try_push(push))
 	{
 		++push;
 		if (push % 2)
 		{
-			BOOST_CHECK_EQUAL(++pop, buffer.pop());
+			EXPECT_EQ(++pop, buffer.pop());
 		}
 	}
 
-	BOOST_CHECK(buffer.full());
+	EXPECT_EQ(true, buffer.full());
 
 	int dummy;
 	while (buffer.try_pop(dummy))
 	{
-		BOOST_CHECK_EQUAL(++pop, dummy);
+		EXPECT_EQ(++pop, dummy);
 	}
 
-	BOOST_CHECK(buffer.empty());
+	EXPECT_EQ(true, buffer.empty());
 }
 
-BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
+TEST(circular_buffer, multi_threaded_push_pop)
 {
-	BOOST_MESSAGE("circular_buffer.multi_threaded_push");
-	const int quantity = 150;
-	const int numProducers = 15;
+	const int32_t quantity = 150;
+	const int32_t numProducers = 15;
 
-	marbles::circular_buffer<int, numProducers*quantity> data;
-	marbles::circular_buffer<int, numProducers*quantity> consumerData;
+	marbles::circular_buffer<int32_t, numProducers*quantity> data;
+	marbles::circular_buffer<int32_t, numProducers*quantity> consumerData;
 	std::array<std::thread, numProducers> producerThreads;
 	for (auto id = numProducers; id--;)
 	{
 		std::thread producer([&data, id, quantity]()
 		{
-			for (int i = quantity; i--;)
+			for (auto i = quantity; i--;)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				data.push(id);
@@ -117,15 +112,14 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 
 	for (auto sum : tally)
 	{
-		BOOST_CHECK_EQUAL(sum, quantity);
+		EXPECT_EQ(sum, quantity);
 	}
 
-	BOOST_MESSAGE("circular_buffer.multi_threaded_pop");
-	const int numConsumers = 6;
+	const size_t numConsumers = 6;
 	std::array<tally_t, numConsumers> tallySheet;
-	for (auto& tally : tallySheet)
+	for (auto& count : tallySheet)
 	{
-		for (auto& value : tally)
+		for (auto& value : count)
 		{
 			value = 0;
 		}
@@ -134,13 +128,13 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 	std::array<std::thread, numConsumers> consumerThreads;
 	for (auto id = numConsumers; id--;)
 	{
-		tally_t& tally = tallySheet[id];
-		std::thread consumer([&tally, &consumerData]()
+		tally_t& count = tallySheet[id];
+		std::thread consumer([&count, &consumerData]()
 		{
 			int value = 0;
 			while (consumerData.try_pop(value))
 			{
-				++tally[value];
+				++count[value];
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
 		});
@@ -158,23 +152,22 @@ BOOST_AUTO_TEST_CASE(multi_threaded_push_pop)
 		value = 0;
 	}
 
-	for (auto& tally : tallySheet)
+	for (auto& count : tallySheet)
 	{
-		for (int i = tally.size(); i--;)
+		for (auto i = count.size(); i--;)
 		{
-			finalTally[i] += tally[i];
+			finalTally[i] += count[i];
 		}
 	}
 
 	for (auto& sum : finalTally)
 	{
-		BOOST_CHECK_EQUAL(sum, quantity);
+		EXPECT_EQ(sum, quantity);
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_thread_usage)
+TEST(circular_buffer, multi_thread_usage)
 {
-	BOOST_MESSAGE( "circular_buffer.multi_thread_usage" );
 	const int quantity = 150;
 	const int bufferSize = 10;
 	const int numProducers = 15;
@@ -242,7 +235,7 @@ BOOST_AUTO_TEST_CASE(multi_thread_usage)
 	int k = 0;
 	for(auto amount : tally)
 	{
-		BOOST_CHECK_EQUAL(amount, quantity);
+		EXPECT_EQ(amount, quantity);
 		threads[k++].join();
 	}
 
@@ -259,5 +252,3 @@ BOOST_AUTO_TEST_CASE(multi_thread_usage)
 
 	accumulation.clear();
 }
-
-BOOST_AUTO_TEST_SUITE_END()

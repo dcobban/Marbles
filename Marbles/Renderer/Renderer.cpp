@@ -176,7 +176,7 @@ bool renderer::setPixelFormat(const PIXELFORMATDESCRIPTOR& pixelFormat)
 	tracePixelFormat(pixelFormat);
 
 	_pixelFormatId = ::ChoosePixelFormat(reinterpret_cast<HDC>(_deviceContext), &pixelFormat);
-	const bool result = ::SetPixelFormat(reinterpret_cast<HDC>(_deviceContext), _pixelFormatId, &pixelFormat);
+	const bool result = 0 != ::SetPixelFormat(reinterpret_cast<HDC>(_deviceContext), _pixelFormatId, &pixelFormat);
 
 	PIXELFORMATDESCRIPTOR pixelFormatDesc;
 	memset(&pixelFormatDesc, 0, sizeof(PIXELFORMATDESCRIPTOR));
@@ -206,7 +206,8 @@ bool renderer::connect(const handle hWindow, const PIXELFORMATDESCRIPTOR& pixelF
 	if (hWindow != NULL)
 	{
 		disconnect();
-		TRACE_INFO("Renderer", "Connecting Window (0x%08x) to marbles::renderer(0x%08x).\n", hWindow, this);
+		TRACE_INFO("Renderer", "Connecting Window (0x%016x) to marbles::renderer(0x%016x).\n", 
+			hWindow, this);
 		_windowHandle = hWindow;
 		reinterpret_cast<HDC&>(_deviceContext) = ::GetDC(reinterpret_cast<HWND>(_windowHandle));
 		if (NULL == _deviceContext && setPixelFormat(pixelFormat))
@@ -223,7 +224,8 @@ bool renderer::connect(const handle hWindow, const PIXELFORMATDESCRIPTOR& pixelF
 	}
 
 	disconnect();
-	TRACE_INFO("Renderer", "Unable to connect window(0x%08x) to marbles::renderer(0x%08x).\n", hWindow, this);
+	TRACE_INFO("Renderer", "Unable to connect window(0x%08x) to marbles::renderer(0x%08x).\n", 
+		reinterpret_cast<uint64_t>(hWindow), reinterpret_cast<uint64_t>(this));
 	return false;
 }
 
@@ -232,7 +234,8 @@ bool renderer::disconnect()
 	const bool renderingContextEnabled = NULL != _deviceContext && NULL != _renderingContext;
 	if (renderingContextEnabled)
 	{
-		TRACE_INFO("Renderer", "Disconnecting Window (0x%08x) from marbles::renderer(0x%08x).\n", _windowHandle, this);
+		TRACE_INFO("Renderer", "Disconnecting Window (0x%08x) from marbles::renderer(0x%08x).\n", 
+			_windowHandle, this);
 		wglMakeCurrent(reinterpret_cast<HDC>(_deviceContext), NULL);
 		wglDeleteContext(reinterpret_cast<HGLRC>(_renderingContext));
 		VERIFY(::ReleaseDC(reinterpret_cast<HWND>(_windowHandle), reinterpret_cast<HDC>(_deviceContext)));

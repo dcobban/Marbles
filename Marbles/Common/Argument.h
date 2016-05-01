@@ -46,13 +46,13 @@ public:
 	}
 
 	// returns number of arguments parsed.
-	template<typename T> int32_t parse(T& out, int32_t argc, char_t** argv)
+	template<typename T> int parse(T& out, int argc, char_t** argv)
 	{
 		reflection::shared_type type = reflection::type_of<T>(out);
 		for (auto& option : _arguments)
 		{
 			hash_t hashName = reflection::type_info::hash(option._name);
-			uint32_t memberIndex = type->memberIndex(hashName);
+			const size_t memberIndex = type->memberIndex(hashName);
 			if (0 <= memberIndex && memberIndex < type->members().size())
 			{
 				option._member = type->members()[memberIndex];
@@ -63,7 +63,7 @@ public:
 			}
 		}
 
-		int32_t count = 0;
+		int count = 0;
 		for (int pos = 1; pos < argc;)
 		{
 			translateArgument(out, pos, argc, argv);
@@ -80,7 +80,7 @@ private:
 		reflection::shared_member _member;
 	};
 
-	const option* findOption(int position, int argc, char** argv) const
+	const option* findOption(int position, int /*argc*/, char** argv) const
 	{
 		auto arg = std::find_if(std::begin(_arguments), std::end(_arguments), [=](const option& arg)
 		{

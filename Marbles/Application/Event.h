@@ -25,7 +25,7 @@
 
 #include <application\service.h>
 #include <algorithm>
-#include <tuple>
+//#include <tuple>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
@@ -52,7 +52,7 @@ private:
 	struct message_info
 	{
 		std::shared_ptr<event_info> _event;
-		std::tuple<Args...> _params;
+		//std::tuple<Args...> _params;
 		shared_task _process_event;
 		
 		message_info();
@@ -166,7 +166,7 @@ inline void event<Args...>::operator()(const Args&&... args)
 	{
 		(*param)->_event = _event;
 	}
-	(*param)->_params = std::make_tuple(args...);
+	//(*param)->_params = std::make_tuple(args...);
 
 	for (auto& srv : _services)
 	{
@@ -191,7 +191,7 @@ inline void event<Args...>::clear()
 template<typename... Args>
 event<Args...>::message_info::message_info()
 {
-	auto& fn = [this]() { this->message_task(gens<sizeof...(Args)>::type());	};
+	auto fn = [this]() { this->message_task(gens<sizeof...(Args)>::type()); };
 	_process_event = std::make_shared<task>(std::move(fn));
 }
 
@@ -202,7 +202,7 @@ void event<Args...>::message_info::message_task(seq<S...>)
 {
 	if (_event)
 	{
-		shared_service& active = service::active();
+		shared_service active = service::active();
 		for (auto& handler : _event->_handlers)
 		{
 			if (active == handler._service.lock() && handler._handler)

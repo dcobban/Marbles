@@ -25,7 +25,6 @@
 
 #include <Common/CircularBuffer.h>
 #include <Common/Common.h>
-#include <boost/thread/mutex.hpp>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles

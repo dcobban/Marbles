@@ -184,6 +184,9 @@
     <ClCompile Include="Renderer\Renderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
+    <ClCompile Include="Common\Source\memory.cpp">
+      <Filter>Common\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Sequencer\readme">

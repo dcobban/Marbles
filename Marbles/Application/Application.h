@@ -80,7 +80,7 @@ inline shared_service application::start(ARG&&... args)
 		service* ptr = srv.get();
 		srv->post(std::make_shared<task>([ptr, args...]() 
 		{ 
-			ptr->make_provider<T>(std::forward<ARG>(args)...); 
+			ptr->make_provider<T>(args...); 
 		}));
 	}
 	return srv;
