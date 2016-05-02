@@ -184,7 +184,7 @@
     <ClCompile Include="Renderer\Renderer.cpp">
       <Filter>Rendering</Filter>
     </ClCompile>
-    <ClCompile Include="Common\Source\memory.cpp">
+    <ClCompile Include="Common\Source\Memory.cpp">
       <Filter>Common\Source</Filter>
     </ClCompile>
   </ItemGroup>

@@ -14,6 +14,7 @@
     <ProjectGuid>{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}</ProjectGuid>
     <RootNamespace>MarblesTest</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -46,19 +47,24 @@
     <LinkIncremental>true</LinkIncremental>
     <TargetName>$(ProjectName)d</TargetName>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <CodeAnalysisRuleSet>SecurityRules.ruleset</CodeAnalysisRuleSet>
+    <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
+    <OutDir>$(SolutionDir)build\$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>$(SolutionDir)build\$(Platform)\obj\$(ProjectName)\$(Configuration)\</IntDir>
     <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
     <LinkIncremental>false</LinkIncremental>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
+    <CodeAnalysisRuleSet>SecurityRules.ruleset</CodeAnalysisRuleSet>
+    <PreLinkEventUseInBuild>false</PreLinkEventUseInBuild>
+    <OutDir>$(SolutionDir)build\$(Platform)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)Marbles;$(SolutionDir)external\googletest\googletest\include;$(SolutionDir)external\googletest\googletest</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <BasicRuntimeChecks>4172</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>MarblesTest.h</PrecompiledHeaderFile>
@@ -67,22 +73,23 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)\tools\boost\main\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Console</SubSystem>
     </Link>
     <PostBuildEvent>
       <Message>Starting Tests...</Message>
-      <Command>"$(TargetDir)\$(TargetName).exe" --result_code=no --report_level=no </Command>
+      <Command>"$(TargetDir)$(TargetName).exe" --result_code=no --report_level=no </Command>
     </PostBuildEvent>
     <CustomBuildStep />
     <CustomBuildStep />
     <CustomBuildStep />
     <PreBuildEvent>
-      <Command>$(SolutionDir)external/setup.bat</Command>
+      <Command>call "$(SolutionDir)external\setup.bat"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Setup external dependencies</Message>
@@ -104,7 +111,8 @@
       <TreatWarningAsError>true</TreatWarningAsError>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
-      <BasicRuntimeChecks>4172</BasicRuntimeChecks>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\tools\boost\main\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -115,13 +123,13 @@
     </Link>
     <PostBuildEvent>
       <Message>Starting Tests...</Message>
-      <Command>"$(TargetDir)\$(TargetName).exe" --result_code=no --report_level=no </Command>
+      <Command>"$(TargetDir)$(TargetName).exe" --result_code=no --report_level=no </Command>
     </PostBuildEvent>
     <CustomBuildStep />
     <CustomBuildStep />
     <CustomBuildStep />
     <PreBuildEvent>
-      <Command>$(SolutionDir)external/setup.bat</Command>
+      <Command>call "$(SolutionDir)external\setup.bat"</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Setup external dependencies</Message>

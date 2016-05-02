@@ -160,6 +160,7 @@ template<typename T> struct object::To<T*>
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+#pragma warning ( disable : 4172 ) // C4172 : multiple copy constructors specified
 template<typename T> inline T& object::as()
 {
 	if (isReference())
@@ -169,6 +170,7 @@ template<typename T> inline T& object::as()
 	}
 	return To<T>::from(*this); 
 }
+#pragma warning ( default : 4172 ) // C4172 : multiple copy constructors specified
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> inline	T& object::as() const
