@@ -29,10 +29,10 @@ TEST(reflection_object, reflection_object_field )
 {
 	Foo foo;
 	float half = 0.5f;
-	double tiny = std::numeric_limits<double>::min();
+	double tiny = marbles::numeric_limits<double>::min();
 	int negative = -1; 
 	bool question = false; 
-	unsigned long long huge = std::numeric_limits<unsigned long long>::max(); 
+	unsigned long long huge = marbles::numeric_limits<unsigned long long>::max();
 
 	object foo_obj(foo);
 	object half_obj(half);

@@ -36,9 +36,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Common\CircularBuffer.h">
-      <Filter>Common</Filter>
-    </ClInclude>
     <ClInclude Include="Common\Common.h">
       <Filter>Common</Filter>
     </ClInclude>
@@ -56,9 +53,6 @@
     </ClInclude>
     <ClInclude Include="Common\Hash.h">
       <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\Source\Platform_Win32.h">
-      <Filter>Common\Source</Filter>
     </ClInclude>
     <ClInclude Include="Behaviour\Agent.h">
       <Filter>Behaviour</Filter>
@@ -147,6 +141,18 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Common\Argument.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Source\Platform_Win32.h">
+      <Filter>Application\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\AtomicBuffer.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\AtomicList.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\Allocator.h">
       <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>

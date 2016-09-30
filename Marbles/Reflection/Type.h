@@ -40,15 +40,15 @@ class object;
 class type_info
 {
 public:
-	typedef std::vector<shared_type>	type_list;
-	typedef std::vector<shared_member>	member_list;
-	typedef std::vector<declaration>	declaration_list;
+	typedef vector<shared_type>	    type_list;
+	typedef vector<shared_member>	member_list;
+	typedef vector<declaration>	    declaration_list;
 	class builder;
 
 	type_info();
 	~type_info();
 
-	const std::string&		name() const;
+	const char* 		    name() const;
 	hash_t					hashName() const;
 	size_t					size() const						{ return mSize; }
 	size_t					alignment() const					{ return static_cast<size_t>(1) << mAlignment; }
@@ -90,7 +90,7 @@ private:
 	// EnumeratorFn
 	// AppendFn
 
-	typedef std::map<hash_t, shared_type> TypeMap; // remove std::map
+	typedef std::map<hash_t, shared_type> TypeMap; // remove map
 	static TypeMap sRegistrar;
 };
 
@@ -126,7 +126,7 @@ private:
 	template<typename T> struct template_traits;
 	template<typename T> friend struct type_of_t;
 
-	std::shared_ptr<type_info> mBuild;
+	shared_ptr<type_info> mBuild;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -134,7 +134,7 @@ template<typename T> struct type_info::builder::template_traits
 {
 	static unsigned parameter_count()					{ return 0; }
 	static declaration parameter_at(unsigned /*index*/)	{ return declaration(); }
-	static std::string type_name(const char* name)		{ return std::string(name); }
+	static string type_name(const char* name)		    { return string(name); }
 };
 
 // Review(danc): This only works for type_info parameters not numeric template parameters
@@ -156,9 +156,9 @@ template<typename T> struct type_info::builder::template_traits
 			declaration parameters[] = { BUILD_PARAMETER_TYPE_LIST(N) }; \
 			return (0 <= index && index < N) ? parameters[index] : declaration(); \
 		} \
-		static std::string type_name(const char* name) \
+		static string type_name(const char* name) \
 		{ \
-			std::stringstream ss; \
+			stringstream ss; \
 			int max_chars = 256; \
 			while ('\0' != *name && '<' != *name && max_chars--) \
 			{ \
@@ -194,8 +194,8 @@ BUILD_TEMPLATE_TRAITS(12);
 template<typename T> 
 shared_type type_info::builder::create(const char* name)
 {	
-	std::shared_ptr<type_info> candidate = std::shared_ptr<type_info>(new type_info());
-	shared_type type = std::const_pointer_cast<const type_info>(candidate);
+	shared_ptr<type_info> candidate = shared_ptr<type_info>(new type_info());
+	shared_type type = const_pointer_cast<const type_info>(candidate);
 
 	unsigned numberOfParameters = template_traits<typename by_value<T>::type>::parameter_count(); 
 	candidate->mParameters.reserve(numberOfParameters);
@@ -203,9 +203,9 @@ shared_type type_info::builder::create(const char* name)
 	{
 		candidate->mParameters.push_back(template_traits<typename by_value<T>::type>::parameter_at(i)); 
 	}
-	std::string fullname = template_traits<typename by_value<T>::type>::type_name(name);
-	std::shared_ptr< memberT<T> > mem = std::make_shared< memberT<T> >(fullname, type, "Default value type_info member.");
-	candidate->mByValue = declaration(std::static_pointer_cast<member>(mem)); 
+	string fullname = template_traits<typename by_value<T>::type>::type_name(name);
+	shared_ptr< memberT<T> > mem = make_shared< memberT<T> >(move(fullname), type, "Default value type_info member.");
+	candidate->mByValue = declaration(static_pointer_cast<member>(mem)); 
 
 	if (type_info::_register(type))
 	{
@@ -219,7 +219,7 @@ shared_type type_info::builder::create(const char* name)
 	if (mBuild)
 	{
 		setCreator(&object::create<void>);
-		setAlignment(std::alignment_of<T>::value);
+		setAlignment(alignment_of<T>::value);
 		setSize(sizeof(T));
 	}
 
@@ -235,7 +235,7 @@ template<typename T> void type_info::builder::addMember(const char* name, const 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> void type_info::builder::addMember(const char* name, T member, const char* description)
 {
-	shared_member memberInfo = std::make_shared< memberT<T> >(name, member, description);
+	shared_member memberInfo = make_shared< memberT<T> >(name, member, description);
 	if (memberInfo)
 	{
 		mBuild->mMembers.push_back(memberInfo);

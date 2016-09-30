@@ -110,13 +110,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Common\Argument.h" />
-    <ClInclude Include="Common\CircularBuffer.h" />
+    <ClInclude Include="Common\AtomicBuffer.h" />
+    <ClInclude Include="Common\Allocator.h" />
     <ClInclude Include="Common\Common.h" />
     <ClInclude Include="Common\Concept.h" />
     <ClInclude Include="Common\Definitions.h" />
     <ClInclude Include="Common\Function_Delayed.h" />
     <ClInclude Include="Common\Function_Traits.h" />
     <ClInclude Include="Common\Hash.h" />
+    <ClInclude Include="Common\AtomicList.h" />
     <ClInclude Include="Common\Memory.h" />
     <ClInclude Include="Common\Source\Platform_Win32.h" />
     <ClInclude Include="Behaviour\Agent.h" />

@@ -32,22 +32,22 @@ TEST(serialization, text_serialization )
 	foo.z = 1;
 
 	foo.bar.reference_foo = &foo;
-	foo.bar.shared_foo = std::make_shared<Foo>();
+	foo.bar.shared_foo = marbles::make_shared<Foo>();
 	foo.bar.shared_foo->x = 1;
 	foo.bar.shared_foo->y = 2;
 	foo.bar.shared_foo->z = 3;
 	foo.bar.weak_foo = foo.bar.shared_foo;
 
 	// Serialize same data should yield same result
-	std::stringstream ss1;
-	std::stringstream ss2;
+    marbles::stringstream ss1;
+    marbles::stringstream ss2;
 	EXPECT_EQ(true, marbles::serialization::serializer::text(ss1, foo));
 	EXPECT_EQ(true, marbles::serialization::serializer::text(ss2, foo));
 	EXPECT_EQ(ss1.str(), ss2.str());
 	
 	// Serialize different should yield different result
 	foo.x = 1;
-	std::stringstream ss3;
+    marbles::stringstream ss3;
 	EXPECT_EQ(true, marbles::serialization::serializer::text(ss3, foo));
 	EXPECT_NE(ss1.str(), ss3.str());
 
@@ -60,7 +60,7 @@ TEST(serialization, text_serialization )
 		foo2.bar.reference_zero = NULL;
 		foo2.bar.reference_foo = &foo;
 		foo2.bar.reference2_foo = &foo_ref;
-		foo2.bar.shared_foo = std::make_shared<Foo>();
+		foo2.bar.shared_foo = marbles::make_shared<Foo>();
 		foo2.bar.weak_foo = foo2.bar.shared_foo;
 
 		EXPECT_EQ(true, marbles::serialization::serializer::from(ss1, foo2));
@@ -86,8 +86,8 @@ TEST(serialization, text_serialization )
 
 	// Sub element serialization
 	// 
-	std::stringstream sub;
-	std::shared_ptr<Foo> org = std::make_shared<Foo>();
+    marbles::stringstream sub;
+    marbles::shared_ptr<Foo> org = marbles::make_shared<Foo>();
 
 	// Intialize data 
 	foo.bar.reference_foo = &foo;

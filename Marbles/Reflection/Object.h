@@ -29,7 +29,7 @@ namespace marbles
 namespace reflection
 {
 class object;
-typedef std::vector<object> ObjectList;
+typedef vector<object> ObjectList;
 typedef std::map<hash_t, object> ObjectMap;
 
 #pragma warning(push)
@@ -47,7 +47,7 @@ public:
 							explicit object(const declaration& declaration, 
 											void* pointee);
 							explicit object(const declaration& declaration, 
-											const std::shared_ptr<void>& pointee);
+											const shared_ptr<void>& pointee);
 	template<typename T>	explicit object(T& obj);
 
 	object&					operator=(const object& obj);
@@ -71,7 +71,7 @@ public:
 	shared_type				typeInfo() const		{ return _type_info(); }
 	shared_member			memberInfo() const		{ return mInfo.memberInfo(); }
 	shared_member			memberInfo(const char* name) const;
-	shared_member			memberInfo(const std::string& name) const;
+	shared_member			memberInfo(const string& name) const;
 	shared_member			memberInfo(const path& route) const;
 	shared_member			memberInfo(hash_t hashName) const;
 	const type_info::member_list& members() const	{ return typeInfo()->members(); }
@@ -80,7 +80,7 @@ public:
 	template<typename T>	T& as() const;
 
 	object					at(const char* name) const;
-	object					at(const std::string& name) const;
+	object					at(const string& name) const;
 	object					at(const path& route) const;
 	object					at(const hash_t hashName) const;
 	object					at(const shared_member& member) const;
@@ -103,15 +103,15 @@ private:
 	template<typename T>	struct To;
 	template<typename T>	struct Put;
 
-	bool	_IsZero() const;
+	bool	                _IsZero() const;
 	template<typename T>
-	object& _AssignReference(const object& rhs);
-	object& _AssignZero(const object& zero);
-	void	_SetAddress(void* p);
+	object&                 _AssignReference(const object& rhs);
+	object&                 _AssignZero(const object& zero);
+	void	                _SetAddress(void* p);
 
 	friend class declaration;
 	declaration				mInfo;		// Description of how to interpret mPointee
-	std::shared_ptr<void>	mPointee;	// Generic reference to the object
+	shared_ptr<void>	    mPointee;	// Generic reference to the object
 };
 
 #pragma warning(pop)
@@ -153,7 +153,7 @@ template<typename T> struct object::To<T*>
 {
 	static T*& from(const object& obj)
 	{	// TODO: check readonly flag here
-		typedef std::remove_cv<T>::type NoConstT;
+		typedef remove_cv<T>::type NoConstT;
 		const void* address = &obj.mPointee;
 		return const_cast<T*>(*reinterpret_cast<NoConstT* const *>(address));
 	}
@@ -194,13 +194,13 @@ inline bool object::identical(const object& obj) const
 // --------------------------------------------------------------------------------------------------------------------
 inline object& object::swap(object& obj)
 {
-	std::swap(obj.mInfo, mInfo);
-	std::swap(obj.mPointee, mPointee);
+	marbles::swap(obj.mInfo, mInfo);
+    marbles::swap(obj.mPointee, mPointee);
 	return *this;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-inline shared_member object::memberInfo(const std::string& name) const
+inline shared_member object::memberInfo(const string& name) const
 {
 	return memberInfo(name.c_str());
 }
@@ -226,14 +226,14 @@ inline object object::operator*() const
 	object result;
 	if (isShared())
 	{
-		std::shared_ptr<void>* pointee = reinterpret_cast<std::shared_ptr<void>*>(mPointee.get());
+		shared_ptr<void>* pointee = reinterpret_cast<shared_ptr<void>*>(mPointee.get());
 		object deref(	declaration(typeInfo()->parameters()[0], isConstant()),
 						*pointee);
 		result.swap(deref);
 	}
 	else if (isWeak())
 	{
-		std::weak_ptr<void>* pointee = reinterpret_cast<std::weak_ptr<void>*>(mPointee.get());
+		weak_ptr<void>* pointee = reinterpret_cast<weak_ptr<void>*>(mPointee.get());
 		object deref(	declaration(typeInfo()->parameters()[0], isConstant()),
 						pointee->lock());
 		result.swap(deref);
@@ -259,7 +259,7 @@ template<typename T> inline void object::create(object& obj)
 template<> inline void object::createShared<void>(object& obj) { object invalid; obj.swap(invalid); }
 template<typename T> inline void object::createShared(object& obj)
 {
-	std::shared_ptr<T> pT = std::make_shared<T>();
+	shared_ptr<T> pT = make_shared<T>();
 	obj.Clone(*object(pT));
 }
 
@@ -273,13 +273,13 @@ inline bool object::_IsZero() const
 
 // --------------------------------------------------------------------------------------------------------------------
 inline void object::_SetAddress(void* p) 
-{	// std::shared_ptr<> does not allow us to set a raw pointer without allocating managed data.
-	// Since std::shared_ptr<> uses only the allocated managed data to perform deletion operations 
-	// setting the raw pointer does not put the std::shared_ptr<> into an invalid state.
+{	// shared_ptr<> does not allow us to set a raw pointer without allocating managed data.
+	// Since shared_ptr<> uses only the allocated managed data to perform deletion operations 
+	// setting the raw pointer does not put the shared_ptr<> into an invalid state.
 	
-	// TODO using the C++11 aliasing constructor std::shared_ptr::std::shared_ptr(std::shared_ptr<T>& base, T* alias)
+	// TODO using the C++11 aliasing constructor shared_ptr::shared_ptr(shared_ptr<T>& base, T* alias)
 	// will remove this need.
-	// mPointee = std::shared_ptr<void>(std::shared_ptr<void>(), p);
+	// mPointee = shared_ptr<void>(shared_ptr<void>(), p);
 	mPointee.reset();
 	*reinterpret_cast<void**>(&mPointee) = p;
 }

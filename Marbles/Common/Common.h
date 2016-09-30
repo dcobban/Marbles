@@ -23,24 +23,14 @@
 
 #pragma once
 
-#include <memory>
-#include <functional>
-#include <algorithm>
-#include <vector>
-#include <atomic>
-#include <array>
-#include <limits>
-#include <cassert>
-#include <type_traits>
-#include <tuple>
-
-#include <Common/Function_Traits.h>
-#include <Common/Definitions.h>
-#include <Common/Memory.h>
+#include <common/function_traits.h>
+#include <common/definitions.h>
+#include <common/memory.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
+
 // --------------------------------------------------------------------------------------------------------------------
 template<int ...> struct seq {};
 template<int N, int ...S> struct gens : gens<N - 1, N - 1, S...> {};
@@ -66,9 +56,32 @@ template<typename T> inline void Destruct(T* p) { p->~T(); }
 template<typename T> inline void Delete(T* p) { delete p; }
 
 template<typename T, typename... Args>
-T* Construct(Args&&... args) { return new T(std::forward<Args>(args)...)}
+T* Construct(Args&&... args) { return new T(forward<Args>(args)...)}
 template<typename T, typename... Args>
-T* Construct(void* p, Args&&... args) { return new (p) T(std::forward<Args>(args)...)}
+T* Construct(void* p, Args&&... args) { return new (p) T(forward<Args>(args)...)}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<class _Ty>
+bool atomic_swap(atomic<_Ty>& a, atomic<_Ty>& b)
+{
+    _Ty localA;
+    _Ty localB;
+    do {
+        localA = a.load();
+        localB = b.load();
+        if (localA == atomic_exchange_strong(&a, &localA, localB))
+        {
+            if (localB == atomic_compare_exchange_strong(&b, &localB, localA))
+            {
+                break;
+            }
+            else if (localB == atomic_compare_exchange_strong(&a, &localB, localB))
+            {
+
+            }
+        }
+    } while (true);
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles

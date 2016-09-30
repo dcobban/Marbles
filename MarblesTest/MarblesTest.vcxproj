@@ -147,7 +147,7 @@
     <ClCompile Include="Common\ArgumentTest.cpp" />
     <ClCompile Include="Reflection\ObjectTest.cpp" />
     <ClCompile Include="Reflection\SerializationTest.cpp" />
-    <ClCompile Include="Common\CircularBufferTest.cpp" />
+    <ClCompile Include="Common\AtomicTest.cpp" />
     <ClCompile Include="Common\ConceptTest.cpp" />
     <ClCompile Include="MarblesTest.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

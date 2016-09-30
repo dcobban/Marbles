@@ -29,9 +29,9 @@ struct TestResults
 	bool flagTest;
 	int intTest;
 	float floatTest;
-	std::string stringTest;
+    marbles::string stringTest;
 	char stringArrayTest[32];
-	// std::unique_ptr<char> stringDynamicTest;
+	// unique_ptr<char> stringDynamicTest;
 };
 
 REFLECT_TYPE(TestResults,

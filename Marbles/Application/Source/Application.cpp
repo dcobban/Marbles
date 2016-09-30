@@ -32,17 +32,22 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
+using std::thread;
+using std::shared_lock;
+using std::shared_mutex;
+using namespace std::this_thread;
+using std::unique_lock;
 
 // --------------------------------------------------------------------------------------------------------------------
 struct application::implementation
 {
-	typedef std::shared_mutex				shared_mutex;
-	typedef std::unique_lock<shared_mutex>	unique_lock;
-	typedef std::shared_lock<shared_mutex>	shared_lock;
-	typedef shared_service*					ActiveService;
-	typedef application*					ActiveApplication;
-	typedef std::vector<weak_service>		service_list;
-	typedef std::vector<std::thread>		thread_list;
+	typedef shared_mutex				shared_mutex;
+	typedef unique_lock<shared_mutex>	unique_lock;
+	typedef shared_lock<shared_mutex>	shared_lock;
+	typedef shared_service*				ActiveService;
+	typedef application*				ActiveApplication;
+	typedef vector<weak_service>		service_list;
+	typedef vector<thread>		        thread_list;
 
 	implementation()
 	: _next_service(0)
@@ -55,8 +60,7 @@ struct application::implementation
 	service_list                            _services;
 	thread_list                             _threads;
 
-	shared_task                             _choose_service;
-	std::atomic<unsigned>                   _next_service;
+	atomic<unsigned>                        _next_service;
 	int                                     _run_result;
 
 	thread_local static ActiveApplication	sApplication;
@@ -69,12 +73,8 @@ thread_local application::implementation::ActiveService application::implementat
 
 // --------------------------------------------------------------------------------------------------------------------
 application::application()
-: _implementation(std::make_unique<implementation>())
+: _implementation(make_unique<implementation>())
 {
-	if (_implementation)
-	{
-		_implementation->_choose_service = std::make_shared<task>([this]() { this->choose_service(); });
-	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -120,11 +120,11 @@ int application::run(unsigned nu_threads)
 		_implementation->_threads.resize(nu_threads - 1);
 		for(size_t i = _implementation->_threads.size(); i--; )
 		{
-			auto action = std::make_shared<task>([this, i]()
+			auto action = [this, i]()
 			{
-				std::thread worker([this](){ application::process_services(); });
+				thread worker([this](){ application::process_services(); });
 				this->_implementation->_threads[i].swap(worker);
-			});
+			};
 			primary->post(action);
 		}
 	}
@@ -142,44 +142,30 @@ int application::run(unsigned nu_threads)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-//bool application::post(const task& action)
-//{
-//	return post(std::make_shared<task>(action));
-//}
-
-// --------------------------------------------------------------------------------------------------------------------
-bool application::post(const shared_task& action)
-{
-	unsigned int next = _implementation->_next_service.load();
-	shared_service next_service = _implementation->_services[next].lock();
-	return next_service && next_service->post(action);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
 application* application::get() 
 { 
 	application* app = implementation::sApplication;
-	ASSERT(app || !"You must call application::run before calling this std::function."); 
+	ASSERT(app || !"You must call application::run before calling this function."); 
 	return app; 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 void application::yield()
 {
-	std::this_thread::yield();
+	this_thread::yield();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 void application::sleep(int milliseconds)
 {
-	std::chrono::milliseconds duration(milliseconds);
-	std::this_thread::sleep_for(duration);
+	chrono::milliseconds duration(milliseconds);
+	this_thread::sleep_for(duration);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 unsigned application::num_hardware_threads()
 {
-	return std::thread::hardware_concurrency();
+	return thread::hardware_concurrency();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -203,11 +189,18 @@ shared_service application::active_service() const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+shared_service application::next_service()
+{
+    unsigned int next = _implementation->_next_service.load();
+    return _implementation->_services[next].lock();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 shared_service application::create_service()
 {
 	shared_service service = service::create();
 	_register(service);
-	return std::move(service);
+	return move(service);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -302,7 +295,7 @@ void application::unregister(const shared_service& service)
 		
 		service->_state = service::stopped;
 		service->_tasks.clear(); 
-		service->post(_implementation->_choose_service);
+		service->post([this]() { this->choose_service(); });
 	}
 }
 
@@ -317,7 +310,7 @@ void application::process_services()
 	{
 		ASSERT(service::queued != choosen->state());
 		ASSERT(!choosen->_tasks.empty());
-		(*choosen->_tasks.pop())();
+		(choosen->_tasks.pop()).get(); // REVIEW(danc): Should we use the value returned?
 	}
 	implementation::sActiveService->reset();
 	implementation::sApplication = NULL;
@@ -338,7 +331,7 @@ void application::choose_service()
 	active = select_service();
 	if (active)
 	{
-		active->post(_implementation->_choose_service); // Schedule the next attempt to switch _services
+		active->post([this]() { this->choose_service(); }); // Schedule the next attempt to switch _services
 	}
 }
 
