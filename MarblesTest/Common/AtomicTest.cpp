@@ -23,6 +23,7 @@
 
 #include <Common/AtomicBuffer.h>
 #include <Common/AtomicList.h>
+#include <Common/Allocator.h>
 #include <thread>
 
 void rest_thread(int value)
@@ -50,7 +51,71 @@ private:
     T _value;
 };
 
-TEST(atomic_buffer, basic_operations)
+TEST(atomic_test, list_operations)
+{
+    typedef marbles::atomic_list<int> list_t;
+    const int size = 25;
+    std::vector<list_t::node_type> nodes;
+    list_t list;
+    int count;
+
+    nodes.reserve(size);
+    EXPECT_EQ(true, list.empty());
+    while (nodes.size() != nodes.capacity())
+    {
+        list_t::node_type next(static_cast<int>(nodes.capacity() - nodes.size()));
+        nodes.push_back(next);
+        list.insert_next(&nodes[nodes.size() - 1]);
+        EXPECT_EQ(false, list.empty());
+    }
+
+    count = 1;
+    for (auto i = list.begin(); i != list.end(); ++i, ++count)
+    {
+        EXPECT_EQ(count, *i);
+    }
+
+    auto* node = list.next();
+    list.set_next(nullptr);
+    EXPECT_EQ(true, list.empty());
+    list.set_next(node);
+
+    count = 1;
+    list_t odd;
+    list_t even;
+    while (!list.empty())
+    {
+        list.remove_next(&node);
+        EXPECT_EQ(count++, node->get());
+
+        if (node->get() % 2)
+        {
+            odd.append(node);
+        }
+        else
+        {
+            even.append(node);
+        }
+    }
+
+    count = 0;
+    for (auto i = odd.begin(); i != odd.end(); ++i)
+    {
+        EXPECT_LT(count, *i);
+        EXPECT_EQ(1, *i % 2);
+        count = *i;
+    }
+
+    count = 0;
+    for (auto i = even.begin(); i != even.end(); ++i)
+    {
+        EXPECT_LT(count, *i);
+        EXPECT_EQ(0, *i % 2);
+        count = *i;
+    }
+}
+
+TEST(atomic_test, buffer_operations)
 {
 	const int size = 10;
 	marbles::atomic_buffer<int, size> buffer;
@@ -96,7 +161,7 @@ TEST(atomic_buffer, basic_operations)
 	EXPECT_EQ(true, buffer.empty());
 }
 
-TEST(atomic_buffer, multi_threaded_push_pop)
+TEST(atomic_test, multi_threaded_push_pop)
 {
 	const int32_t quantity = 150;
 	const int32_t numProducers = 15;
@@ -192,14 +257,17 @@ TEST(atomic_buffer, multi_threaded_push_pop)
 	}
 }
 
-TEST(atomic_buffer, multi_thread_usage)
+TEST(atomic_test, multi_thread_usage)
 {
 	const int quantity = 150;
 	const int bufferSize = 10;
 	const int numProducers = 10;
 	const int numBuffers = numProducers >> 1;
 
-	typedef marbles::atomic_buffer<wrap<int>, bufferSize> Buffer;
+    typedef marbles::atomic_list<wrap<int>> List;
+    typedef marbles::array<List::node_type, quantity*numProducers> NodeArray;
+
+    typedef marbles::atomic_buffer<wrap<int>, bufferSize> Buffer;
 	typedef marbles::array<Buffer, numProducers> BufferArray;
 	typedef marbles::array<std::thread, numProducers> ThreadArray;
 	typedef marbles::array<int, numProducers> TallyArray;
@@ -214,7 +282,7 @@ TEST(atomic_buffer, multi_thread_usage)
 		count = 0;
 	}
 
-	auto accumulator = [&buffers, &accumulation](int)
+	auto bufferAccumulator = [&buffers, &accumulation](int)
 	{
 		wrap<int> value = 0;
 		unsigned index = 0;
@@ -232,8 +300,8 @@ TEST(atomic_buffer, multi_thread_usage)
 		} while (0 <= value);
 	};
 
-    std::thread accumulatorThread([accumulator]{ accumulator(1); });
-    std::thread accumulator2Thread([accumulator]{ accumulator(2); });
+    std::thread accumulatorThread([bufferAccumulator]{ bufferAccumulator(1); });
+    std::thread accumulator2Thread([bufferAccumulator]{ bufferAccumulator(2); });
 	for (unsigned id = 0; id < numProducers; ++id)
 	{
 		Buffer& buffer = buffers[id%numBuffers];
@@ -280,77 +348,3 @@ TEST(atomic_buffer, multi_thread_usage)
 	accumulation.clear();
 }
 
-TEST(atomic_list, basic_operations)
-{
-    typedef marbles::atomic_list<int> list_t;
-    const int size = 100;
-    std::vector<list_t::node_type> nodes;
-    list_t list;
-    int count;
-
-    nodes.reserve(size);
-    EXPECT_EQ(true, list.empty());
-    while (nodes.size() != nodes.capacity())
-    {
-        list_t::node_type next(static_cast<int>(nodes.capacity() - nodes.size()));
-        nodes.push_back(next);
-        list.insert_next(&nodes[nodes.size() - 1]);
-        EXPECT_EQ(false, list.empty());
-    }
-
-    count = 1;
-    for (auto i = list.begin(); i != list.end(); ++i, ++count)
-    {
-        EXPECT_EQ(count, *i);
-    }
-
-    auto* node = list.next();
-    list.set_next(nullptr);
-    EXPECT_EQ(true, list.empty());
-    list.set_next(node);
-
-    count = 1;
-    for (auto i = list.begin(); i != list.end(); ++i, count += 2)
-    {
-        i.remove_next(&node);
-        EXPECT_EQ(count, node->get());
-        EXPECT_EQ(count + 1, *i);
-    }
-
-    //count = 1;
-    //for (auto i = list.begin(); i != list.end(); ++i, count += 2)
-    //{
-    //    i.remove_next(&node);
-    //    EXPECT_EQ(count, node->get());
-    //    EXPECT_EQ(count + 1, *i);
-    //}
-
-    //EXPECT_EQ(true, buffer.full());
-    //EXPECT_EQ(push, size);
-
-    //while (buffer.try_pop(pop))
-    //{
-    //    EXPECT_EQ(pop, size - buffer.size() - 1);
-    //}
-
-    //EXPECT_EQ(true, buffer.empty());
-
-    //while (buffer.try_push(push))
-    //{
-    //    ++push;
-    //    if (push % 2)
-    //    {
-    //        EXPECT_EQ(++pop, buffer.pop());
-    //    }
-    //}
-
-    //EXPECT_EQ(true, buffer.full());
-
-    //int dummy;
-    //while (buffer.try_pop(dummy))
-    //{
-    //    EXPECT_EQ(++pop, dummy);
-    //}
-
-    //EXPECT_EQ(true, buffer.empty());
-}

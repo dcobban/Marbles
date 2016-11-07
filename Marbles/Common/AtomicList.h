@@ -79,7 +79,7 @@ public:
             {
                 keeper = skipper->next();
             }
-        } while (keeper && !try_set_next(keeper));
+        } while (!try_set_next(keeper) && keeper);
 
         if (out)
         {
