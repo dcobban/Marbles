@@ -23,7 +23,6 @@
 
 #include <Common/AtomicBuffer.h>
 #include <Common/AtomicList.h>
-#include <Common/Allocator.h>
 #include <thread>
 
 void rest_thread(int value)
@@ -272,17 +271,28 @@ TEST(atomic_test, multi_thread_usage)
 	typedef marbles::array<std::thread, numProducers> ThreadArray;
 	typedef marbles::array<int, numProducers> TallyArray;
 
+    List pool;
+    NodeArray poolBuffer;
 	TallyArray tally;
 	ThreadArray threads;
 	BufferArray buffers;
-	Buffer accumulation;
+    List accumulation;
+
+    {
+        int id = 0;
+        for (auto& node : poolBuffer)
+        {
+            node.get() = id++;
+            pool.insert_next(&node);
+        }
+    }
 
 	for (auto& count : tally)
 	{
 		count = 0;
 	}
 
-	auto bufferAccumulator = [&buffers, &accumulation](int)
+	auto bufferAccumulator = [&buffers, &pool, &accumulation](int)
 	{
 		wrap<int> value = 0;
 		unsigned index = 0;
@@ -291,10 +301,19 @@ TEST(atomic_test, multi_thread_usage)
 			++index;
 			index %= buffers.size();
 		
-			if (buffers[index].try_pop(value) && 0 <= value)
-			{
-				accumulation.push(value);
-			}
+            List::node_type* node;
+            if (pool.remove_next(&node))
+            {
+                if (buffers[index].try_pop(value) && 0 <= value)
+			    {
+                    node->get() = value;
+				    accumulation.insert_next(node);
+			    }
+                else
+                {
+                    pool.insert_next(node);
+                }
+            }
 
             rest_thread(value);
 		} while (0 <= value);
@@ -319,11 +338,13 @@ TEST(atomic_test, multi_thread_usage)
 	int sum = 0;
 	do
 	{
-		wrap<int> value(0);
-		if (accumulation.try_pop(value))
+        List::node_type* node;
+        if (accumulation.remove_next(&node))
 		{
-			++tally[value];
+			++tally[node->get()];
 			++sum;
+
+            pool.insert_next(node);
 		}
 	} while (sum < numProducers*quantity);
 	
@@ -344,7 +365,5 @@ TEST(atomic_test, multi_thread_usage)
 	// Clean up
 	accumulatorThread.join();
 	accumulator2Thread.join();
-
-	accumulation.clear();
 }
 
