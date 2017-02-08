@@ -36,22 +36,22 @@ shared_type	declaration::typeInfo() const
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-member::member(const std::string& name, const declaration& declaration, const char* usage)
-: mName(name)
+member::member(const string name, const declaration& declaration, const char* usage)
+: mName(move(name))
 , mType(declaration.typeInfo())
 , mUsage(usage)
 , mDeclaration(declaration)
 {
-	mHashName = type_info::hash(mName.c_str());
+	mHashName = type_info::hash(this->name());
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-member::member(const std::string& name, const shared_type& type_info, const char* usage)
-: mName(name)
+member::member(const string name, const shared_type& type_info, const char* usage)
+: mName(move(name))
 , mType(type_info)
 , mUsage(usage)
 {
-	mHashName = type_info::hash(mName.c_str());
+	mHashName = type_info::hash(this->name());
 }
 
 // --------------------------------------------------------------------------------------------------------------------

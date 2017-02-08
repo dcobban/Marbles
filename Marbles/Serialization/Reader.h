@@ -36,13 +36,13 @@ public:
 					Reader(bool endianSwap = false);
 
 	const path&		Context() const;
-	bool			Read(std::istream& is, object& obj);
+	bool			Read(istream& is, object& obj);
 
 private:
-	template <typename T> bool Translate(std::istream& is, object& obj);
-	bool			ReadReference(std::istream& is, object& obj);
-	bool			ReadEnumerable(std::istream& is, object& obj);
-	bool			ReadMembers(std::istream& is, object& obj);
+	template <typename T> bool Translate(istream& is, object& obj);
+	bool			ReadReference(istream& is, object& obj);
+	bool			ReadEnumerable(istream& is, object& obj);
+	bool			ReadMembers(istream& is, object& obj);
 	static hash_t	hash(const path& route);
 
 	F				mFormat;
@@ -58,7 +58,7 @@ Reader<F>::Reader(bool endianSwap = false)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F>
-bool Reader<F>::Read(std::istream& is, object& value)
+bool Reader<F>::Read(istream& is, object& value)
 {
 	mFormat.typeInfo(is, value);
 	
@@ -91,7 +91,7 @@ bool Reader<F>::Read(std::istream& is, object& value)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F> template <typename T> 
-bool Reader<F>::Translate(std::istream& is, object& obj)
+bool Reader<F>::Translate(istream& is, object& obj)
 {
 	bool canRead = type_of<T>() == obj.typeInfo();
 	if (canRead)
@@ -103,20 +103,20 @@ bool Reader<F>::Translate(std::istream& is, object& obj)
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F>
-bool Reader<F>::ReadReference(std::istream& is, object& value)
+bool Reader<F>::ReadReference(istream& is, object& value)
 {
 	return mFormat.ReadReference(is, mPath, value);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F>
-bool Reader<F>::ReadMembers(std::istream& is, object& value)
+bool Reader<F>::ReadMembers(istream& is, object& value)
 {
-	std::istream::pos_type start = is.tellg();
+	istream::pos_type start = is.tellg();
 	if (mFormat.OpenMap(is))
 	{
 		do {
-			const std::string& label = mFormat.Label(is);
+			const string& label = mFormat.Label(is);
 			object member = value.at(label.c_str());
 			if (member.isValid()) 
 			{	// Read this element

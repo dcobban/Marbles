@@ -23,9 +23,8 @@
 
 #pragma once
 
-#include <Common/CircularBuffer.h>
+#include <Common/AtomicBuffer.h>
 #include <Common/Common.h>
-#include <boost/thread/mutex.hpp>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
@@ -52,8 +51,8 @@ public:
 
 	template<typename T>
 	T*						provider();
-	// bool					post(const task& action);
-	bool					post(const shared_task& action);
+    template< class Function, class... Args>
+    bool					post(Function&& f, Args&&... args);
 
 	bool					operator==(const service& rhs);
 
@@ -65,21 +64,21 @@ public:
 	static shared_service	active();
 private:
 	friend class application;
-	typedef std::shared_ptr<void> shared_provider;
-	typedef std::weak_ptr<void> weak_provider;
+	typedef shared_ptr<void> shared_provider;
+	typedef weak_ptr<void> weak_provider;
 
 							service();
 
-	template<typename T, typename... ARGS>
-	void					make_provider(ARGS&&... args);
+	template<typename T, typename... Args>
+	void					make_provider(Args&&... args);
 	static shared_service	create();
 
-	typedef circular_buffer<shared_task, 128>	task_queue;
+	typedef atomic_buffer<task, 128>	task_queue;
 
-	task_queue						_tasks;
-	std::atomic<execution_state>	_state;
-	shared_provider					_provider;
-	weak_service					_self;
+	task_queue				_tasks;
+	atomic<execution_state>	_state;
+	shared_provider			_provider;
+	weak_service			_self;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -98,26 +97,23 @@ inline bool	service::hasStopped() const
 template<typename T>
 inline T* service::provider()
 {
-	return std::static_pointer_cast<T>(_provider).get();
+	return static_pointer_cast<T>(_provider).get();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-//inline bool service::post(const task& action)
-//{
-//	return post(std::make_shared<task>(std::forward<task>(action)));
-//}
-
-// --------------------------------------------------------------------------------------------------------------------
-inline bool service::post(const shared_task& action)
+template< class Function, class... Args>
+inline bool service::post(Function&& f, Args&&... args)
 {
-	return _tasks.try_push(action);
+    return _tasks.try_push(async(launch::deferred, 
+                                 [f](Args&&... fargs) { f(forward<Args>(fargs)...); return 0; }, 
+                                 forward<Args>(args)...));
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T, typename... ARGS>
-inline void service::make_provider(ARGS&&... args)
+template<typename T, typename... Args>
+inline void service::make_provider(Args&&... args)
 {
-	_provider = std::static_pointer_cast<void>(std::make_shared<T>(std::forward<ARGS>(args)...));
+	_provider = static_pointer_cast<void>(make_shared<T>(forward<Args>(args)...));
 }
 
 // --------------------------------------------------------------------------------------------------------------------

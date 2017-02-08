@@ -35,34 +35,34 @@ using namespace reflection;
 class serializer
 {
 public:
-	static bool text(std::ostream& os, const object& root);
-	static bool text(std::ostream& os, const object& root, const object& sub);
-	//static bool Binary(std::ostream& os, const object& root, const bool big_endian = PLATFORM_BIG_ENDIAN);
-	//static bool Binary(std::ostream& os, const object& root, const object& sub, const bool big_endian = PLATFORM_BIG_ENDIAN);
-	static bool from(std::istream& is, object& root);
+	static bool text(ostream& os, const object& root);
+	static bool text(ostream& os, const object& root, const object& sub);
+	//static bool Binary(ostream& os, const object& root, const bool big_endian = PLATFORM_BIG_ENDIAN);
+	//static bool Binary(ostream& os, const object& root, const object& sub, const bool big_endian = PLATFORM_BIG_ENDIAN);
+	static bool from(istream& is, object& root);
 
-	template<typename T>				static bool text(std::ostream& os, const T& root);
-	template<typename T, typename S>	static bool text(std::ostream& os, const T& root, const S& sub);
-	//template<typename T>				static bool Binary(std::ostream& os, const T& root, const bool big_endian = PLATFORM_BIG_ENDIAN);
-	//template<typename T, typename S>	static bool Binary(std::ostream& os, const T& root, const S& sub, const bool big_endian = PLATFORM_BIG_ENDIAN);
-	template<typename T>				static bool from(std::istream& is, T& root);
+	template<typename T>				static bool text(ostream& os, const T& root);
+	template<typename T, typename S>	static bool text(ostream& os, const T& root, const S& sub);
+	//template<typename T>				static bool Binary(ostream& os, const T& root, const bool big_endian = PLATFORM_BIG_ENDIAN);
+	//template<typename T, typename S>	static bool Binary(ostream& os, const T& root, const S& sub, const bool big_endian = PLATFORM_BIG_ENDIAN);
+	template<typename T>				static bool from(istream& is, T& root);
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-inline bool serializer::text(std::ostream& os, const object& root)
+inline bool serializer::text(ostream& os, const object& root)
 {
 	return text(os, root, root);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> inline bool serializer::text(std::ostream& os, const T& root)
+template<typename T> inline bool serializer::text(ostream& os, const T& root)
 {
 	object rootobj(root);
 	return text(os, rootobj, rootobj);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T, typename S> inline bool serializer::text(std::ostream& os, const T& root, const S& sub)
+template<typename T, typename S> inline bool serializer::text(ostream& os, const T& root, const S& sub)
 {
 	object rootobj(root);
 	object subobj(sub);
@@ -70,7 +70,7 @@ template<typename T, typename S> inline bool serializer::text(std::ostream& os, 
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T> inline bool serializer::from(std::istream& is, T& root)
+template<typename T> inline bool serializer::from(istream& is, T& root)
 {
 	object rootobj(root);
 	return from(is, rootobj);

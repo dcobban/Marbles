@@ -28,12 +28,12 @@
 struct Foo;
 struct Bar
 {
-	Foo*					reference_zero;
-	Foo*					reference_foo;
-	Foo**					reference2_foo;
-	// std::unique_ptr<Foo>	unique_foo;
-	std::shared_ptr<Foo>	shared_foo;
-	std::weak_ptr<Foo>		weak_foo;
+	Foo*					    reference_zero;
+	Foo*					    reference_foo;
+	Foo**					    reference2_foo;
+	// marbles::unique_ptr<Foo>	unique_foo;
+    marbles::shared_ptr<Foo>	shared_foo;
+    marbles::weak_ptr<Foo>		weak_foo;
 
 private:
 	friend struct Foo;
@@ -56,8 +56,8 @@ struct Foo
 	void				SetX(const float val)		{ x = static_cast<int>(val); }
 	unsigned			GetY() const				{ return static_cast<unsigned>(y); }
 	void				SetY(const unsigned val)	{ y = static_cast<float>(val); }
-	std::string			GetZ() const				{ std::stringstream ss; ss << z; return ss.str(); }
-	void				SetZ(const std::string val)	{ std::stringstream ss(val); ss >> z; }
+	marbles::string	    GetZ() const				{ marbles::stringstream ss; ss << z; return ss.str(); }
+	void				SetZ(const marbles::string val)	{ marbles::stringstream ss(val); ss >> z; }
 
 	Foo*				GetFooBarFoo() const		{ return bar.reference_foo; }
 };

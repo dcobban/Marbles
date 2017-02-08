@@ -105,22 +105,22 @@ class declarationT : public declaration
 	template<typename T> struct get_semantic
 	{ 
 		static const reference_semantic value = 
-			std::is_function<T>::value || std::is_member_function_pointer<T>::value ? Function : Value; 
+			is_function<T>::value || is_member_function_pointer<T>::value ? Function : Value; 
 	};
-	template<typename T> struct get_semantic< T* >                  { static const reference_semantic value = Reference; };
-	template<typename T> struct get_semantic< std::shared_ptr<T> >  { static const reference_semantic value = Shared; };
-	template<typename T> struct get_semantic< std::weak_ptr<T> >    { static const reference_semantic value = Weak; };
+	template<typename T> struct get_semantic< T* > { static const reference_semantic value = Reference; };
+	template<typename T> struct get_semantic< shared_ptr<T> > { static const reference_semantic value = Shared; };
+	template<typename T> struct get_semantic< weak_ptr<T> > { static const reference_semantic value = Weak; };
 
-	template<typename T> struct get_deref_count         { static const int value = 0; };
-	template<typename T> struct get_deref_count< T* >   { static const int value = get_deref_count<T>::value + 1; };
+	template<typename T> struct get_deref_count			{ static const int value = 0; };
+	template<typename T> struct get_deref_count< T* >	{ static const int value = get_deref_count<T>::value + 1; };
 
 public:
 	declarationT()
 	: declaration(type_of<T>()->valueDeclaration())
 	{
-		is_constant	= std::is_const<std::remove_reference<T>::type>::value;
-		semantic = get_semantic<std::remove_const<T>::type>::value;
-		deref_count = get_deref_count<std::remove_reference<T>::type>::value;
+		is_constant	= is_const<remove_reference<T>::type>::value;
+		semantic = get_semantic<remove_const<T>::type>::value;
+		deref_count = get_deref_count<remove_reference<T>::type>::value;
 	}
 
 	inline static void* store(T*& obj)
@@ -129,7 +129,7 @@ public:
 	}
 	inline static void* store(T& obj)
 	{
-		typedef typename std::remove_const<T>::type* storeType;
+		typedef typename remove_const<T>::type* storeType;
 		return const_cast<storeType>(&obj);
 	}
 };

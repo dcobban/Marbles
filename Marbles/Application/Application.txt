@@ -3,7 +3,7 @@ marbles application layer
 The application layer is a set of classes designed for managing the primary 
 platform device features.  This layer consists of features to control the flow
 of the application and make it simple for users to quickly modify that flow.  
-By design all marbles applications are multi-std::thread and therefore the application 
+By design all marbles applications are multi-thread and therefore the application 
 layer's primary feature is that of an execution service.  A marbles application 
 consists of a finite set of services operating together asyncronously, 
 communicating to each other via a tasking system.
@@ -11,9 +11,9 @@ communicating to each other via a tasking system.
 application service
 
 A service is defined as being an unrestricted independent execution unit 
-that receives tasks from another service to perform.  An application std::thread will 
+that receives tasks from another service to perform.  An application thread will 
 select a service to execute and perform the tasks in that service's task queue.  
-When an application std::thread starts processing a service queue a 'select new service 
+When an application thread starts processing a service queue a 'select new service 
 task' is inserted into the service task queue.  This ensures that only the existing 
 tasks within the queue will be performed before moving on to the next service. It 
 is important to note that task order is maintained by the service queue and tasks 

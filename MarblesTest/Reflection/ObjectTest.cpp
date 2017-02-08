@@ -25,18 +25,14 @@
 
 using namespace marbles::reflection;
 
-BOOST_AUTO_TEST_SUITE( reflection_object )
-
-BOOST_AUTO_TEST_CASE( reflection_object_field )
+TEST(reflection_object, reflection_object_field )
 {
-	BOOST_MESSAGE( "reflection.object.field" );
-
 	Foo foo;
 	float half = 0.5f;
-	double tiny = std::numeric_limits<double>::min();
+	double tiny = marbles::numeric_limits<double>::min();
 	int negative = -1; 
 	bool question = false; 
-	unsigned long long huge = std::numeric_limits<unsigned long long>::max(); 
+	unsigned long long huge = marbles::numeric_limits<unsigned long long>::max();
 
 	object foo_obj(foo);
 	object half_obj(half);
@@ -45,49 +41,42 @@ BOOST_AUTO_TEST_CASE( reflection_object_field )
 	object question_obj(question);
 	object huge_obj(huge);
 
-	BOOST_CHECK_EQUAL(half_obj.as<float>(), half);
-	BOOST_CHECK_EQUAL(tiny_obj.as<double>(), tiny);
-	BOOST_CHECK_EQUAL(negative_obj.as<int>(), negative);
-	BOOST_CHECK_EQUAL(question_obj.as<bool>(), question);
-	BOOST_CHECK_EQUAL(huge_obj.as<unsigned long long>(), huge);
+	EXPECT_EQ(half_obj.as<float>(), half);
+	EXPECT_EQ(tiny_obj.as<double>(), tiny);
+	EXPECT_EQ(negative_obj.as<int>(), negative);
+	EXPECT_EQ(question_obj.as<bool>(), question);
+	EXPECT_EQ(huge_obj.as<unsigned long long>(), huge);
 
 	half_obj = 0.25f;
-	BOOST_CHECK_EQUAL(half, 0.25f);
+	EXPECT_EQ(half, 0.25f);
 	tiny_obj = 0.0000000001;
-	BOOST_CHECK_EQUAL(tiny, 0.0000000001);
+	EXPECT_EQ(tiny, 0.0000000001);
 	negative_obj = -25;
-	BOOST_CHECK_EQUAL(negative, -25);
+	EXPECT_EQ(negative, -25);
 	question_obj = 0 > negative;
-	BOOST_CHECK_EQUAL(question, true);
+	EXPECT_EQ(question, true);
 	huge_obj = 0ull;
-	BOOST_CHECK_EQUAL(huge, 0);
+	EXPECT_EQ(huge, 0);
 
 	foo.x = 1;
 	foo.y = 2.0f;
 	foo.z = 3ull;
 
-	BOOST_CHECK_EQUAL(foo_obj.at("X").as<int>(), foo.x);
-	BOOST_CHECK_EQUAL(foo_obj.at("Y").as<float>(), foo.y);
-	BOOST_CHECK_EQUAL(foo_obj.at("Z").as<marbles::uint64_t>(), foo.z);
+	EXPECT_EQ(foo_obj.at("X").as<int>(), foo.x);
+	EXPECT_EQ(foo_obj.at("Y").as<float>(), foo.y);
+	EXPECT_EQ(foo_obj.at("Z").as<marbles::uint64_t>(), foo.z);
 
 	object bar_obj = foo_obj.at("Bar");
 	bar_obj.at("reference_foo") = &foo;
-	BOOST_CHECK_EQUAL(foo.bar.reference_foo, &foo);
-
-//	object getFooBarFoo = foo_obj.at("GetFooBarFoo");
-//	Foo* callTest = getFooBarFoo().as<Foo*>();
-//	BOOST_CHECK_EQUAL(callTest, &foo);
-
+	EXPECT_EQ(foo.bar.reference_foo, &foo);
 	object new_foo_obj = type_of<Foo>()->create();
 	bar_obj.at("shared_foo") = new_foo_obj.as<Foo*>();
 	Foo* test1 = new_foo_obj.as<Foo*>();
 	Foo* test2 = bar_obj.at("shared_foo").as<Foo*>();
-	BOOST_CHECK_EQUAL(test1, test2);
+	EXPECT_EQ(test1, test2);
 	bar_obj.at("weak_foo") = bar_obj.at("shared_foo");
 	Foo* test3 = bar_obj.at("weak_foo").as<Foo*>();
-	BOOST_CHECK_EQUAL(test1, test3);
+	EXPECT_EQ(test1, test3);
 	
 	marbles::reflection::type_info::clear_registrar();
 }
-
-BOOST_AUTO_TEST_SUITE_END()

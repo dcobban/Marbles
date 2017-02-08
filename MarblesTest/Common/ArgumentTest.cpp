@@ -29,9 +29,9 @@ struct TestResults
 	bool flagTest;
 	int intTest;
 	float floatTest;
-	std::string stringTest;
+    marbles::string stringTest;
 	char stringArrayTest[32];
-	// std::unique_ptr<char> stringDynamicTest;
+	// unique_ptr<char> stringDynamicTest;
 };
 
 REFLECT_TYPE(TestResults,
@@ -43,12 +43,8 @@ REFLECT_TYPE(TestResults,
 	// REFLECT_MEMBER("stringDynamicTest", &TestResults::stringDynamicTest)
 	)
 
-BOOST_AUTO_TEST_SUITE(argument_test)
-
-BOOST_AUTO_TEST_CASE(parse_basic_arguments)
+TEST(argument_test, parse_basic_arguments)
 {
-	BOOST_MESSAGE("argument.parse_basic_arguments");
-
 	const marbles::reflection::shared_type info = marbles::reflection::type_of<TestResults>();
 	TestResults results;
 	marbles::argument args;
@@ -70,12 +66,10 @@ BOOST_AUTO_TEST_CASE(parse_basic_arguments)
 	const size_t argc = sizeof(argv) / sizeof(argv[0]);
 	const size_t count = args.parse(results, argc, argv);
 
-	BOOST_CHECK_EQUAL(count, info->members().size());
-	BOOST_CHECK(results.flagTest);
-	BOOST_CHECK_EQUAL(3, results.intTest);
-	BOOST_CHECK_EQUAL(3.5f, results.floatTest);
-	BOOST_CHECK_EQUAL("\"Happy hunting.\"", results.stringTest);
+	EXPECT_EQ(count, info->members().size());
+	EXPECT_EQ(true, results.flagTest);
+	EXPECT_EQ(3, results.intTest);
+	EXPECT_EQ(3.5f, results.floatTest);
+	EXPECT_EQ("\"Happy hunting.\"", results.stringTest);
 	//BOOST_CHECK(0 == strcmp("\"Continue hunting.\"", &results.stringArrayTest[0]));
 }
-
-BOOST_AUTO_TEST_SUITE_END()

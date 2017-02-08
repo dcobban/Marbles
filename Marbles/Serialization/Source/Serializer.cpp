@@ -31,6 +31,8 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
+namespace serialization
+{
 namespace 
 {
 // --------------------------------------------------------------------------------------------------------------------
@@ -51,71 +53,71 @@ static const uint32_t memory_big	= 'rsm0';
 static const uint32_t memory_little	= '0msr';
 
 // --------------------------------------------------------------------------------------------------------------------
-struct TextFormat : public serialization::format
+struct TextFormat : public format
 {
-	std::ostream& Write(std::ostream& os, const bool& value) const
-	{ return os << std::ios::boolalpha << value; } 
-	std::ostream& Write(std::ostream& os, const marbles::uint8_t& value) const
+	ostream& Write(ostream& os, const bool& value) const
+	{ return os << ios::boolalpha << value; } 
+	ostream& Write(ostream& os, const marbles::uint8_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const marbles::uint16_t& value) const
+	ostream& Write(ostream& os, const marbles::uint16_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const marbles::uint32_t& value) const
+	ostream& Write(ostream& os, const marbles::uint32_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const marbles::uint64_t& value) const
+	ostream& Write(ostream& os, const marbles::uint64_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const marbles::int8_t& value) const
+	ostream& Write(ostream& os, const marbles::int8_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const marbles::int16_t& value) const
+	ostream& Write(ostream& os, const marbles::int16_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const marbles::int32_t& value) const
+	ostream& Write(ostream& os, const marbles::int32_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const marbles::int64_t& value) const
+	ostream& Write(ostream& os, const marbles::int64_t& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const float& value) const
+	ostream& Write(ostream& os, const float& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const double& value) const
+	ostream& Write(ostream& os, const double& value) const
 	{ return os << value; } 
-	std::ostream& Write(std::ostream& os, const std::string& value) const
+	ostream& Write(ostream& os, const string& value) const
 	{ return os << "\"" << value << "\"" ; } 
 
-	std::ostream& typeInfo(std::ostream& os, const object& obj) const
+	ostream& typeInfo(ostream& os, const object& obj) const
 	{
 		ASSERT(obj.isValid());
 		return os << "type_info<" << obj.typeInfo()->name() << "> ";
 	}
-	std::ostream& Label(std::ostream& os, const object& obj) const
+	ostream& Label(ostream& os, const object& obj) const
 	{
 		ASSERT(obj.isValid());
 		return os << obj.memberInfo()->name() << " = ";
 	}
-	std::ostream& PathInfo(std::ostream& os, const std::string& path) const
+	ostream& PathInfo(ostream& os, const string& path) const
 	{
 		return os << path;
 	}
-	std::ostream& OpenEnumeration(std::ostream& os) const
+	ostream& OpenEnumeration(ostream& os) const
 	{ return os << '['; }
-	std::ostream& CloseEnumeration(std::ostream& os) const
+	ostream& CloseEnumeration(ostream& os) const
 	{ return os << ']'; }
-	std::ostream& OpenMap(std::ostream& os) const
+	ostream& OpenMap(ostream& os) const
 	{ return os << '{'; }
-	std::ostream& CloseMap(std::ostream& os) const
+	ostream& CloseMap(ostream& os) const
 	{ return os << '}'; }
-	std::ostream& Seperator(std::ostream& os) const
+	ostream& Seperator(ostream& os) const
 	{ return os << ','; }
-	std::ostream& Indent(std::ostream& os) const
+	ostream& Indent(ostream& os) const
 	{ return os << "  "; }
-	std::ostream& NewLine(std::ostream& os) const
-	{ return os << std::endl; }
-	std::ostream& Zero(std::ostream& os) const
+	ostream& NewLine(ostream& os) const
+	{ return os << endl; }
+	ostream& Zero(ostream& os) const
 	{ return os << '0'; }
 
 	// Reader interface
-	bool Read(std::istream& is, object& value) const
+	bool Read(istream& is, object& value) const
 	{
 		shared_type type_info = value.typeInfo();
-		std::string readValue;
-		std::istream::pos_type pos = is.tellg();
-		std::locale prev = is.getloc();
+		string readValue;
+		istream::pos_type pos = is.tellg();
+		locale prev = is.getloc();
 
 		is.imbue(mReadStop);
 		char peek = static_cast<char>(is.peek());
@@ -125,7 +127,7 @@ struct TextFormat : public serialization::format
 			ReadIf(is, '"') || ReadIf(is, '\'');
 
 			is.imbue(mStringStop);
-			is >> value.as<std::string>();
+			is >> value.as<string>();
 			is.imbue(mReadStop);
 
 			// Read closing quote
@@ -147,7 +149,7 @@ struct TextFormat : public serialization::format
 		}
 		else if ('t' == tolower(peek, prev) || 'f' == tolower(peek, prev))
 		{
-			std::string boolean;
+			string boolean;
 			is >> boolean;
 			value.as<bool>() = "true" == boolean;
 		}
@@ -168,26 +170,26 @@ struct TextFormat : public serialization::format
 		return pos != is.tellg();
 	}
 
-	bool typeInfo(std::istream& is, object& value) const
+	bool typeInfo(istream& is, object& value) const
 	{
 		char name[1024];
 		shared_type type_info;
-		std::istream::pos_type start = is.tellg();
-		std::locale prev = is.getloc();
+		istream::pos_type start = is.tellg();
+		locale prev = is.getloc();
 
 		// Read formatted type_info information
 		is.imbue(mReadStop);
-		//is >> std::ios::uppercase;
+		//is >> ios::uppercase;
 		is >> name;
 		// TODO(danc): this should be case insensative
-		if (0 == std::char_traits<char>::compare("type_info", name, 4)) 
+		if (0 == char_traits<char>::compare("type_info", name, 4)) 
 		{
 			is >> name;
 			type_info = type_info::find(name);
 		}
 		else
 		{
-			is.seekg(start, std::ios::beg);
+			is.seekg(start, ios::beg);
 			type_info = value.typeInfo();
 		}
 		is.imbue(prev);
@@ -202,14 +204,14 @@ struct TextFormat : public serialization::format
 		return !createRequired;
 	}
 
-	bool ReadReference(std::istream& is, ObjectList& path, object& value)
+	bool ReadReference(istream& is, ObjectList& path, object& value)
 	{
-		std::istream::pos_type start = is.tellg();
+		istream::pos_type start = is.tellg();
 		if (value.isReference())
 		{
 			ConsumeWhitespace(is);
 
-			std::locale prev = is.getloc();
+			locale prev = is.getloc();
 			is.imbue(mReadStop);
 
 			char txtPath[1024];
@@ -226,7 +228,7 @@ struct TextFormat : public serialization::format
 				char name[256] = { '\0' };
 				object root(path.front());
 
-				std::stringstream ss(txtPath); 
+				stringstream ss(txtPath); 
 				ss.imbue(mPathStop);
 				do
 				{
@@ -256,11 +258,11 @@ struct TextFormat : public serialization::format
 		return start != is.tellg();
 	}
 
-	std::string Label(std::istream& is) const
+	string Label(istream& is) const
 	{
-		std::istream::pos_type start = is.tellg();
-		std::locale prev = is.getloc();
-		std::string label;
+		istream::pos_type start = is.tellg();
+		locale prev = is.getloc();
+		string label;
 		is.imbue(mReadStop);
 		is >> label;
 		is.imbue(prev);
@@ -268,31 +270,31 @@ struct TextFormat : public serialization::format
 		return label;
 	}
 
-	bool OpenEnumeration(std::istream& is) const
+	bool OpenEnumeration(istream& is) const
 	{
 		return ReadIf(is, '[');
 	}
 
-	bool CloseEnumeration(std::istream& is) const
+	bool CloseEnumeration(istream& is) const
 	{
 		return ReadIf(is, ']');
 	}
 
-	bool OpenMap(std::istream& is) const
+	bool OpenMap(istream& is) const
 	{
 		return ReadIf(is, '{');
 	}
 
-	bool CloseMap(std::istream& is) const
+	bool CloseMap(istream& is) const
 	{
 		return ReadIf(is, '}');
 	}
 	
-	bool Consume(std::istream& is) const
+	bool Consume(istream& is) const
 	{
-		std::istream::pos_type start = is.tellg();
-		std::locale prev = is.getloc();
-		std::string consume;
+		istream::pos_type start = is.tellg();
+		locale prev = is.getloc();
+		string consume;
 		int count = 0; 
 
 		is.imbue(mReadStop);
@@ -316,20 +318,20 @@ struct TextFormat : public serialization::format
 		return true;
 	}
 
-	bool Seperator(std::istream& is) const
+	bool Seperator(istream& is) const
 	{
 		return ReadIf(is, ',');
 	}
 
 	TextFormat(object root, const bool endianSwap) 
 	: format(root, endianSwap)
-	, mReadStop(std::locale(), new read_stop())
-	, mStringStop(std::locale(), new string_stop())
-	, mPathStop(std::locale(), new path_stop())
+	, mReadStop(locale(), new read_stop())
+	, mStringStop(locale(), new string_stop())
+	, mPathStop(locale(), new path_stop())
 	{}
 
 private:
-	bool ReadIf(std::istream& is, char character) const
+	bool ReadIf(istream& is, char character) const
 	{
 		ConsumeWhitespace(is);
 		const bool isCharacter = character == static_cast<char>(is.peek());
@@ -341,7 +343,7 @@ private:
 		return isCharacter;
 	}
 
-	void ConsumeWhitespace(std::istream& is) const
+	void ConsumeWhitespace(istream& is) const
 	{
 		char peek = static_cast<char>(is.peek());
 		while (isspace(peek, mReadStop))
@@ -351,11 +353,11 @@ private:
 		}
 	}
 
-	struct read_stop : public std::ctype<char>
+	struct read_stop : public ctype<char>
 	{
 	public:
 		read_stop()
-		: std::ctype<char>(generate(), false, sizeof(_table))
+		: ctype<char>(generate(), false, sizeof(_table))
 		{}
 
 	private:
@@ -365,25 +367,25 @@ private:
 		ctype_base::mask _table[256];
 		const ctype_base::mask *generate()
 		{
-			const std::ctype<char>& stdFacet = std::use_facet<std::ctype<char>>(std::locale());
+			const ctype<char>& stdFacet = use_facet<ctype<char>>(locale());
 			const int tableSize = sizeof(_table) / sizeof(_table[0]);
 			char keys[tableSize];
 			for (int ch = 0; ch < tableSize; ++ch)
 				keys[ch] = static_cast<char>(ch);
 			stdFacet.is(&keys[0], &keys[0] + tableSize, &_table[0]);
 
-			_table['\n'] = _table['\r'] = _table['\t'] = _table[' '] = std::ctype<char>::space;
-			_table['<'] = _table['>'] = _table[':'] = _table['='] = std::ctype<char>::space;
-			_table[','] = std::ctype<char>::space;
-			// _table['['] = _table[']'] = _table['{'] = _table['}'] = std::ctype<char>::space;
+			_table['\n'] = _table['\r'] = _table['\t'] = _table[' '] = ctype<char>::space;
+			_table['<'] = _table['>'] = _table[':'] = _table['='] = ctype<char>::space;
+			_table[','] = ctype<char>::space;
+			// _table['['] = _table[']'] = _table['{'] = _table['}'] = ctype<char>::space;
 			return &_table[0];
 		}
 	};
-	struct string_stop : public std::ctype<char>
+	struct string_stop : public ctype<char>
 	{
 	public:
 		string_stop()
-		: std::ctype<char>(generate(), false, sizeof(_table))
+		: ctype<char>(generate(), false, sizeof(_table))
 		{}
 
 	private:
@@ -395,17 +397,17 @@ private:
 		{
 			const int tableSize = sizeof(_table) / sizeof(_table[0]);
 			for (int ch = 0; ch < tableSize; ++ch)
-				_table[ch] = std::ctype<char>::punct;
+				_table[ch] = ctype<char>::punct;
 
-			_table['\''] = _table['"'] = std::ctype<char>::space;
+			_table['\''] = _table['"'] = ctype<char>::space;
 			return &_table[0];
 		}
 	};
-	struct path_stop : public std::ctype<char>
+	struct path_stop : public ctype<char>
 	{
 	public:
 		path_stop()
-		: std::ctype<char>(generate(), false, sizeof(_table))
+		: ctype<char>(generate(), false, sizeof(_table))
 		{}
 
 	private:
@@ -417,49 +419,44 @@ private:
 		{
 			const int tableSize = sizeof(_table) / sizeof(_table[0]);
 			for (int ch = 0; ch < tableSize; ++ch)
-				_table[ch] = std::ctype<char>::punct;
+				_table[ch] = ctype<char>::punct;
 
-			_table['.'] = std::ctype<char>::space;
+			_table['.'] = ctype<char>::space;
 			return &_table[0];
 		}
 	};
-	std::locale mReadStop;
-	std::locale mStringStop;
-	std::locale mPathStop;
+	locale mReadStop;
+	locale mStringStop;
+	locale mPathStop;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace <>
 
 // --------------------------------------------------------------------------------------------------------------------
-bool serializer::text(std::ostream& os, const object& root, const object& sub)
+bool serializer::text(ostream& os, const object& root, const object& sub)
 {	// start serialization
-	serialization::Writer<TextFormat> writer(root);
+	Writer<TextFormat> writer(root);
 	writer.Include(sub);
 	return writer.Write(os);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-bool serializer::from(std::istream& is, object& root)
+bool serializer::from(istream& is, object& root)
 {
 	uint32_t header;
-	const bool endianSwap = false;
-	serialization::Reader<TextFormat> reader(endianSwap);
-
-	std::ios::pos_type pos = is.tellg();
+	bool endianSwap = false;
+	ios::pos_type pos = is.tellg();
 	is.read(reinterpret_cast<char*>(&header), sizeof(header));
-	is.seekg(0, std::ios::beg);
 
 	switch(header)
 	{
 	case 'epyt': 
+		endianSwap = true;
 	case 'type':
 		{	// text format
-			reader.Read(is, root);
-		}
-		break;
-	default:
-		{
+			Reader<TextFormat> reader(endianSwap);
+			is.seekg(0, ios::beg);
 			reader.Read(is, root);
 		}
 		break;
@@ -469,6 +466,7 @@ bool serializer::from(std::istream& is, object& root)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+} // namespace serialization
 } // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

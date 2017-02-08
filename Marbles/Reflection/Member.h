@@ -34,13 +34,13 @@ class object;
 template<typename T> class memberT;
 
 // --------------------------------------------------------------------------------------------------------------------
-class member : public std::enable_shared_from_this<const member>
+class member : public enable_shared_from_this<const member>
 {
 public:
-	member(const std::string& name, const declaration& declaration, const char* usage);
-	member(const std::string& name, const shared_type& type_info, const char* usage);
+	member(const string name, const declaration& declaration, const char* usage);
+	member(const string name, const shared_type& type_info, const char* usage);
 
-	const std::string&	name() const		{ return mName; }
+	const char*     	name() const		{ return mName.c_str(); }
 	hash_t				hashName() const	{ return mHashName; }
 	declaration			declare_info() const{ return declaration(shared_from_this(), mDeclaration); }
 	const char*			usage() const		{ return mUsage; }
@@ -54,7 +54,7 @@ public:
 	virtual object		call(object& self, object* pObjs, unsigned count) const;
 
 private:
-	std::string			mName;
+	string			    mName;
 	hash_t				mHashName;
 	declaration			mDeclaration;
 	weak_type			mType;

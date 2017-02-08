@@ -46,13 +46,13 @@ public:
 	}
 
 	// returns number of arguments parsed.
-	template<typename T> int32_t parse(T& out, int32_t argc, char_t** argv)
+	template<typename T> int parse(T& out, int argc, char_t** argv)
 	{
 		reflection::shared_type type = reflection::type_of<T>(out);
 		for (auto& option : _arguments)
 		{
 			hash_t hashName = reflection::type_info::hash(option._name);
-			size_t memberIndex = type->memberIndex(hashName);
+			const size_t memberIndex = type->memberIndex(hashName);
 			if (0 <= memberIndex && memberIndex < type->members().size())
 			{
 				option._member = type->members()[memberIndex];
@@ -63,7 +63,7 @@ public:
 			}
 		}
 
-		int32_t count = 0;
+		int count = 0;
 		for (int pos = 1; pos < argc;)
 		{
 			translateArgument(out, pos, argc, argv);
@@ -80,9 +80,9 @@ private:
 		reflection::shared_member _member;
 	};
 
-	const option* findOption(int position, int , char** argv) const
+	const option* findOption(int position, int /*argc*/, char** argv) const
 	{
-		auto arg = std::find_if(std::begin(_arguments), std::end(_arguments), [=](const option& arg)
+		auto arg = find_if(begin(_arguments), end(_arguments), [=](const option& arg)
 		{
 			const bool isMapped = NULL != arg._member;
 			const bool isShort = 0 == _strnicmp(&argv[position][0], arg._option, max_argument_length);
@@ -102,7 +102,7 @@ private:
 			const bool readValue = NULL == opt && isType;
 			if (readValue)
 			{
-				std::stringstream ss(argv[position]);
+				stringstream ss(argv[position]);
 				T& out = obj.as<T>();
 				ss >> out;
 				++position;
@@ -133,16 +133,16 @@ private:
 			return isBoolean;
 		}
 	};
-	template<> struct value<std::string>
+	template<> struct value<string>
 	{
 		static bool translate(reflection::object& obj, argument& self, int& position, int argc, char** argv)
 		{
-			const bool isType = reflection::type_of<std::string>() == obj.typeInfo();
+			const bool isType = reflection::type_of<string>() == obj.typeInfo();
 			const option* opt = self.findOption(position, argc, argv);
 			const bool readValue = NULL == opt && isType;
 			if (readValue)
 			{
-				std::stringstream ss(argv[position]);
+				stringstream ss(argv[position]);
 				bool quote = false;
 				do {
 					if (quote)
@@ -156,7 +156,7 @@ private:
 					}
 					++position;
 				} while (quote);
-				std::string& out = obj.as<std::string>();
+				string& out = obj.as<string>();
 				out = ss.str();
 			}
 			return isType;
@@ -171,7 +171,7 @@ private:
 			const bool readValue = NULL == opt && isType;
 			if (readValue)
 			{
-				std::stringstream ss(argv[position]);
+				stringstream ss(argv[position]);
 				bool quote = false;
 				do {
 					if (quote)
@@ -185,7 +185,7 @@ private:
 					}
 					++position;
 				} while (quote);
-				std::string& out = obj.as<std::string>();
+				string& out = obj.as<string>();
 				out = ss.str();
 			}
 			return isType;
@@ -212,14 +212,14 @@ private:
 					|| value<uint64_t>::translate(obj, *this, position, argc, argv)
 					|| value<float32_t>::translate(obj, *this, position, argc, argv)
 					|| value<float64_t>::translate(obj, *this, position, argc, argv)
-					|| value<std::string>::translate(obj, *this, position, argc, argv);
+					|| value<string>::translate(obj, *this, position, argc, argv);
 			}
 		}
 		return consumed;
 	}
 
-	std::stringstream _sstream;
-	std::vector<option> _arguments;
+	stringstream _sstream;
+	vector<option> _arguments;
 };
 
 // --------------------------------------------------------------------------------------------------------------------

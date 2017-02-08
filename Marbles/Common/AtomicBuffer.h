@@ -22,23 +22,26 @@
 // --------------------------------------------------------------------------------------------------------------------
 #pragma once
 
+#include <type_traits> 
+
 namespace marbles
 {
 
 // Lock-free circular buffer
-template<typename T, unsigned N> class circular_buffer
+template<typename T, size_t N> 
+class alignas(alignment_of<T>::value) atomic_buffer
 {
 public:
-	circular_buffer()
-	: _items(reinterpret_cast<T*>(&_buffer[0]))
-	, _start(0)
+	atomic_buffer()
+	: _start(0)
 	, _end(0)
 	, _init(0)
 	, _clean(0)
 	{
 	}
-	circular_buffer(const circular_buffer<T, N>&) = delete;
-	~circular_buffer() {}
+
+    atomic_buffer(const atomic_buffer<T, N>&) = delete;
+    atomic_buffer<T, N>& operator=(const atomic_buffer<T, N>&) = delete;
 
 	inline unsigned size() const
 	{
@@ -74,18 +77,20 @@ public:
 	{
 		unsigned reserved;
 		unsigned next;
-		do
-		{	// Reserve an element to be created
-			reserved = _init.load();
-			next = (reserved + 1) % (N + 1);
-			const bool isFull = next == _clean.load();
-			if (isFull)
-				return false;
-			// Try again if another std::thread has modified the _init value before me.
+        do
+        {	// Reserve an element to be created
+            reserved = _init.load();
+            next = (reserved + 1) % (N + 1);
+            const bool isFull = next == _clean.load();
+            if (isFull)
+            {
+                return false;
+            }
+			// Try again if another thread has modified the _init value before me.
 		} while (!_init.compare_exchange_weak(reserved, next));
 		
 		// Element reserved, assign the value
-		new (&_items[reserved]) T(std::forward<T>(value));
+		new (items() + reserved) T(forward<T>(value));
 
 		// Syncronize the end position with the updated reserved position
 		const unsigned persist = reserved;
@@ -100,7 +105,7 @@ public:
 
 	void push(T value)
 	{
-		while (!try_push(std::forward<T>(value)))
+		while (!try_push(forward<T>(value)))
 		{
 			application::yield();
 		}
@@ -115,12 +120,14 @@ public:
 			start = _start.load();
 			const bool isEmpty = start == _end.load();
 			if (isEmpty)
+            {
 				return false;
+            }
 			next = (start + 1) % (N + 1);
 		} while(!_start.compare_exchange_weak(start, next));
 		
-		out = std::move(_items[start]);
-		_items[start].~T();
+		out = move(*(items() + start));
+		(items() + start)->~T();
 
 		// Syncronize the clean position with the updated start position
 		const unsigned persist = start;
@@ -135,23 +142,25 @@ public:
 
 	T pop()
 	{
-		T tmp;
+		T tmp; // Review: Causes all template types to require a default constructor, this API may not be approprate
 		while (!try_pop(tmp))
 		{
 			application::yield();
 		}
-		return tmp;
+		return move(tmp);
 	}
 private:
-	// Todo: We really should control construction and destruction
-	unsigned char			_buffer[sizeof(T)*(N + 1)]; // we have some alignment problems here
-	T*						_items;
-	std::atomic<unsigned>	_start;
-	std::atomic<unsigned>	_end;
-	std::atomic<unsigned>	_init;
-	std::atomic<unsigned>	_clean;
+	T*                  items()       { return reinterpret_cast<T*>(&_reserve[0]); }
+	const T*            items() const { return reinterpret_cast<const T*>(&_reserve[0]); }
+
+	char				_reserve[sizeof(T) * (N + 1)];
+	atomic<unsigned>	_start;
+	atomic<unsigned>	_end;
+	atomic<unsigned>	_init;
+	atomic<unsigned>	_clean;
 };
 
+// --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

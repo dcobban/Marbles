@@ -24,6 +24,7 @@
 #pragma once
 
 // --------------------------------------------------------------------------------------------------------------------
+#include <common/common.h>
 #include <reflection/traits.h>
 #include <reflection/typeOf.h>
 #include <reflection/declaration.h>

@@ -34,12 +34,11 @@ template<typename T>
 class memberT : public member
 {
 public:
-	memberT(const std::string& name, const shared_type& type_info, const char* usage)
-	: member(name, type_info, usage) {}
-	memberT(const std::string& name, const declaration& declaration, const char* usage)
-	: member(name, declaration, usage) {}
+	memberT(const string name, const shared_type& type_info, const char* usage)
+	: member(forward<const string>(name), type_info, usage) {}
+	memberT(const string name, const declaration& declaration, const char* usage)
+	: member(forward<const string>(name), declaration, usage) {}
 
-	virtual bool		isConstant() const { return std::is_const<T>::value; }
 	virtual shared_type	declaredType() const { return type_of<T>(); }
 	virtual object		dereference(const object& self) const
 	{
@@ -52,20 +51,21 @@ public:
 		ASSERT(!"Not implemented");
 		return object();
 	}
-	virtual object		assign(object& self, const object& rhs) const;
+	virtual object		assign(object self, const object& rhs) const;
 private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T, int N>
-class memberT<T[N]> : public memberT<T>
+class memberT<T[N]> : public member
 {
 public:
-	memberT(const std::string& name, const shared_type& type_info, const char* usage)
-		: member(name, type_info, usage) {}
-	memberT(const std::string& name, const declaration& declaration, const char* usage)
-		: member(name, declaration, usage) {}
+	memberT(const string name, const shared_type& type_info, const char* usage)
+		: member(forward<const string>(name), type_info, usage) {}
+	memberT(const string name, const declaration& declaration, const char* usage)
+		: member(forward<const string>(name), declaration, usage) {}
 
+	//virtual shared_type	declaredType() const { return type_of<T>(); }
 	virtual object		dereference(const object& self) const
 	{
 		declaration info(typeInfo()->valueDeclaration(), self.isConstant());
@@ -77,13 +77,13 @@ public:
 		ASSERT(!"Not implemented");
 		return object();
 	}
-	virtual object		assign(object& self, const object& rhs) const;
+	virtual object		assign(object self, const object& rhs) const;
 private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> 
-object memberT<T>::assign(object& self, const object& rhs) const
+object memberT<T>::assign(object self, const object& rhs) const
 {
 	ASSERT(self.isValid());
 	ASSERT(self.typeInfo()->implements(rhs.typeInfo()));
@@ -93,11 +93,11 @@ object memberT<T>::assign(object& self, const object& rhs) const
 	}
 	//else if (self.isShared())
 	//{
-	//	self.as< std::shared_ptr<T> >() = rhs.as<T>();
+	//	self.as< shared_ptr<T> >() = rhs.as<T>();
 	//}
 	//else if (self.isWeak())
 	//{
-	//	self.as< std::weak_ptr<T> >() = rhs.as<T>();
+	//	self.as< weak_ptr<T> >() = rhs.as<T>();
 	//}
 	else if (self.isReference())
 	{
@@ -108,7 +108,7 @@ object memberT<T>::assign(object& self, const object& rhs) const
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T, int N>
-object memberT<T[N]>::assign(object& self, const object& rhs) const
+object memberT<T[N]>::assign(object self, const object& rhs) const
 {
 	ASSERT(self.isValid());
 	ASSERT(self.typeInfo()->implements(rhs.typeInfo()));
@@ -123,11 +123,11 @@ object memberT<T[N]>::assign(object& self, const object& rhs) const
 	}
 	//else if (self.isShared())
 	//{
-	//	self.as< std::shared_ptr<T> >() = rhs.as<T>();
+	//	self.as< shared_ptr<T> >() = rhs.as<T>();
 	//}
 	//else if (self.isWeak())
 	//{
-	//	self.as< std::weak_ptr<T> >() = rhs.as<T>();
+	//	self.as< weak_ptr<T> >() = rhs.as<T>();
 	//}
 	else if (self.isReference())
 	{

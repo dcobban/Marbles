@@ -163,4 +163,6 @@ pip-log.txt
 .DS_Store
 
 #Marbles
-tools/*
+external/bin/*
+external/googletest/*
+googletest

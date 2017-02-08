@@ -24,14 +24,14 @@
     <ClCompile Include="Reflection\SerializationTest.cpp">
       <Filter>Reflection</Filter>
     </ClCompile>
-    <ClCompile Include="Common\CircularBufferTest.cpp">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="Common\ConceptTest.cpp">
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="MarblesTest.cpp" />
     <ClCompile Include="Common\ArgumentTest.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\AtomicTest.cpp">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>

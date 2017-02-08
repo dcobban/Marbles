@@ -27,11 +27,11 @@
 namespace marbles
 {
 class service;
-typedef std::function<void __cdecl ()> task;
-typedef std::shared_ptr<task> shared_task;
-typedef std::weak_ptr<task> weak_task;
-typedef std::shared_ptr<service> shared_service;
-typedef std::weak_ptr<service> weak_service;
+typedef future<int> task;
+typedef shared_ptr<task> shared_task;
+typedef weak_ptr<task> weak_task;
+typedef shared_ptr<service> shared_service;
+typedef weak_ptr<service> weak_service;
 
 // --------------------------------------------------------------------------------------------------------------------
 class application
@@ -43,9 +43,9 @@ public:
 	template<typename T, typename... ARG> 
 	shared_service		start(ARG&&... args);
 	void				stop(int run_result);
-	// bool				post(const task& action);
-	bool				post(const shared_task& action);
-	int					run(unsigned numThreads = 0); // The value given to application::stop() is returned by this std::function
+    template< class Function, class... Args>
+    bool				post(Function&& f, Args&&... args);
+    int					run(unsigned numThreads = 0); // The value given to application::stop() is returned by this function
 
 	static application*	get();
 	static void			yield(); // Why do users need this?
@@ -57,9 +57,10 @@ private:
 	friend class service;
 
 	size_t service_count() const;
-	shared_service service_at(size_t index);
-	shared_service active_service() const;
-	shared_service create_service();
+    shared_service service_at(size_t index);
+    shared_service active_service() const;
+    shared_service next_service();
+    shared_service create_service();
 	shared_service select_service();
 
 	void _register(const shared_service& service);
@@ -67,7 +68,7 @@ private:
 	void choose_service();
 	void process_services();
 
-	std::unique_ptr<implementation> _implementation;
+	unique_ptr<implementation> _implementation;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -78,12 +79,20 @@ inline shared_service application::start(ARG&&... args)
 	if (srv)
 	{
 		service* ptr = srv.get();
-		srv->post(std::make_shared<task>([ptr, args...]() 
+		srv->post([ptr, args...]() 
 		{ 
-			ptr->make_provider<T>(std::forward<ARG>(args)...); 
-		}));
+			ptr->make_provider<T>(args...); 
+		});
 	}
 	return srv;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template< class Function, class... Args>
+bool application::post(Function&& f, Args&&... args)
+{
+    shared_service next = next_service();
+    return next && next->post(forward<Function>(f), forward<Args>(args)...);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

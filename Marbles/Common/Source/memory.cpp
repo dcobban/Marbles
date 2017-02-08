@@ -21,69 +21,53 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#pragma once
-
-#include <common/function_traits.h>
-#include <common/definitions.h>
-#include <common/memory.h>
+#include <Memory.h>
 
 // --------------------------------------------------------------------------------------------------------------------
-namespace marbles
+//_CRTRESTRICT void* __cdecl malloc(size_t size)
+//{
+//    (void)(size);
+//    return nullptr;
+//}
+//
+//// --------------------------------------------------------------------------------------------------------------------
+//void __cdecl free(void* p)
+//{
+//    (void)p;
+//}
+
+// --------------------------------------------------------------------------------------------------------------------
+void* operator new(size_t size/*, const char* filename = __FILE__, size_t line = __LINE__*/)
 {
-
-// --------------------------------------------------------------------------------------------------------------------
-template<int ...> struct seq {};
-template<int N, int ...S> struct gens : gens<N - 1, N - 1, S...> {};
-template<int ...S> struct gens<0, S...> { typedef seq<S...> type; };
-
-// --------------------------------------------------------------------------------------------------------------------
-template <typename T> 
-inline size_t AlignTo(size_t value) 
-{ 
-	return ((value + (AlignOf<T>() - 1)) & ~AlignOf<T>()); 
+	void* p = malloc(size);
+#if defined CONFIG_DEBUG
+	printf("%s(%d): Alloc(%d) 0x%X\n", "", 0, ++marbles::allocs, (unsigned)(p));
+#endif // defined CONFIG_DEBUG
+	return p;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-template <typename A>
-inline const A& Max(const A& a, const A& b) { return a > b ? a : b; }
-template <typename A>
-inline const A& Min(const A& a, const A& b) { return a < b ? a : b; }
-template <typename A>
-inline const A& Select(const bool condition, const A& a, const A& b) { return condition ? a : b; }
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename T> inline void Destruct(T* p) { p->~T(); }
-template<typename T> inline void Delete(T* p) { delete p; }
-
-template<typename T, typename... Args>
-T* Construct(Args&&... args) { return new T(forward<Args>(args)...)}
-template<typename T, typename... Args>
-T* Construct(void* p, Args&&... args) { return new (p) T(forward<Args>(args)...)}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<class _Ty>
-bool atomic_swap(atomic<_Ty>& a, atomic<_Ty>& b)
+void* operator new[](size_t size, size_t N/*, const char* filename = __FILE__, size_t line = __LINE__*/)
 {
-    _Ty localA;
-    _Ty localB;
-    do {
-        localA = a.load();
-        localB = b.load();
-        if (localA == atomic_exchange_strong(&a, &localA, localB))
-        {
-            if (localB == atomic_compare_exchange_strong(&b, &localB, localA))
-            {
-                break;
-            }
-            else if (localB == atomic_compare_exchange_strong(&a, &localB, localB))
-            {
-
-            }
-        }
-    } while (true);
+	void* p = malloc(size*N);
+#if defined CONFIG_DEBUG
+	printf("%s(%d): Alloc(%d) 0x%X\n", "", 0, ++marbles::allocs, (unsigned)(p));
+#endif // defined CONFIG_DEBUG
+	return p;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace marbles
+void operator delete(void*p)
+{
+	//	printf("%s(%d): free 0x%X\n", "", 0, (unsigned)(p));
+	free(p);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void operator delete[](void*p)
+{
+	//	printf("%s(%d): free 0x%X\n", "", 0, (unsigned)(p));
+	free(p);
+}
 
 // End of file --------------------------------------------------------------------------------------------------------
