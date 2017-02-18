@@ -24,7 +24,7 @@ struct ExecutedService
 struct ApplicationStop
 {
 	typedef marbles::event<> UpdateEvent;
-	typedef UpdateEvent::shared_handler UpdateHandler;
+	typedef UpdateEvent::handler UpdateHandler;
 	int count;
 	int stop;
 	int label;

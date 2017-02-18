@@ -29,6 +29,15 @@ public:
         return nullptr == next();
     }
 
+    void clear()
+    {
+        node* next;
+        do
+        {
+            remove_next(&next);
+        } while (nullptr != next);
+    }
+
     node* next()
     {
         return _next.load();
@@ -157,13 +166,13 @@ public:
     node(const node& data) : atomic_list<T>(data), _data(data._data)
     {}
 
-    T& get() 
+    T* get()
     {
-        return _data;
+        return &_data;
     }
-    const T& get() const 
+    const T* get() const
     {
-        return _data;
+        return &_data;
     }
 
 protected:
@@ -181,7 +190,7 @@ public:
 
     T& operator*()
     {
-        return next()->get();
+        return *next()->get();
     }
 
     const T& operator*() const
@@ -191,12 +200,12 @@ public:
 
     T* operator->()
     {
-        return &next()->get();
+        return next()->get();
     }
 
     const T* operator->() const
     {
-        return &next()->get();
+        return next()->get();
     }
 
     iterator operator++(int)

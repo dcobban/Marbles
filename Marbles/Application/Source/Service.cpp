@@ -65,19 +65,37 @@ void service::stop()
 // --------------------------------------------------------------------------------------------------------------------
 size_t service::count()
 {
-	return application::get()->service_count();
+    size_t cnt = 0;
+    application* app = application::get();
+    if (nullptr != app)
+    {
+        cnt = app->service_count();
+    }
+    return cnt;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 shared_service service::at(unsigned int i)
 {
-	return application::get()->service_at(i);
+    shared_service service;
+    application* app = application::get();
+    if (nullptr != app)
+    {
+        service = app->service_at(i);
+    }
+    return service;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 shared_service service::active()
 {
-	return application::get()->active_service();
+    shared_service service;
+    application* app = application::get();
+    if (nullptr != app)
+    {
+        service = app->active_service();
+    }
+	return service;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

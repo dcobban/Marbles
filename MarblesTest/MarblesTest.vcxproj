@@ -74,12 +74,15 @@
       </UndefinePreprocessorDefinitions>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
       <SubSystem>Console</SubSystem>
+      <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Message>Starting Tests...</Message>
@@ -89,8 +92,7 @@
     <CustomBuildStep />
     <CustomBuildStep />
     <PreBuildEvent>
-      <Command>cd $(SolutionDir)external
-call setup.bat</Command>
+      <Command>call prebuild.bat</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Setup external dependencies</Message>
@@ -113,7 +115,8 @@ call setup.bat</Command>
       </UndefinePreprocessorDefinitions>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\tools\boost\main\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -121,6 +124,7 @@ call setup.bat</Command>
       <SubSystem>Console</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <IgnoreSpecificDefaultLibraries>MSVCRT</IgnoreSpecificDefaultLibraries>
     </Link>
     <PostBuildEvent>
       <Message>Starting Tests...</Message>
@@ -130,8 +134,7 @@ call setup.bat</Command>
     <CustomBuildStep />
     <CustomBuildStep />
     <PreBuildEvent>
-      <Command>cd $(SolutionDir)external
-call setup.bat</Command>
+      <Command>call prebuild.bat</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Setup external dependencies</Message>
@@ -147,6 +150,7 @@ call setup.bat</Command>
   <ItemGroup>
     <ClCompile Include="Application\ServiceTests.cpp" />
     <ClCompile Include="Common\ArgumentTest.cpp" />
+    <ClCompile Include="Platform\WindowTest.cpp" />
     <ClCompile Include="Reflection\ObjectTest.cpp" />
     <ClCompile Include="Reflection\SerializationTest.cpp" />
     <ClCompile Include="Common\AtomicTest.cpp" />
@@ -159,6 +163,9 @@ call setup.bat</Command>
   <ItemGroup>
     <ClInclude Include="Reflection\FooBar.h" />
     <ClInclude Include="MarblesTest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="prebuild.bat" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

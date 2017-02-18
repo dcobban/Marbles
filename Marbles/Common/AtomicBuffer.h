@@ -149,6 +149,14 @@ public:
 		}
 		return move(tmp);
 	}
+
+    const T& operator[](int index) const
+    {
+        assert(index < size());
+        const int position = (start + index) % (N + 1);
+        return *(items() + position);
+    }
+
 private:
 	T*                  items()       { return reinterpret_cast<T*>(&_reserve[0]); }
 	const T*            items() const { return reinterpret_cast<const T*>(&_reserve[0]); }

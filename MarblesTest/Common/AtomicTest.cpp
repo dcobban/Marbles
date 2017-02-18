@@ -85,9 +85,9 @@ TEST(atomic_test, list_operations)
     while (!list.empty())
     {
         list.remove_next(&node);
-        EXPECT_EQ(count++, node->get());
+        EXPECT_EQ(count++, *node->get());
 
-        if (node->get() % 2)
+        if (*node->get() % 2)
         {
             odd.append(node);
         }
@@ -282,7 +282,7 @@ TEST(atomic_test, multi_thread_usage)
         int id = 0;
         for (auto& node : poolBuffer)
         {
-            node.get() = id++;
+            *node.get() = id++;
             pool.insert_next(&node);
         }
     }
@@ -306,7 +306,7 @@ TEST(atomic_test, multi_thread_usage)
             {
                 if (buffers[index].try_pop(value) && 0 <= value)
 			    {
-                    node->get() = value;
+                    *node->get() = value;
 				    accumulation.insert_next(node);
 			    }
                 else
@@ -341,7 +341,7 @@ TEST(atomic_test, multi_thread_usage)
         List::node_type* node;
         if (accumulation.remove_next(&node))
 		{
-			++tally[node->get()];
+			++tally[*node->get()];
 			++sum;
 
             pool.insert_next(node);

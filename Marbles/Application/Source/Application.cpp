@@ -144,9 +144,7 @@ int application::run(unsigned nu_threads)
 // --------------------------------------------------------------------------------------------------------------------
 application* application::get() 
 { 
-	application* app = implementation::sApplication;
-	ASSERT(app || !"You must call application::run before calling this function."); 
-	return app; 
+	return implementation::sApplication;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

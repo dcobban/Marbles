@@ -24,6 +24,8 @@
 #pragma once
 
 #include <application\service.h>
+#include <application\application.h>
+#include <common\atomiclist.h>
 #include <algorithm>
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -32,190 +34,157 @@ namespace marbles
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-class event_base
+class event
 {
 public:
-	class callback;
-	typedef function<void(Args...)> handler_t;
-	typedef shared_ptr<callback> shared_handler;
-    typedef weak_ptr<callback> weak_handler;
+    class       handler;
+    typedef     function<void(Args...)> callback_t;
 
-	shared_handler	onRaise(const handler_t& handler);
-	shared_handler	onRaise(shared_handler& handler);
-	shared_handler	clear(shared_handler& handler);
-	void			clear();
+    void        clear();
+    void        clear(handler* callback);
+    handler*    onRaise(callback_t callback);
+    handler*    onRaise(callback_t callback, shared_service service);
+    void        raise(Args... args);
 
-	shared_handler	operator+=(const handler_t& handler);
-	shared_handler	operator+=(shared_handler& handler);
-	shared_handler	operator-=(shared_handler& handler);
+    void        operator()(Args... args);
+    event&      operator+=(callback_t callback);
 
 protected:
-    shared_handler  next_callback();
-	atomic<callback*> _handlers;
-	shared_handler _refHandlers;
+    typedef atomic_list<handler> handlers_t;
+    handlers_t _handlers;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-class event_base<Args...>::callback : public event_base<Args...>
+class event<Args...>::handler
 {
 public:
-	void raise(const Args... args);
-	void operator()(const Args... args);
+    handler() = default;
+    handler(callback_t callback, shared_service service);
 
-protected:
-	friend class event_base<Args...>; // Is this needed? ... remove it and find out!
-	event_base<Args...>::handler_t _handler;
-	weak_service _service;
+    const callback_t& callback() const;
+    const callback_t& callback(callback_t fn);
+    shared_service service();
+    shared_service service(shared_service service);
+
+private:
+    callback_t _callback;
+    weak_service _service;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-class event : public event_base<Args...>
+event<Args...>::handler::handler(callback_t fn, shared_service service)
+: _handler(move(fn))
+, _service(move(service))
 {
-public:
-	event();
-
-	void raise(const Args... args);
-	void operator()(const Args... args);
-};
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename... Args>
-inline typename event_base<Args...>::shared_handler event_base<Args...>::onRaise(const handler_t& handler)
-{
-	auto new_handler = make_shared<callback>();
-	new_handler->_handler = handler;
-	new_handler->_service = service::active();
-    return onRaise(new_handler);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event_base<Args...>::shared_handler event_base<Args...>::onRaise(shared_handler& handler)
+inline const typename event<Args...>::callback_t& event<Args...>::handler::callback() const
 {
-	auto new_handler = handler;
-	if (!new_handler->_handlers.load())
-	{
-		new_handler = make_shared<callback>();
-		new_handler->_handler = handler->_handler;
-		new_handler->_service = handler->_service;
-	}
-
-    callback* local = nullptr;
-	do {
-		new_handler->_handlers = _handlers.load();
-		new_handler->_refHandlers = _refHandlers;
-        _refHandlers = new_handler;
-        local = _refHandlers.get();
-	} while (!_handlers.compare_exchange_weak(local, _handlers.load()));
-
-	return new_handler;
+    return _callback;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event_base<Args...>::shared_handler event_base<Args...>::operator+=(const handler_t& handler)
+inline const typename event<Args...>::callback_t& event<Args...>::handler::callback(typename event<Args...>::callback_t fn)
 {
-	return onRaise(handler);
+    _callback = move(fn);
+    return _callback;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event_base<Args...>::shared_handler event_base<Args...>::operator+=(shared_handler& handler)
+inline shared_service event<Args...>::handler::service()
 {
-	return onRaise(handler);
+    return _service.lock();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event_base<Args...>::shared_handler event_base<Args...>::operator-=(shared_handler& callback)
-{	
-	return move(clear(callback));
+inline shared_service event<Args...>::handler::service(shared_service srvc)
+{
+    _service = srvc;
+    return _service.lock();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event_base<Args...>::shared_handler event_base<Args...>::clear(shared_handler& handler)
+inline void event<Args...>::clear()
 {
-    (void)handler;
-    // remove from list
-    //handler_t* handler;
-
+    _handlers.clear();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event_base<Args...>::shared_handler event_base<Args...>::next_callback()
+inline typename void event<Args...>::clear(typename event<Args...>::handler* callback)
 {
-    handler_t* handler;
-    shared_handler callback;
-    do {
-        handler = _handlers.load();
-        callback = _refHandlers;
-    } while (_handlers.compare_exchange_weak(handler, handler));
+    _handlers.remove(callback);
 
-    return move(callback);
+    return callback;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline void event_base<Args...>::callback::raise(const Args... args)
+inline typename event<Args...>::handler* event<Args...>::onRaise(typename event<Args...>::callback_t callback)
 {
-    shared_handler handler = next_callback();
-    if (handler)
+    return onRaise(forward<callback_t>(callback), service::active());
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+inline typename event<Args...>::handler* event<Args...>::onRaise(typename event<Args...>::callback_t callback, shared_service service)
+{
+    handler* result = nullptr;
+    handlers_t::node *node = new handlers_t::node();
+    if (node)
     {
-        shared_service service = handler->_service.lock();
+        node->get()->callback(forward<callback_t>(callback));
+        node->get()->service(forward<shared_service>(service));
+        _handlers.insert_next(node);
+        result = node->get();
+    }
+    return result;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+inline void event<Args...>::operator()(Args... args)
+{
+    raise(forward<Args>(args)...);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+inline event<Args...>& event<Args...>::operator+=(callback_t callback)
+{
+    onRaise(callback);
+    return *this; 
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename... Args>
+inline void event<Args...>::raise(Args... args)
+{
+    for (handler& callback : _handlers)
+    {
+        application* app = application::get();
+        shared_service service = callback.service();
         if (service)
         {
-            weak_handler trigger = handler;
-            service->post([trigger, args...]() {
-                shared_handler myHandler = trigger.lock();
-                if (myHandler)
-                {
-                    myHandler->callback(args...);
-                }
-            });
+            service->post(callback.callback(), forward<Args>(args)...);
+        }
+        else if (app)
+        {
+            app->post(callback.callback(), forward<Args>(args)...);
+        }
+        else
+        {
+            callback.callback()(forward<Args>(args)...);
         }
     }
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename... Args>
-inline void event_base<Args...>::callback::operator()(const Args... args) 
-{
-	raise(forward<Args>(args)...);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename... Args>
-inline void event_base<Args...>::clear()
-{ 
-    shared_handler handler;
-    _handlers.exchange(nullptr);
-    handler.swap(_refHandlers);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename... Args>
-event<Args...>::event()
-{
-    event_base<Args...>::clear();
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename... Args>
-inline void event<Args...>::raise(const Args... args)
-{
-    shared_handler callback = next_callback();
-	callback->raise(args...);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-template<typename... Args>
-void event<Args...>::operator()(const Args... args)
-{
-    raise(args...);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

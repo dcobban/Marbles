@@ -22,9 +22,6 @@
     <Filter Include="Reflection\Source">
       <UniqueIdentifier>{6fc5880e-8d58-4d86-9cb4-c8e8e4cc3bbc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Rendering">
-      <UniqueIdentifier>{67fd60bf-53e9-407e-becd-e63d4d13672a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Serialization">
       <UniqueIdentifier>{a8027e20-c428-457a-b30c-18a1c4efac6e}</UniqueIdentifier>
     </Filter>
@@ -33,6 +30,9 @@
     </Filter>
     <Filter Include="Sequencer">
       <UniqueIdentifier>{fb193592-2de7-4786-b7fb-7258b3c20e8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{67fd60bf-53e9-407e-becd-e63d4d13672a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -137,14 +137,8 @@
     <ClInclude Include="Common\Memory.h">
       <Filter>Common</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer\Renderer.h">
-      <Filter>Rendering</Filter>
-    </ClInclude>
     <ClInclude Include="Common\Argument.h">
       <Filter>Common</Filter>
-    </ClInclude>
-    <ClInclude Include="Common\Source\Platform_Win32.h">
-      <Filter>Application\Source</Filter>
     </ClInclude>
     <ClInclude Include="Common\AtomicBuffer.h">
       <Filter>Common</Filter>
@@ -154,6 +148,9 @@
     </ClInclude>
     <ClInclude Include="Common\Allocator.h">
       <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform\Window.h">
+      <Filter>Platform</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -166,9 +163,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application\Source\Application.cpp">
-      <Filter>Application\Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Application\Source\Platform_Win32.cpp">
       <Filter>Application\Source</Filter>
     </ClCompile>
     <ClCompile Include="Application\Source\Service.cpp">
@@ -187,16 +181,17 @@
       <Filter>Serialization\Source</Filter>
     </ClCompile>
     <ClCompile Include="Marbles.cpp" />
-    <ClCompile Include="Renderer\Renderer.cpp">
-      <Filter>Rendering</Filter>
-    </ClCompile>
     <ClCompile Include="Common\Source\Memory.cpp">
       <Filter>Common\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\Window.cpp">
+      <Filter>Platform</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Sequencer\readme">
       <Filter>Sequencer</Filter>
     </None>
+    <None Include="prebuild.bat" />
   </ItemGroup>
 </Project>

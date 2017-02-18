@@ -57,25 +57,31 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)external\glm;$(SolutionDir)external\glfw\include;C:\VulkanSDK\1.0.37.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>Marbles.h</PrecompiledHeaderFile>
       <GenerateXMLDocumentationFiles>true</GenerateXMLDocumentationFiles>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
-      <DisableSpecificWarnings>4477;4313</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4477;4313;4201</DisableSpecificWarnings>
       <ForcedIncludeFiles>Marbles.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnablePREfast>false</EnablePREfast>
       <FunctionLevelLinking>true</FunctionLevelLinking>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;VKstatic.1.lib</AdditionalDependencies>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw\lib-vc2015;C:\VulkanSDK\1.0.37.0\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference />
+    <PreBuildEvent>
+      <Command>prebuild.bat</Command>
+    </PreBuildEvent>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
@@ -84,10 +90,9 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)external\glm;$(SolutionDir)external\glfw\include;C:\VulkanSDK\1.0.37.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <FloatingPointModel>Fast</FloatingPointModel>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -96,14 +101,21 @@
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>true</TreatWarningAsError>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <DisableSpecificWarnings>4477;4313</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4477;4313;4201</DisableSpecificWarnings>
       <ForcedIncludeFiles>Marbles.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnablePREfast>true</EnablePREfast>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>opengl32.lib</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw\lib-vc2015;C:\VulkanSDK\1.0.37.0\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
+    <ProjectReference />
+    <PreBuildEvent>
+      <Command>prebuild.bat</Command>
+    </PreBuildEvent>
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
@@ -120,7 +132,6 @@
     <ClInclude Include="Common\Hash.h" />
     <ClInclude Include="Common\AtomicList.h" />
     <ClInclude Include="Common\Memory.h" />
-    <ClInclude Include="Common\Source\Platform_Win32.h" />
     <ClInclude Include="Behaviour\Agent.h" />
     <ClInclude Include="Behaviour\Bag.h" />
     <ClInclude Include="Behaviour\Behaviour.h" />
@@ -128,6 +139,7 @@
     <ClInclude Include="Application\Event.h" />
     <ClInclude Include="Application\Platform.h" />
     <ClInclude Include="Application\Service.h" />
+    <ClInclude Include="Platform\Window.h" />
     <ClInclude Include="Reflection\Declaration.h" />
     <ClInclude Include="Reflection\Enumerator.h" />
     <ClInclude Include="Reflection\Field.h" />
@@ -142,7 +154,6 @@
     <ClInclude Include="Reflection\type_def.h" />
     <ClInclude Include="Reflection\TypeOf.h" />
     <ClInclude Include="Reflection\Value.h" />
-    <ClInclude Include="Renderer\Renderer.h" />
     <ClInclude Include="Sequencer\Sequence.h" />
     <ClInclude Include="Serialization\Format.h" />
     <ClInclude Include="Serialization\Reader.h" />
@@ -157,13 +168,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application\Source\Application.cpp" />
-    <ClCompile Include="Application\Source\Platform_Win32.cpp" />
     <ClCompile Include="Application\Source\Service.cpp" />
     <ClCompile Include="Common\Source\Memory.cpp" />
+    <ClCompile Include="Platform\Window.cpp" />
     <ClCompile Include="Reflection\Source\Member.cpp" />
     <ClCompile Include="Reflection\Source\Object.cpp" />
     <ClCompile Include="Reflection\Source\Type.cpp" />
-    <ClCompile Include="Renderer\Renderer.cpp" />
     <ClCompile Include="Serialization\Source\Serializer.cpp" />
     <ClCompile Include="Marbles.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -173,6 +183,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="prebuild.bat" />
     <None Include="Sequencer\readme" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

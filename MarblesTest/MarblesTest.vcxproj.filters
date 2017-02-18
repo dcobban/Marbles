@@ -13,6 +13,9 @@
     <Filter Include="Common">
       <UniqueIdentifier>{7a36d55c-14d8-4e19-af1f-b4e907ebaec2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Platform">
+      <UniqueIdentifier>{4acec434-d8b7-4e35-98d0-367012b40bd1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Application\ServiceTests.cpp">
@@ -34,11 +37,17 @@
     <ClCompile Include="Common\AtomicTest.cpp">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="Platform\WindowTest.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Reflection\FooBar.h">
       <Filter>Reflection</Filter>
     </ClInclude>
     <ClInclude Include="MarblesTest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="prebuild.bat" />
   </ItemGroup>
 </Project>

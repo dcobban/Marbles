@@ -73,3 +73,5 @@ TEST(argument_test, parse_basic_arguments)
 	EXPECT_EQ("\"Happy hunting.\"", results.stringTest);
 	//BOOST_CHECK(0 == strcmp("\"Continue hunting.\"", &results.stringArrayTest[0]));
 }
+
+// End of file --------------------------------------------------------------------------------------------------------
