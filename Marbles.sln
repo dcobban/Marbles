@@ -7,19 +7,27 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Marbles", "Marbles\Marbles.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MarblesTest", "MarblesTest\MarblesTest.vcxproj", "{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "etch", "etch\etch.vcxproj", "{E0ECCBA5-91AE-42D5-9971-70D961F04821}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
+		Release|Win32 = Release|Win32
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Debug|Win32.ActiveCfg = Debug|x64
 		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Debug|x64.ActiveCfg = Debug|x64
 		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Debug|x64.Build.0 = Debug|x64
 		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Debug|x64.Deploy.0 = Debug|x64
+		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Release|Win32.ActiveCfg = Release|x64
 		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Release|x64.ActiveCfg = Release|x64
 		{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}.Release|x64.Build.0 = Release|x64
+		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Debug|Win32.ActiveCfg = Debug|x64
 		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Debug|x64.ActiveCfg = Debug|x64
 		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Debug|x64.Build.0 = Debug|x64
+		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Release|Win32.ActiveCfg = Release|x64
 		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Release|x64.ActiveCfg = Release|x64
 		{7BFA31D9-E1B3-4F5C-8CA9-3548740E4334}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection

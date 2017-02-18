@@ -45,10 +45,13 @@ public:
 	declaration			declare_info() const{ return declaration(shared_from_this(), mDeclaration); }
 	const char*			usage() const		{ return mUsage; }
 
+	virtual bool		callable() const	{ return false; }
+	virtual bool		readOnly() const	{ return false; }
 	virtual shared_type typeInfo() const	{ return mType.lock(); }
-	virtual object		assign(object self, const object& rhs) const;
+	virtual object		assign(object& self, const object& rhs) const;
 	virtual object		dereference(const object& self) const;
 	virtual object		append(object& self) const;
+	virtual object		call(object& self, object* pObjs, unsigned count) const;
 
 private:
 	string			    mName;

@@ -21,75 +21,94 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <reflection.h>
-#include <Common/Common.h>
+#include <application/Platform.h>
 
-// --------------------------------------------------------------------------------------------------------------------
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 namespace marbles
 {
-namespace reflection
+namespace 
 {
 // --------------------------------------------------------------------------------------------------------------------
-shared_type	declaration::typeInfo() const 
-{ 
-	return member->typeInfo(); 
-}
+class Platform_Win32 : public Platform
+{
+private:
+	static TCHAR sgMarblesWindow[];
 
-// --------------------------------------------------------------------------------------------------------------------
-member::member(const string name, const declaration& declaration, const char* usage)
-: mName(move(name))
-, mType(declaration.typeInfo())
-, mUsage(usage)
-, mDeclaration(declaration)
-{
-	mHashName = type_info::hash(this->name());
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-member::member(const string name, const shared_type& type_info, const char* usage)
-: mName(move(name))
-, mType(type_info)
-, mUsage(usage)
-{
-	mHashName = type_info::hash(this->name());
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-object member::assign(object& self, const object& rhs) const
-{
-	ASSERT(self.isValid());
-	ASSERT(rhs.typeInfo()->implements(self.typeInfo()));
-	const type_info::member_list& members = self.typeInfo()->members();
-	for(type_info::member_list::const_iterator i = members.begin(); i < members.end(); ++i)
+	// --------------------------------------------------------------------------------------------------------------------
+	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
-		self.at(*i) = rhs.at(*i);
+		int wmId, wmEvent;
+	//	PAINTSTRUCT ps;
+	//	HDC hdc;
+
+		switch (message)
+		{
+		case WM_COMMAND:
+			wmId    = LOWORD(wParam);
+			wmEvent = HIWORD(wParam);
+			// Parse the menu selections:
+			//switch (wmId)
+			//{
+			//case IDM_ABOUT:
+			//	DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			//	break;
+			//case IDM_EXIT:
+			//	DestroyWindow(hWnd);
+			//	break;
+			//default:
+				return DefWindowProc(hWnd, message, wParam, lParam);
+			//}
+			break;
+		case WM_PAINT:
+			//hdc = BeginPaint(hWnd, &ps);
+			//// TODO: Add any drawing code here...
+			//EndPaint(hWnd, &ps);
+			break;
+		case WM_DESTROY:
+			PostQuitMessage(0);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+		return 0;
 	}
-	return self;
-}
+
+	// --------------------------------------------------------------------------------------------------------------------
+	ATOM RegisterMarblesWindow(HINSTANCE hInstance)
+	{
+		WNDCLASSEX wcex;
+
+		wcex.cbSize			= sizeof(WNDCLASSEX);
+		wcex.style			= CS_HREDRAW | CS_VREDRAW;
+		wcex.lpfnWndProc	= WndProc;
+		wcex.cbClsExtra		= 0;
+		wcex.cbWndExtra		= 0;
+		wcex.hInstance		= hInstance;
+		wcex.hIcon			= NULL; // LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TEST));
+		wcex.hCursor		= NULL; // LoadCursor(NULL, IDC_ARROW);
+		wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
+		wcex.lpszMenuName	= NULL; // MAKEINTRESOURCE(IDC_TEST);
+		wcex.lpszClassName	= sgMarblesWindow;
+		wcex.hIconSm		= NULL; // LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+		return RegisterClassEx(&wcex);
+	}
+};
 
 // --------------------------------------------------------------------------------------------------------------------
-object member::dereference(const object& /*self*/) const
-{
-	ASSERT(!"Object cannot be dereferened.");
-	return object();
-}
+TCHAR Platform_Win32::sgMarblesWindow[] = TEXT("MarblesWindow");
 
 // --------------------------------------------------------------------------------------------------------------------
-object member::append(object& /*self*/) const
-{
-	ASSERT(!"Object cannot perform append default object.");
-	return object();
-}
+static Platform_Win32 sPlatform;
 
 // --------------------------------------------------------------------------------------------------------------------
-object member::call(object& /*self*/, object* /*pObjs*/, unsigned /*count*/) const
-{
-	ASSERT(!"Object cannot perform call operation.");
-	return object();
-}
+} // namespace <>
 
 // --------------------------------------------------------------------------------------------------------------------
-} // namespace reflection
+Platform* Platform::sInstance = &sPlatform;
+
 } // namespace marbles
 
 // End of file --------------------------------------------------------------------------------------------------------

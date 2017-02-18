@@ -93,12 +93,12 @@ bool Reader<F>::Read(istream& is, object& value)
 template<typename F> template <typename T> 
 bool Reader<F>::Translate(istream& is, object& obj)
 {
-	bool canWrite = type_of<T>() == obj.typeInfo();
-	if (canWrite)
+	bool canRead = type_of<T>() == obj.typeInfo();
+	if (canRead)
 	{
 		mFormat.Read(os, obj.as<T>());
 	}
-	return canWrite;
+	return canRead;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -24,6 +24,7 @@
 #pragma once
 
 #include <memory>
+#include <algorithm>
 #include <type_traits>
 #include <Common/Function_Traits.h>
 
@@ -81,10 +82,9 @@ struct HasIndexer
 {
 	template<typename U, typename V, typename K, V (U::*)(K)> struct signature
 	{
-		typedef function_traits<V (U::*)(K)> FnTraits;
-		typedef typename FnTraits::member_type container_type;
-		typedef typename FnTraits::return_type value_type;
-		typedef typename FnTraits::arg0_type key_type;
+		typedef typename U container_type;
+		typedef typename V value_type;
+		typedef typename K key_type;
 	};
 	struct void_signature
 	{

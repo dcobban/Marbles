@@ -63,8 +63,8 @@ TEST(argument_test, parse_basic_arguments)
 		"-s", "\"Happy hunting.\"",
 		//"-a", "\"Continue hunting.\"",
 	};
-	const int argc = sizeof(argv) / sizeof(argv[0]);
-	const int count = args.parse(results, argc, argv);
+	const size_t argc = sizeof(argv) / sizeof(argv[0]);
+	const size_t count = args.parse(results, argc, argv);
 
 	EXPECT_EQ(count, info->members().size());
 	EXPECT_EQ(true, results.flagTest);

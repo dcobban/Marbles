@@ -89,7 +89,7 @@ private:
 			const bool isLong = 0 == _strnicmp(&argv[position][0], arg._name, max_argument_length);
 			const bool canTranslate = isMapped && (isShort || isLong);
 
-			return isMapped && (isShort || isLong);
+			return canTranslate;
 		});
 		return arg != _arguments.end() ? &(*arg) : NULL;
 	}
