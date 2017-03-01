@@ -68,7 +68,7 @@ REFLECT_TYPE(Foo,
 	REFLECT_MEMBER("X", &Foo::x, "")
 	REFLECT_MEMBER("Y", &Foo::y, "")
 	REFLECT_MEMBER("Z", &Foo::z, "")
-	REFLECT_MEMBER("GetFooBarFoo", &Foo::GetFooBarFoo, "")
+	//REFLECT_MEMBER("GetFooBarFoo", &Foo::GetFooBarFoo, "")
 	)
 
 REFLECT_TYPE(Bar,

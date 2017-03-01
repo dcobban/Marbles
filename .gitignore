@@ -166,3 +166,4 @@ pip-log.txt
 external/*
 googletest
 /.sync
+/.vs

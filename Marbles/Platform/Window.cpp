@@ -24,7 +24,7 @@
 #include <platform/window.h>
 
 #define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <GLFW\glfw3.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles {
@@ -180,6 +180,7 @@ int window::close()
     int result = -1;
     if (is_open())
     {
+        onClose(this);
         glfwDestroyWindow(_win->_window);
         _win->_window = nullptr;
         result = 0;
@@ -213,6 +214,12 @@ window::builder::builder(/*allocator*/)
             window* win = reinterpret_cast<window*>(glfwGetWindowUserPointer(glfwWin));
             win->onReposition(win, x, y);
         });
+        glfwSetWindowCloseCallback(glfwWin, [](GLFWwindow* glfwWin)
+        {
+            window* win = reinterpret_cast<window*>(glfwGetWindowUserPointer(glfwWin));
+            win->onClose(win);
+        });
+
         return 0;
     }));
 }

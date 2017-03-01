@@ -51,7 +51,7 @@ public:
 		ASSERT(!"Not implemented");
 		return object();
 	}
-	virtual object		assign(object self, const object& rhs) const;
+	virtual object		assign(object& self, const object& rhs) const;
 private:
 };
 
@@ -77,13 +77,13 @@ public:
 		ASSERT(!"Not implemented");
 		return object();
 	}
-	virtual object		assign(object self, const object& rhs) const;
+    virtual object		assign(object& self, const object& rhs) const;
 private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T> 
-object memberT<T>::assign(object self, const object& rhs) const
+object memberT<T>::assign(object& self, const object& rhs) const
 {
 	ASSERT(self.isValid());
 	ASSERT(self.typeInfo()->implements(rhs.typeInfo()));
@@ -108,7 +108,7 @@ object memberT<T>::assign(object self, const object& rhs) const
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename T, int N>
-object memberT<T[N]>::assign(object self, const object& rhs) const
+object memberT<T[N]>::assign(object& self, const object& rhs) const
 {
 	ASSERT(self.isValid());
 	ASSERT(self.typeInfo()->implements(rhs.typeInfo()));

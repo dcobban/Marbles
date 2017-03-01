@@ -25,7 +25,9 @@
 
 TEST(window, basic_operations)
 {
+    int update = 1000;
     int x[3] = { 25 }, y[3] = { 25 };
+    int closed = 0;
     marbles::window win;
     marbles::window::builder builder;
 
@@ -36,18 +38,25 @@ TEST(window, basic_operations)
         x[1] = xPos;
         y[1] = yPos;
     };
+    win.onClose += [&closed](marbles::window* win)
+    {
+        (void)win;
+        closed = 1;
+    };
     builder.create(&win);
 
     win.position(&x[2], &y[2]);
     while (win.is_open())
     {
         win.poll();
-        win.close();
+        if (!(--update))
+            win.close();
     }
     EXPECT_EQ(x[0], x[1]);
     EXPECT_EQ(y[0], y[1]);
     EXPECT_EQ(x[1], x[2]);
     EXPECT_EQ(y[1], y[2]);
+    EXPECT_EQ(1, closed);
     win.poll();
     win.close();
 }

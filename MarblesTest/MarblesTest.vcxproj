@@ -141,13 +141,6 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Marbles\Marbles.vcxproj">
-      <Project>{b2377f9f-75af-48fd-b3ca-99017bfd9cc0}</Project>
-      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
-      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Application\ServiceTests.cpp" />
     <ClCompile Include="Common\ArgumentTest.cpp" />
     <ClCompile Include="Platform\WindowTest.cpp" />
@@ -166,6 +159,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="prebuild.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Marbles\Marbles.vcxproj">
+      <Project>{b2377f9f-75af-48fd-b3ca-99017bfd9cc0}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

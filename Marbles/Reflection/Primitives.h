@@ -39,20 +39,20 @@ template<> struct ::marbles::reflection::type_of_t<void>
 REFLECT_TYPE(marbles::reflection::type_info, REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
-REFLECT_TYPE(bool,				REFLECT_CREATOR())
-REFLECT_TYPE(marbles::byte_t,	REFLECT_CREATOR())
-REFLECT_TYPE(marbles::int8_t,	REFLECT_CREATOR())
-REFLECT_TYPE(marbles::int16_t,	REFLECT_CREATOR())
-REFLECT_TYPE(marbles::int32_t,	REFLECT_CREATOR())
-REFLECT_TYPE(marbles::int64_t,	REFLECT_CREATOR())
-REFLECT_TYPE(marbles::uint8_t,	REFLECT_CREATOR())
-REFLECT_TYPE(marbles::uint16_t, REFLECT_CREATOR())
-REFLECT_TYPE(marbles::uint32_t, REFLECT_CREATOR())
-REFLECT_TYPE(marbles::uint64_t, REFLECT_CREATOR())
-REFLECT_TYPE(marbles::float32_t, REFLECT_CREATOR())
-REFLECT_TYPE(marbles::float64_t, REFLECT_CREATOR())
-REFLECT_TYPE(marbles::string,	REFLECT_CREATOR())
-REFLECT_TYPE(marbles::reflection::object,REFLECT_CREATOR())
+REFLECT_TYPE(bool,				            REFLECT_CREATOR())
+REFLECT_TYPE(marbles::byte_t,	            REFLECT_CREATOR())
+REFLECT_TYPE(marbles::int8_t,	            REFLECT_CREATOR())
+REFLECT_TYPE(marbles::int16_t,	            REFLECT_CREATOR())
+REFLECT_TYPE(marbles::int32_t,	            REFLECT_CREATOR())
+REFLECT_TYPE(marbles::int64_t,	            REFLECT_CREATOR())
+REFLECT_TYPE(marbles::uint8_t,	            REFLECT_CREATOR())
+REFLECT_TYPE(marbles::uint16_t,             REFLECT_CREATOR())
+REFLECT_TYPE(marbles::uint32_t,             REFLECT_CREATOR())
+REFLECT_TYPE(marbles::uint64_t,             REFLECT_CREATOR())
+REFLECT_TYPE(marbles::float32_t,            REFLECT_CREATOR())
+REFLECT_TYPE(marbles::float64_t,            REFLECT_CREATOR())
+REFLECT_TYPE(marbles::string,	            REFLECT_CREATOR())
+REFLECT_TYPE(marbles::reflection::object,   REFLECT_CREATOR())
 
 // --------------------------------------------------------------------------------------------------------------------
 REFLECT_TEMPLATE_TYPE(template<typename T>, marbles::char_traits<T>, )
@@ -88,6 +88,11 @@ public:
 // --------------------------------------------------------------------------------------------------------------------
 REFLECT_TEMPLATE_TYPE(template<typename T REFLECT_COMMA typename A>,
                       marbles::vector<T REFLECT_COMMA A>,
+					  REFLECT_CREATOR())
+
+// --------------------------------------------------------------------------------------------------------------------
+REFLECT_TEMPLATE_TYPE(template<typename T>,
+                      marbles::function<T>,
 					  REFLECT_CREATOR())
 
 // End of file --------------------------------------------------------------------------------------------------------
