@@ -22,16 +22,16 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 #include <platform/window.h>
+#include <platform/device.h>
+#include <chrono>
 
 TEST(window, basic_operations)
 {
     int update = 1000;
     int x[3] = { 25 }, y[3] = { 25 };
     int closed = 0;
-    marbles::window win;
-    marbles::window::builder builder;
 
-    builder.position(x[0], y[0]);
+    marbles::window win;
     win.onReposition += [&x, &y](marbles::window* win, int xPos, int yPos)
     {
         (void)win;
@@ -43,6 +43,9 @@ TEST(window, basic_operations)
         (void)win;
         closed = 1;
     };
+
+    marbles::window::builder builder;
+    builder.position(x[0], y[0]);
     builder.create(&win);
 
     win.position(&x[2], &y[2]);
@@ -61,7 +64,32 @@ TEST(window, basic_operations)
     win.close();
 }
 
+marbles::device* idealDevice(marbles::device::manager* manager)
+{
+    return manager->begin().get();
+}
+
+
 TEST(window, application_windows)
 {
-    // EXPECT_EQ(count, info->members().size());
+    int update = 1000;
+    marbles::device::manager manager("windowtest", 0, true);
+
+    marbles::window win;
+    marbles::window::builder builder;
+    builder.bind(idealDevice(&manager));
+    builder.fullscreen(true);
+    // builder.validation(true);
+    builder.create(&win);
+    while (win.is_open())
+    {
+        win.poll();
+
+        bool open = win.is_open();
+        if (win.is_open() && !(--update))
+        {
+            EXPECT_TRUE(open);
+            win.close();
+        }
+    }
 }

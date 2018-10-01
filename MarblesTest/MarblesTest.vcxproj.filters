@@ -40,6 +40,9 @@
     <ClCompile Include="Platform\WindowTest.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
+    <ClCompile Include="PlatformTest.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Reflection\FooBar.h">

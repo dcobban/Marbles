@@ -23,81 +23,19 @@
 
 #pragma once
 
-#include <application/event.h>
-
-struct GLFWmonitor;
+// --------------------------------------------------------------------------------------------------------------------
+#include <platform/compute.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
-class device;
-
 // --------------------------------------------------------------------------------------------------------------------
-class window
+class graphic : public compute
 {
 public:
-    window();
-
-    void size(int width, int height);
-    void size(int* width, int* height) const;
-    void position(int x, int y);
-    void position(int* x, int* y) const;
-    void cursor(double x, double y);
-    void cursor(double* x, double* y) const;
-
-    bool visible() const;
-    void visible(bool enable);
-    bool fullscreen() const;
-    void fullscreen(bool enable);
-
-    bool is_open() const;
-    void hide();
-    void show();
-    void poll() const;
-    int  close();
-
-    event<window*> onClose;
-    event<window*, int, int> onResize;
-    event<window*, int, int> onReposition;
-
     class builder;
-private:
-    struct internal;
-    struct delete_internal
-    {
-        void operator()(internal* _win) const;
-    };
-    typedef unique_ptr<internal, delete_internal> unique_internal;
-
-    shared_ptr<internal> _internal;
-}; // class window
-
-// --------------------------------------------------------------------------------------------------------------------
-class window::builder
-{
-public:
-    builder();
-
-    void name(const char* name);
-    void size(int width, int height);
-    void position(int x, int y);
-    void visible(bool enable);
-    void fullscreen(bool enable);
-    void validation(bool enable);
-
-    bool bind(marbles::device* rasterizer);
-    int create(window*);
-private:
-    vector<future<int>> _pre;
-    vector<future<int>> _post;
-
-    window* _win;
-    const char* _name;
-    int _width;
-    int _height;
-    bool _fullscreen;
-    bool _validation;
-}; // class window::builder
+    // swap chain
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles

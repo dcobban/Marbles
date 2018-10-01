@@ -22,9 +22,10 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 #include <platform/window.h>
+#include <platform/device.h>
 
 #define GLFW_INCLUDE_VULKAN
-#include <GLFW\glfw3.h>
+#include <GLFW/glfw3.h>
 
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles {
@@ -52,8 +53,8 @@ struct window::internal
     {
         _window = nullptr;
         _cursor = nullptr;
-        _glfw = s_glfw.lock();
 
+        _glfw = s_glfw.lock();
         if (!_glfw)
         {
             _glfw = make_shared<glfw>();
@@ -64,6 +65,7 @@ struct window::internal
     shared_ptr<glfw> _glfw;
     GLFWwindow* _window;
     GLFWcursor* _cursor;
+    VkSurfaceKHR _surface;
 
     static weak_ptr<glfw> s_glfw;
 };
@@ -79,14 +81,14 @@ void window::delete_internal::operator()(internal* win) const
 
 // --------------------------------------------------------------------------------------------------------------------
 window::window() 
-: _win(new internal())
+: _internal(new internal())
 {
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 bool window::fullscreen() const
 {
-    return _win && glfwGetWindowMonitor(_win->_window);
+    return _internal && glfwGetWindowMonitor(_internal->_window);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -94,7 +96,7 @@ void window::size(int width, int height)
 {
     if (is_open())
     {
-        glfwSetWindowSize(_win->_window, width, height);
+        glfwSetWindowSize(_internal->_window, width, height);
     }
 }
 
@@ -103,7 +105,7 @@ void window::size(int* width, int* height) const
 {
     if (is_open())
     {
-        glfwGetWindowSize(_win->_window, width, height);
+        glfwGetWindowSize(_internal->_window, width, height);
     }
 }
 
@@ -112,7 +114,7 @@ void window::position(int x, int y)
 {
     if (is_open())
     {
-        glfwSetWindowPos(_win->_window, x, y);
+        glfwSetWindowPos(_internal->_window, x, y);
     }
 }
 
@@ -121,7 +123,7 @@ void window::position(int* x, int* y) const
 {
     if (is_open())
     {
-        glfwGetWindowPos(_win->_window, x, y);
+        glfwGetWindowPos(_internal->_window, x, y);
     }
 }
 
@@ -130,7 +132,7 @@ void window::cursor(double x, double y)
 {
     if (is_open())
     {
-        glfwSetCursorPos(_win->_window, x, y);
+        glfwSetCursorPos(_internal->_window, x, y);
     }
 }
 
@@ -139,7 +141,7 @@ void window::cursor(double* x, double* y) const
 {
     if (is_open())
     {
-        glfwGetCursorPos(_win->_window, x, y);
+        glfwGetCursorPos(_internal->_window, x, y);
     }
 }
 
@@ -148,7 +150,7 @@ void window::hide()
 {
     if (is_open())
     {
-        glfwHideWindow(_win->_window);
+        glfwHideWindow(_internal->_window);
     }
 }
 
@@ -157,7 +159,7 @@ void window::show()
 {
     if (is_open())
     {
-        glfwShowWindow(_win->_window);
+        glfwShowWindow(_internal->_window);
     }
 }
 
@@ -170,19 +172,24 @@ void window::poll() const
 // --------------------------------------------------------------------------------------------------------------------
 bool window::is_open() const
 {
-    return _win && nullptr != _win->_window && !glfwWindowShouldClose(_win->_window);
+    return _internal && nullptr != _internal->_window && !glfwWindowShouldClose(_internal->_window);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 int window::close()
 {
-    assert(_win);
+    assert(_internal);
     int result = -1;
     if (is_open())
     {
         onClose(this);
-        glfwDestroyWindow(_win->_window);
-        _win->_window = nullptr;
+        
+        if (_internal->_surface)
+        {
+            // vkDestroySurfaceKHR(instance, _surface, allocator);
+        }
+        glfwDestroyWindow(_internal->_window);
+        _internal->_window = nullptr;
         result = 0;
     }
     return result;
@@ -191,23 +198,27 @@ int window::close()
 // --------------------------------------------------------------------------------------------------------------------
 window::builder::builder(/*allocator*/)
 : _win(nullptr)
-, _name("Marble Window")
+, _name("Marbles")
 , _width(1280)
 , _height(720)
 , _fullscreen(false)
+, _validation(false)
 {
     _pre.reserve(8);
     _pre.push_back(async(launch::deferred, [this]() -> int
     {
         glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // using vulkan
+        if (glfwVulkanSupported())
+        {
+            glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API); // use vulkan
+        }
         return 0;
     }));
 
     _post.reserve(8);
     _post.push_back(async(launch::deferred, [this]() -> int
     {
-        GLFWwindow* glfwWin = this->_win->_win->_window;
+        GLFWwindow* glfwWin = this->_win->_internal->_window;
         glfwSetWindowUserPointer(glfwWin, this->_win);
         glfwSetWindowPosCallback(glfwWin, [](GLFWwindow* glfwWin, int x, int y)
         {
@@ -216,9 +227,10 @@ window::builder::builder(/*allocator*/)
         });
         glfwSetWindowCloseCallback(glfwWin, [](GLFWwindow* glfwWin)
         {
-            window* win = reinterpret_cast<window*>(glfwGetWindowUserPointer(glfwWin));
+            window* win = reinterpret_cast<window*>(glfwGetWindowUserPointer(glfwWin)); 
             win->onClose(win);
         });
+        
 
         return 0;
     }));
@@ -271,13 +283,26 @@ void window::builder::fullscreen(bool enable)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+void window::builder::validation(bool enable)
+{
+    _validation = enable;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+bool window::builder::bind(marbles::device* rasterizer)
+{
+    (void)rasterizer;
+    return false;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 int window::builder::create(window* win)
 {
     int result = -1;
     _win = win;
     if (_win)
     {
-        _win->_win.reset(new window::internal());
+        _win->_internal.reset(new window::internal());
         for (auto& task : _pre)
         {
             result = task.get();
@@ -294,10 +319,16 @@ int window::builder::create(window* win)
             {
                 monitor = glfwGetPrimaryMonitor();
             }
-            _win->_win->_window = glfwCreateWindow(_width, _height, _name, monitor, nullptr);
+            _win->_internal->_window = glfwCreateWindow(_width, _height, _name, monitor, nullptr);
 
-            if (_win->_win->_window)
+            if (_win->_internal->_window)
             {
+                // VDeleter<VkSurfaceKHR> surface { instance, vkDestroySurfaceKHR };
+
+                //if (glfwCreateWindowSurface(instance, _win->_internal->_window, nullptr, _surface) != VK_SUCCESS)
+                //{
+                //}
+                //_win->_internal->_surface;
                 for (auto& task : _post)
                 {
                     result = task.get();
