@@ -51,7 +51,7 @@ private:
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F> 
-Reader<F>::Reader(bool endianSwap = false)
+Reader<F>::Reader(bool endianSwap/* = false*/)
 : mFormat(object(), endianSwap)
 {
 }

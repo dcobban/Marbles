@@ -68,7 +68,7 @@ private:
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename F> 
-Writer<F>::Writer(const object& obj, bool endianSwap = false)
+Writer<F>::Writer(const object& obj, bool endianSwap /*= false*/)
 : mFormat(obj, endianSwap)
 {
 	mPath.push_back(obj);

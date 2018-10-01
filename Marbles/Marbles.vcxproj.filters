@@ -152,6 +152,9 @@
     <ClInclude Include="Platform\Window.h">
       <Filter>Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Platform\Device.h">
+      <Filter>Platform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Application\Application.txt">
@@ -185,6 +188,9 @@
       <Filter>Common\Source</Filter>
     </ClCompile>
     <ClCompile Include="Platform\Window.cpp">
+      <Filter>Platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform\Device.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
   </ItemGroup>
