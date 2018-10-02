@@ -27,4 +27,7 @@
 #include <reflection.h>
 #include <application/application.h>
 
+// Dependent libraries are build off a different compiler and require this additional library.
+#pragma comment(lib,"legacy_stdio_definitions.lib") 
+
 // End of file --------------------------------------------------------------------------------------------------------

@@ -74,9 +74,10 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;VKstatic.1.lib</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;VKstatic.1.lib;Shlwapi.lib</AdditionalDependencies>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
       <AdditionalLibraryDirectories>$(SolutionDir)external\glfw\lib-vc2015;C:\VulkanSDK\1.0.39.1\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Lib>
     <ProjectReference />
     <PreBuildEvent>
@@ -109,8 +110,9 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;Shlwapi.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)external\glfw\lib-vc2015;C:\VulkanSDK\1.0.39.1\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Lib>
     <ProjectReference />
     <PreBuildEvent>

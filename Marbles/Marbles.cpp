@@ -1,6 +1,16 @@
 // marbles.cpp : Defines the entry point for the console application.
 //
 
+#if !defined NDEBUG
+// Implemented to resolve: "error LNK2019: unresolved external symbol __iob_func referenced in function loader_log
+FILE _iob[] = { *stdin, *stdout, *stderr };
+
+extern "C" FILE * __cdecl __iob_func(void)
+{
+	return _iob;
+}
+#endif // #if !defined NDEBUG
+
 #if defined CONFIG_DEBUG
 namespace marbles
 {
