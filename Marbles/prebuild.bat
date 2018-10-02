@@ -14,7 +14,7 @@ set GLMDIR=%GLM%
 IF EXIST %GLMDIR% GOTO :GETGLFW
 set GLMURL=https://github.com/g-truc/glm/archive/master.zip
 set GLMZIP=master.zip
-set GLMOUT=%GLMZIP%b
+set GLMOUT=%GLMZIP%
 echo downloading %GLMURL%
 powershell -command "Invoke-WebRequest %GLMURL% -OutFile %GLMOUT%"
 echo expanding %GLMZIP% to %GLMDIR%
