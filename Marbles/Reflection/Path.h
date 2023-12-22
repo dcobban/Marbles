@@ -51,7 +51,7 @@ public:
 	PathT& operator=(const string& path);
 	PathT& operator=(const PathT& path);
 
-	static const char Seperator = '.';
+	static const char Seperator;
 private:
 	typedef vector<_Hash, _Ax> base_type;
 	static base_type Parse(const char* path);
@@ -82,11 +82,12 @@ PathT<_Hash, _HashFn, _Ax>::PathT(const PathT& path)
 {
 }
 
+// --------------------------------------------------------------------------------------------------------------------
 template<typename _Hash, _Hash (*_HashFn)(const char*), typename _Ax>
 _Hash PathT<_Hash, _HashFn, _Ax>::hashName() const
 {
 	_Hash hashName = 0;
-	for (iterator i = begin(); i != end(); ++i)
+	for (auto i = base_type::begin(); i != base_type::end(); ++i)
 	{
 		hashName += *i;
 	}
@@ -118,8 +119,8 @@ void PathT<_Hash, _HashFn, _Ax>::push_back(const string& value)
 template<typename _Hash, _Hash (*_HashFn)(const char*), typename _Ax>
 void PathT<_Hash, _HashFn, _Ax>::push_back(const PathT<_Hash, _HashFn, _Ax>& path)
 {
-	reserve(size() + path.size());
-	for (base_type::iterator i = path.begin(); i != path.end(); ++i)
+	reserve(base_type::size() + path.size());
+	for (auto i = path.begin(); i != path.end(); ++i)
 	{
 		base_type::push_back(*i);
 	}
@@ -129,7 +130,7 @@ void PathT<_Hash, _HashFn, _Ax>::push_back(const PathT<_Hash, _HashFn, _Ax>& pat
 template<typename _Hash, _Hash (*_HashFn)(const char*), typename _Ax>
 PathT<_Hash, _HashFn, _Ax>& PathT<_Hash, _HashFn, _Ax>::operator=(const _Hash& value)
 {
-	clear();
+	base_type::clear();
 	base_type::push_back(value);
 	return *this;
 }

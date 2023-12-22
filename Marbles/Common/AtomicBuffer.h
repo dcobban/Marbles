@@ -20,16 +20,18 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
+
 #pragma once
 
 #include <type_traits> 
+#include "definitions.h"
 
 namespace marbles
 {
 
 // Lock-free circular buffer
 template<typename T, size_t N> 
-class alignas(alignment_of<T>::value) atomic_buffer
+class alignas(alignment_of<T>::value) atomic_buffer final
 {
 public:
 	atomic_buffer()
@@ -40,6 +42,11 @@ public:
 	{
 	}
 
+	~atomic_buffer()
+	{ 
+		clear();
+	}
+
     atomic_buffer(const atomic_buffer<T, N>&) = delete;
     atomic_buffer<T, N>& operator=(const atomic_buffer<T, N>&) = delete;
 
@@ -47,7 +54,9 @@ public:
 	{
 		const unsigned start = _start.load();
 		const unsigned end = _end.load();
-		return start <= end ? end - start : end + N + 1 - start;
+		const unsigned inclusive_range = end - start;
+		const unsigned exclusive_range = end + N - start;
+		return start <= end ? inclusive_range : exclusive_range;
 	}
 
 	inline unsigned capacity() const
@@ -62,14 +71,15 @@ public:
 
 	inline bool full() const
 	{
-		return N == size();
+		return (N - 1) == size();
 	}
 
 	void clear()
 	{
-		while (!empty())
+		T out; // Review: Causes all template types to require a default constructor, this API may not be appropriate
+		while (try_pop(out)) 
 		{
-			pop();
+			this_thread::yield();
 		}
 	}
 
@@ -80,7 +90,7 @@ public:
         do
         {	// Reserve an element to be created
             reserved = _init.load();
-            next = (reserved + 1) % (N + 1);
+            next = (reserved + 1) % N;
             const bool isFull = next == _clean.load();
             if (isFull)
             {
@@ -92,12 +102,12 @@ public:
 		// Element reserved, assign the value
 		new (items() + reserved) T(forward<T>(value));
 
-		// Syncronize the end position with the updated reserved position
+		// Synchronize the end position with the updated reserved position
 		const unsigned persist = reserved;
 		while (!_end.compare_exchange_weak(reserved, next))
 		{	// wait for the other element to be completed.
 			reserved = persist;
-			application::yield(); 
+			this_thread::yield(); 
 		}
 
 		return true;
@@ -107,7 +117,7 @@ public:
 	{
 		while (!try_push(forward<T>(value)))
 		{
-			application::yield();
+			this_thread::yield();
 		}
 	}
 
@@ -118,12 +128,12 @@ public:
 		do 
 		{
 			start = _start.load();
-			const bool isEmpty = start == _end.load();
-			if (isEmpty)
+			const bool is_empty = start == _end.load();
+			if (is_empty)
             {
 				return false;
             }
-			next = (start + 1) % (N + 1);
+			next = (start + 1) % N;
 		} while(!_start.compare_exchange_weak(start, next));
 		
 		out = move(*(items() + start));
@@ -134,7 +144,7 @@ public:
 		while (!_clean.compare_exchange_weak(start, next))
 		{	// wait for the other element to be cleaned first
 			start = persist;
-			application::yield(); 
+			this_thread::yield();
 		}
 		
 		return true;
@@ -142,10 +152,10 @@ public:
 
 	T pop()
 	{
-		T tmp; // Review: Causes all template types to require a default constructor, this API may not be approprate
+		T tmp; // Review: Causes all template types to require a default constructor, this API may not be appropriate
 		while (!try_pop(tmp))
 		{
-			application::yield();
+			this_thread::yield();
 		}
 		return move(tmp);
 	}
@@ -153,7 +163,7 @@ public:
     const T& operator[](int index) const
     {
         assert(index < size());
-        const int position = (start + index) % (N + 1);
+        const int position = (_start + index) % N;
         return *(items() + position);
     }
 
@@ -161,7 +171,7 @@ private:
 	T*                  items()       { return reinterpret_cast<T*>(&_reserve[0]); }
 	const T*            items() const { return reinterpret_cast<const T*>(&_reserve[0]); }
 
-	char				_reserve[sizeof(T) * (N + 1)];
+	uint8_t				_reserve[sizeof(T) * N];
 	atomic<unsigned>	_start;
 	atomic<unsigned>	_end;
 	atomic<unsigned>	_init;

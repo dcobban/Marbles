@@ -1,3 +1,26 @@
+// This source file is part of marbles library.
+//
+// Copyright (c) 2023 Dan Cobban
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+// --------------------------------------------------------------------------------------------------------------------
+
 #pragma once
 
 #include <Common/Common.h>
@@ -72,7 +95,7 @@ public:
 
     atomic_list<T>& set_next(node* next_value)
     {
-        while (!try_set_next(next_value)) {}
+        _next.exchange(next_value);
         return *this;
     }
 
@@ -100,14 +123,17 @@ public:
     atomic_list<T>& append(node* next_value)
     { 
         auto last = this;
-        auto end = last->next();
-        while (nullptr != end)
-        {
-            last = end;
-            end = last->next();
-        }
+        do {
+            const auto* next = last->next();
+            if (nullptr == next && !last->try_insert_next(next_value))
+            { 
+                continue;
+            }
+			last = last->next();
+            assert(nullptr != last);
+        } while (next_value != last);
 
-        return last->insert_next(next_value);
+        return *this;
     }
 
     iterator begin()

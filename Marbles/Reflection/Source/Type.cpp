@@ -108,13 +108,13 @@ const bool type_info::operator==(const type_info& type_info) const
 // --------------------------------------------------------------------------------------------------------------------
 hash_t type_info::hash(const char* str)
 {
-	return hash::djb2(str);
+	return marbles::hash::djb2(str);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 hash_t type_info::hash(const void* obj, size_t size)
 {
-	return hash::djb2(obj, size);
+	return marbles::hash::djb2(obj, size);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -22,15 +22,14 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 #include <Common/Argument.h>
-#include <string>
 
 struct TestResults
 {
-	bool flagTest;
-	int intTest;
-	float floatTest;
-    marbles::string stringTest;
-	char stringArrayTest[32];
+	bool flagTest = false;
+	int intTest = 0;
+	float floatTest = 0.0;
+    marbles::string stringTest = "";
+	char stringArrayTest[32] = "";
 	// unique_ptr<char> stringDynamicTest;
 };
 
@@ -55,7 +54,7 @@ TEST(argument_test, parse_basic_arguments)
 	args.add("-s", "stringTest");
 	args.add("-a", "stringArrayTest");
 
-	char *argv[] = { 
+	const char *argv[] = { 
 		"MyApp.exe",
 		"-d",
 		"-i", "3.5",
@@ -64,14 +63,14 @@ TEST(argument_test, parse_basic_arguments)
 		//"-a", "\"Continue hunting.\"",
 	};
 	const size_t argc = sizeof(argv) / sizeof(argv[0]);
-	const size_t count = args.parse(results, argc, argv);
+	const size_t count = args.parse(results, argc, const_cast<char**>(argv));
 
 	EXPECT_EQ(count, info->members().size());
 	EXPECT_EQ(true, results.flagTest);
 	EXPECT_EQ(3, results.intTest);
 	EXPECT_EQ(3.5f, results.floatTest);
 	EXPECT_EQ("\"Happy hunting.\"", results.stringTest);
-	//BOOST_CHECK(0 == strcmp("\"Continue hunting.\"", &results.stringArrayTest[0]));
+	//EXPECT_EQ(0, strcmp("\"Continue hunting.\"", &results.stringArrayTest[0]));
 }
 
 // End of file --------------------------------------------------------------------------------------------------------

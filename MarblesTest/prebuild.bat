@@ -14,13 +14,13 @@ set GOOGLETEST=googletest
 set GOOGLETESTDIR=%GOOGLETEST%
 IF EXIST %GOOGLETESTDIR% GOTO :END
 set GOOGLETESTURL=https://github.com/google/googletest/archive/master.zip
-set GOOGLETESTZIP=googletext.zip
+set GOOGLETESTZIP=googletest.zip
 set GOOGLETESTOUT=%GOOGLETESTZIP%
 echo downloading %GOOGLETESTURL%
 powershell -command "Invoke-WebRequest %GOOGLETESTURL% -OutFile %GOOGLETESTOUT%"
 echo expanding %GOOGLETESTZIP% to %GOOGLETESTDIR%
 powershell -command "& { Add-Type -A 'System.IO.Compression.FileSystem'; [IO.Compression.ZipFile]::ExtractToDirectory('%GOOGLETESTOUT%', '.'); }"
-ren googletest-master %GOOGLETESTDIR%
+ren googletest-main %GOOGLETESTDIR%
 del /Q /F %GOOGLETESTOUT%
 
 :END

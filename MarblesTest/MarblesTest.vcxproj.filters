@@ -43,6 +43,9 @@
     <ClCompile Include="PlatformTest.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
+    <ClCompile Include="AllocatorTest.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Reflection\FooBar.h">

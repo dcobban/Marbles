@@ -21,21 +21,15 @@
 // THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
-#include <Common/AtomicBuffer.h>
 #include <Common/AtomicList.h>
+#include <Common/AtomicBuffer.h>
+#include <Common/AtomicQueue.h>
 #include <thread>
 
 void rest_thread(int value)
 {
-    // yield and sleep_for to encourage thread contention.
-    if (value % 10)
-    {
-        std::this_thread::sleep_for(std::chrono::microseconds(1));
-    }
-    else
-    {
-        std::this_thread::yield();
-    }
+	(void)value;
+    std::this_thread::sleep_for(std::chrono::microseconds(1));
 }
 
 template<typename T>
@@ -116,7 +110,7 @@ TEST(atomic_test, list_operations)
 
 TEST(atomic_test, buffer_operations)
 {
-	const int size = 10;
+	const int size = 9;
 	marbles::atomic_buffer<int, size> buffer;
 
 	int pop = 0;
@@ -127,15 +121,15 @@ TEST(atomic_test, buffer_operations)
 	while (buffer.try_push(push))
 	{
 		++push;
-		EXPECT_EQ(push, buffer.size());
+		EXPECT_EQ(push, (int)buffer.size());
 	}
 
 	EXPECT_EQ(true, buffer.full());
-	EXPECT_EQ(push, size);
+	EXPECT_EQ(push, size - 1);
 
-	while (buffer.try_pop(pop))
+	for (int i = 0; buffer.try_pop(pop); ++i)
 	{
-		EXPECT_EQ(pop, size - buffer.size() - 1);
+		EXPECT_EQ(pop, i);
 	}
 
 	EXPECT_EQ(true, buffer.empty());
@@ -160,25 +154,195 @@ TEST(atomic_test, buffer_operations)
 	EXPECT_EQ(true, buffer.empty());
 }
 
-TEST(atomic_test, multi_threaded_push_pop)
+TEST(atomic_test, queue_operations)
+{
+	const int size = 16;
+	marbles::atomic_queue<int, size> queue;
+
+	int pop = 0;
+	int push = 0;
+
+	EXPECT_TRUE(queue.empty());
+
+	while (size != push)
+	{
+		queue.enqueue(push++);
+	}
+
+	EXPECT_FALSE(queue.empty());
+
+	while (!queue.empty())
+	{
+		int value = 0;
+
+		EXPECT_TRUE(queue.dequeue(value));
+		EXPECT_EQ(pop++, value);
+	}
+
+	EXPECT_TRUE(queue.empty());
+
+	for (int i = 3*size; --i;)
+	{
+		queue.enqueue(push++);
+		queue.enqueue(push++);
+
+		int value = 0;
+		EXPECT_TRUE(queue.dequeue(value));
+		EXPECT_EQ(pop++, value);
+	}
+
+	while (!queue.empty())
+	{
+		queue.enqueue(push++);
+
+		int value = 0;
+		if (queue.dequeue(value))
+		{
+			EXPECT_EQ(pop++, value);
+		}
+		if (queue.dequeue(value))
+		{
+			EXPECT_EQ(pop++, value);
+		}
+	}
+
+	EXPECT_TRUE(queue.empty());
+}
+
+template<typename queue_t> void push_pop_multi()
+{
+	static const int32_t num_consumers = 3;
+	static const int32_t num_producers = 10;
+	static const int32_t num_produce = 1000;
+	marbles::atomic<int32_t> consumed[num_producers];
+	marbles::atomic<int32_t> consumer_end;
+	marbles::atomic<int32_t> producer_end;
+	std::thread workers[num_consumers + num_producers];
+
+	marbles::atomic_queue<int32_t, 32> id_queue;
+	marbles::atomic<int32_t> start = 0;
+
+	int32_t num_workers = 0;
+	for (int32_t i = num_consumers; i--;)
+	{
+		consumer_end.fetch_add(1);
+		std::thread consumer([&]()
+		{
+			int32_t id = 0;
+			while (0 <= producer_end.load() || !id_queue.empty())
+			{
+				if (id_queue.dequeue(id))
+				{
+					consumed[id].fetch_add(1);
+				}
+				else
+				{
+					rest_thread(id);
+				}
+			}
+			consumer_end.fetch_add(-1);
+		});
+		workers[num_workers++].swap(consumer);
+	}
+	for (int32_t i = num_producers; i--;)
+	{
+		consumed[i].store(0);
+		producer_end.fetch_add(1);
+
+		std::thread producer([&]()
+		{
+			while (0 == start.load())
+			{
+				std::this_thread::sleep_for(std::chrono::microseconds(1));
+			}
+
+			int32_t id = 0; // select id
+			do {
+				id = start.load();
+			} while (!start.compare_exchange_weak(id, id + 1));
+			rest_thread(id);
+
+			--id; // id should be in range [0 (num_producers - 1)]
+			for (int32_t i = num_produce; i--;)
+			{
+				id_queue.enqueue(id);
+				if (i % 5)
+				{
+					rest_thread(i);
+				}
+			}
+			producer_end.fetch_add(-1);
+		});
+		workers[num_workers++].swap(producer);
+	}
+
+	start.store(1);
+
+	for (int32_t i = 0; i < num_workers; ++i)
+	{
+		workers[i].join();
+	}
+
+	for (int32_t i = num_producers; i--;)
+	{
+		EXPECT_EQ(num_produce, consumed[i].load());
+	}
+}
+
+TEST(atomic_test, buffer_push_pop_multi)
 {
 	const int32_t quantity = 150;
 	const int32_t numProducers = 15;
 
-	marbles::atomic_buffer<wrap<int32_t>, numProducers*quantity> data;
-	marbles::atomic_buffer<int32_t, numProducers*quantity> consumerData;
-    marbles::array<std::thread, numProducers> producerThreads;
+	typedef marbles::array<int32_t, numProducers> tally_t;
+	tally_t tally;
+	for (auto& sum : tally)
+	{
+		sum = 0;
+	}
+
+	const size_t numConsumers = 6;
+	marbles::array<tally_t, numConsumers> tallySheet;
+	for (auto& count : tallySheet)
+	{
+		count = tally;
+	}
+
+	marbles::atomic<int> producerCount = numProducers;
+	marbles::atomic_buffer<int32_t, quantity> data;
+
+	marbles::array<std::thread, numProducers> producerThreads;
 	for (auto id = numProducers; id--;)
 	{
-        std::thread producer([&data, id, quantity]()
+        std::thread producer([&producerCount, &data, id, quantity]()
 		{
 			for (auto i = quantity; i--;)
 			{
                 rest_thread(i);
                 data.push(id);
 			}
+			producerCount--;
 		});
 		producerThreads[id].swap(producer);
+	}
+
+	marbles::array<std::thread, numConsumers> consumerThreads;
+	for (auto id = numConsumers; id--;)
+	{
+		tally_t& count = tallySheet[id];
+		std::thread consumer([&producerCount, &count, &data]()
+		{
+			int value = 0;
+			while (0 != producerCount.load() || !data.empty())
+			{
+				rest_thread(value);
+				if (data.try_pop(value))
+				{
+					++count[value];
+				}
+			}
+		});
+		consumerThreads[id].swap(consumer);
 	}
 
 	for (auto j = producerThreads.size(); j--;)
@@ -186,49 +350,90 @@ TEST(atomic_test, multi_threaded_push_pop)
 		producerThreads[j].join();
 	}
 
-	typedef marbles::array<int, numProducers> tally_t;
+	for (auto j = consumerThreads.size(); j--;)
+	{
+		consumerThreads[j].join();
+	}
+
+	tally_t finalTally;
+	for (auto& value : finalTally)
+	{
+		value = 0;
+	}
+
+	for (auto& count : tallySheet)
+	{
+		for (auto i = count.size(); i--;)
+		{
+			finalTally[i] += count[i];
+		}
+	}
+
+	for (auto& sum : finalTally)
+	{
+		EXPECT_EQ(sum, quantity);
+	}
+}
+
+TEST(atomic_test, queue_push_pop_multi)
+{
+	const int32_t quantity = 150;
+	const int32_t numProducers = 15;
+
+	typedef marbles::array<int32_t, numProducers> tally_t;
 	tally_t tally;
 	for (auto& sum : tally)
 	{
 		sum = 0;
 	}
 
-	while (!data.empty())
-	{
-		int value = data.pop();
-		consumerData.push(value);
-		++tally[value];
-	}
-
-	for (auto sum : tally)
-	{
-		EXPECT_EQ(sum, quantity);
-	}
-
 	const size_t numConsumers = 6;
 	marbles::array<tally_t, numConsumers> tallySheet;
 	for (auto& count : tallySheet)
 	{
-		for (auto& value : count)
-		{
-			value = 0;
-		}
+		count = tally;
 	}
 
-    marbles::array<std::thread, numConsumers> consumerThreads;
+	marbles::atomic<int> producerCount = numProducers;
+	marbles::atomic_queue<int32_t, 16> data;
+
+	marbles::array<std::thread, numProducers> producerThreads;
+	for (auto id = numProducers; id--;)
+	{
+		std::thread producer([&producerCount, &data, id, quantity]()
+		{
+			for (auto i = quantity; i--;)
+			{
+				rest_thread(i);
+				data.enqueue(id);
+			}
+			producerCount--;
+		});
+		producerThreads[id].swap(producer);
+	}
+
+	marbles::array<std::thread, numConsumers> consumerThreads;
 	for (auto id = numConsumers; id--;)
 	{
 		tally_t& count = tallySheet[id];
-		std::thread consumer([&count, &consumerData]()
+		std::thread consumer([&producerCount, &count, &data]()
 		{
 			int value = 0;
-			while (consumerData.try_pop(value))
+			while (0 != producerCount.load() || !data.empty())
 			{
-				++count[value];
-                rest_thread(value);
-            }
+				rest_thread(value);
+				if (data.dequeue(value))
+				{
+					++count[value];
+				}
+			}
 		});
 		consumerThreads[id].swap(consumer);
+	}
+
+	for (auto j = producerThreads.size(); j--;)
+	{
+		producerThreads[j].join();
 	}
 
 	for (auto j = consumerThreads.size(); j--;)

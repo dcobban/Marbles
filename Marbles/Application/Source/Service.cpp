@@ -101,9 +101,9 @@ shared_service service::active()
 // --------------------------------------------------------------------------------------------------------------------
 shared_service service::create()
 {
-	shared_service service(new service()); // would like to use make_shared<service>() but service::service() is private
-	service->_self = service;
-	return move(service);
+	shared_service new_service(new service()); // would like to use make_shared<service>() but service::service() is private
+	new_service->_self = new_service;
+	return move(new_service);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

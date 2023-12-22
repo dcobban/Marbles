@@ -65,11 +65,11 @@ template<int N>
 struct ::marbles::reflection::type_of_t<char[N]> 
 : public ::marbles::reflection::instance_t< ::marbles::reflection::type_of_t<char[N]> > 
 {	
-	static ::marbles::reflection::shared_type typeInfo() 
+	typedef ::marbles::reflection::instance_t< ::marbles::reflection::type_of_t<char[N]> > super;
+	static ::marbles::reflection::shared_type typeInfo()
 	{ 
-		::marbles::reflection::shared_type typeInfo = get().reflect_type.lock(); 
-		if (!typeInfo) 
-			typeInfo = get().create(); 
+		::marbles::reflection::shared_type typeInfo = super::get().reflect_type.lock();
+		if (!typeInfo) { typeInfo = super::get().create(); }
 		return typeInfo; 
 	} 
 private: 

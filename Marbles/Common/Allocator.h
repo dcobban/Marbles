@@ -31,42 +31,159 @@ namespace marbles
 {
 
 // --------------------------------------------------------------------------------------------------------------------
-template<size_t BLOCK_SIZE>
-class block_allocator : public allocator<void>
+template<size_t block_size = 64>
+class block_allocator
 {
 public:
-    block_allocator() : _alloc(nullptr)
-    {}
+    block_allocator() 
+    : _free(nullptr)
+    , _outstanding(0)
+    {
+    }
+
     ~block_allocator()
     {
-        ::free(_alloc);
+        ASSERT(_outstanding == 0);
+        release();
     }
 
-    size_t capacity()
+    // Can a block be allocated
+    bool can_allocate() const 
     {
-        return _blocks; 
+        return nullptr != _free.load();
     }
 
-    bool reserve_blocks(size_t count)
+	// Total number of blocks available for allocation
+    int32_t num_available() const
     {
-        if (nullptr == _alloc)
+		int32_t count = 0;
+		block_t* head = nullptr;
+		do {
+			count = 0;
+			head = _free.load();
+			block_t* next = head;
+			while (nullptr != next)
+			{
+                ++count;
+				next = next->_next.load();
+			}
+		} while (head != _free.load()); // Another thread changed the free list
+
+		return count;
+    }
+
+    // Total number of blocks managed by this allocator
+    int32_t num_reserved() const
+    {
+        return num_available() + _outstanding.load();
+    }
+
+    // Increases the number of blocks available for allocation
+    bool reserve(int32_t count)
+    {
+		allocator<int8_t> blockAllocator;
+        block_t* block = nullptr;
+        do { 
+			block = reinterpret_cast<block_t*>(blockAllocator.allocate(sizeof(block_t)));
+
+            push_block(block);
+            if (nullptr != block)
+            {
+                count = count - 1;
+            }
+        } while (nullptr != block && 0 != count);
+
+        return nullptr != block;
+    }
+
+    // Release the number of given blocks or release all blocks in reserve
+    // @param count     release on 'count' number of buffers. if count <= 0 all buffers are removed.
+    // @return          number of buffers released from the pool
+    int32_t release(int32_t count = 0) 
+    {
+		allocator<int8_t> blockAllocator;
+        int32_t pop_count = 0;
+        block_t* head = nullptr;
+        do 
         {
-            _alloc = ::malloc(size);
+            head = pop_block();
+            if (nullptr != head)
+            {
+                --count;
+				++pop_count;
+				blockAllocator.deallocate(reinterpret_cast<int8_t*>(head), sizeof(block_t));
+            }
+        } while (nullptr != head && 0 != count);
+
+        return pop_count;
+    }
+
+    // Allocate a new object from the pool 
+    template<typename T, typename ...args> T* allocate(args...)
+    {
+        STATIC_ASSERT(sizeof(T) <= block_size);
+        block_t* head = pop_block();
+        if (nullptr != head)
+        {
+            ++_outstanding;
+			allocator<T> tAllocator;
+            T* out = reinterpret_cast<T*>(head);
+            allocator_traits<allocator<T>>::construct(tAllocator, out, args...);
+            return out;
         }
+        return nullptr;
+    }
+
+    // Free the given pointer to the pool
+    template<typename T> bool free(T* item)
+    {
+        if (nullptr != item)
+        {
+			allocator<T> tAllocator;
+            allocator_traits<allocator<T>>::destroy(tAllocator, item);
+			--_outstanding;
+
+            // TODO: Validate that this block was previously owned by the allocator?
+            block_t* blockItem = reinterpret_cast<block_t*>(item);
+            push_block(blockItem);
+        }
+	    return nullptr != item;
     }
 
 protected:
-    static const size_t page_size = 4*kb;
-    static_assert(BLOCK_SIZE <= (page_size >> 1), "Blocks must be smaller than the page size. (BLOCK_SIZE <= (page_size >> 1)");
-    static_assert(0 == page_size % BLOCK_SIZE, "page_size must be be divisable by BLOCK_SIZE (0 == page_size % BLOCK_SIZE)");
-    union block_t
+
+	static const size_t page_size = 4 * kb;
+	static_assert(block_size <= (page_size >> 1), "Blocks must be smaller than the page size. (BLOCK_SIZE <= (page_size >> 1)");
+	static_assert(0 == page_size % block_size, "page_size must be be divisable by BLOCK_SIZE (0 == page_size % BLOCK_SIZE)");
+	union block_t
+	{
+		atomic<block_t*> _next;
+		ubyte_t _block[block_size];
+	};
+
+    block_t* pop_block()
     {
-        atomic<block_t*> _next;
-        ubyte_t _block[BLOCK_SIZE];
-    };
+		block_t* head = nullptr;
+		do {
+			head = _free.load();
+		} while (nullptr != head && !_free.compare_exchange_weak(head, head->_next.load()));
+        return head;
+    }
+
+    void push_block(block_t* block)
+    {
+        if (nullptr != block)
+        {
+		    block_t* head = nullptr;
+            do {
+                head = _free.load();
+                block->_next = head;
+            } while (!_free.compare_exchange_weak(head, block));
+		}
+    }
+
     atomic<block_t*> _free;
     atomic<int32_t> _outstanding;
-    ubyte_t* _alloc;
 };
 
 // --------------------------------------------------------------------------------------------------------------------

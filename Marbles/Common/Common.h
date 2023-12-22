@@ -56,9 +56,9 @@ template<typename T> inline void Destruct(T* p) { p->~T(); }
 template<typename T> inline void Delete(T* p) { delete p; }
 
 template<typename T, typename... Args>
-T* Construct(Args&&... args) { return new T(forward<Args>(args)...)}
+T* Construct(Args&&... args) { return new T(forward<Args>(args)...); }
 template<typename T, typename... Args>
-T* Construct(void* p, Args&&... args) { return new (p) T(forward<Args>(args)...)}
+T* Construct(void* p, Args&&... args) { return new (p) T(forward<Args>(args)...); }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<class _Ty>

@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include <application/service.h>
+
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
@@ -72,8 +74,8 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-template<typename T, typename... ARG> 
-inline shared_service application::start(ARG&&... args)
+template<typename T, typename... Args>
+inline shared_service application::start(Args&&... args)
 {
 	shared_service srv = create_service();
 	if (srv)

@@ -34,6 +34,12 @@
 #include <cassert>
 #include <type_traits>
 #include <future>
+#include <chrono>
+#include <locale>
+#include <iostream>
+#include <sstream>
+#include <map>
+#include <bit>
 
 // --------------------------------------------------------------------------------------------------------------------
 #define TO_STRING2(label) #label
@@ -83,6 +89,7 @@ using std::async;
 using std::atomic;
 using std::alignment_of;
 using std::allocator;
+using std::allocator_traits;
 using std::char_traits;
 using std::const_pointer_cast;
 namespace chrono = std::chrono;
@@ -119,6 +126,11 @@ using std::unique_ptr;
 using std::use_facet;
 using std::vector;
 using std::weak_ptr;
+using std::map;
+//using std::byteswap; // C++23
+using std::bit_cast;
+using std::bit_ceil;
+using std::bit_floor;
 
 } // namespace marbles
 

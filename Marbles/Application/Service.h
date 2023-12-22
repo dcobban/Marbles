@@ -29,6 +29,12 @@
 // --------------------------------------------------------------------------------------------------------------------
 namespace marbles
 {
+class service;
+typedef future<int> task;
+typedef shared_ptr<task> shared_task;
+typedef weak_ptr<task> weak_task;
+typedef shared_ptr<service> shared_service;
+typedef weak_ptr<service> weak_service;
 
 // --------------------------------------------------------------------------------------------------------------------
 class service
@@ -56,7 +62,7 @@ public:
 
 	bool					operator==(const service& rhs);
 
-	~service() {}
+							~service() {}
 
 	// service API
 	static size_t			count();
@@ -67,7 +73,7 @@ private:
 	typedef shared_ptr<void> shared_provider;
 	typedef weak_ptr<void> weak_provider;
 
-							service();
+							explicit service();
 
 	template<typename T, typename... Args>
 	void					make_provider(Args&&... args);

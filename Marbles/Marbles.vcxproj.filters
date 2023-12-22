@@ -155,6 +155,9 @@
     <ClInclude Include="Platform\Device.h">
       <Filter>Platform</Filter>
     </ClInclude>
+    <ClInclude Include="Common\AtomicQueue.h">
+      <Filter>Common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Application\Application.txt">

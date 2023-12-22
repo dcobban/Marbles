@@ -30,7 +30,7 @@ namespace reflection
 {
 class object;
 typedef vector<object> ObjectList;
-typedef std::map<hash_t, object> ObjectMap;
+typedef map<hash_t, object> ObjectMap;
 
 #pragma warning(push)
 #pragma warning(disable: 4521) // C4521 : multiple copy constructors specified
@@ -155,7 +155,7 @@ template<typename T> struct object::To<T*>
 	{	// TODO: check readonly flag here
 		typedef remove_cv<T>::type NoConstT;
 		const void* address = &obj.mPointee;
-		return const_cast<T*>(*reinterpret_cast<NoConstT* const *>(address));
+		return const_cast<T*&>(*reinterpret_cast<NoConstT* const *>(address));
 	}
 };
 
@@ -181,7 +181,7 @@ template<typename T> inline	T& object::as() const
 // --------------------------------------------------------------------------------------------------------------------
 inline bool object::isValid() const
 {
-	return mPointee && mInfo.isValid();
+	return address() != nullptr && mInfo.isValid();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -260,7 +260,7 @@ template<> inline void object::createShared<void>(object& obj) { object invalid;
 template<typename T> inline void object::createShared(object& obj)
 {
 	shared_ptr<T> pT = make_shared<T>();
-	obj.Clone(*object(pT));
+	obj.swap(object(pT));
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -279,9 +279,81 @@ inline void object::_SetAddress(void* p)
 	
 	// TODO using the C++11 aliasing constructor shared_ptr::shared_ptr(shared_ptr<T>& base, T* alias)
 	// will remove this need.
-	// mPointee = shared_ptr<void>(shared_ptr<void>(), p);
-	mPointee.reset();
-	*reinterpret_cast<void**>(&mPointee) = p;
+	mPointee = shared_ptr<void>(shared_ptr<void>(), p);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename T>
+shared_type type_info::builder::create(const char* name)
+{
+	shared_ptr<type_info> candidate = shared_ptr<type_info>(new type_info());
+	shared_type type = const_pointer_cast<const type_info>(candidate);
+
+	unsigned numberOfParameters = template_traits<typename by_value<T>::type>::parameter_count();
+	candidate->mParameters.reserve(numberOfParameters);
+	for (unsigned i = 0; i < numberOfParameters; ++i)
+	{
+		candidate->mParameters.push_back(template_traits<typename by_value<T>::type>::parameter_at(i));
+	}
+	string fullname = template_traits<typename by_value<T>::type>::type_name(name);
+	shared_ptr< memberT<T> > mem = make_shared< memberT<T> >(move(fullname), type, "Default value type_info member.");
+	candidate->mByValue = declaration(static_pointer_cast<member>(mem));
+
+	if (type_info::_register(type))
+	{
+		mBuild.swap(candidate);
+	}
+	else
+	{
+		type.reset();
+	}
+
+	if (mBuild)
+	{
+		setCreator(&object::create<void>);
+		setAlignment(alignment_of<T>::value);
+		setSize(sizeof(T));
+	}
+
+	return type;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename T> void type_info::builder::addMember(const char* name, const char* description)
+{
+	addMember(name, type_of<T>(), description);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename T> void type_info::builder::addMember(const char* name, T member, const char* description)
+{
+	typedef T member_type;
+	shared_member memberInfo = make_shared< memberT<member_type> >(name, member, description);
+	if (memberInfo)
+	{
+		mBuild->mMembers.push_back(memberInfo);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename R, typename T> void type_info::builder::addMember(const char* name, R(T::* member)(), const char* description)
+{
+	typedef R(T::* member_type)();
+	shared_member memberInfo = std::make_shared< memberT<member_type> >(name, member, description);
+	if (memberInfo)
+	{
+		mBuild->mMembers.push_back(memberInfo);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+template<typename R, typename T> void type_info::builder::addMember(const char* name, R(T::* member)() const, const char* description)
+{
+	shared_member memberInfo = std::make_shared< memberT<R(T::*)() const> >(name, member, description);
+	if (memberInfo)
+	{
+		mBuild->mMembers.push_back(memberInfo);
+	}
 }
 
 // --------------------------------------------------------------------------------------------------------------------

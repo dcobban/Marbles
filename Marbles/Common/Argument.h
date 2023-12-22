@@ -35,18 +35,18 @@ class argument
 public:
 	static const int32_t max_argument_length = 32;
 
-	bool add(const char_t* option, const char_t* longName)
+	inline bool add(const char_t* option, const char_t* longName)
 	{
 		const bool canAdd = max_argument_length > strnlen(longName, max_argument_length);
 		if (canAdd)
 		{
-			_arguments.push_back({ option, longName, NULL });
+			_arguments.push_back({ option, longName, nullptr });
 		}
 		return canAdd;
 	}
 
 	// returns number of arguments parsed.
-	template<typename T> int parse(T& out, int argc, char_t** argv)
+	template<typename T> int parse(T& out, int argc, char ** argv)
 	{
 		reflection::shared_type type = reflection::type_of<T>(out);
 		for (auto& option : _arguments)
@@ -59,7 +59,7 @@ public:
 			}
 			else
 			{
-				option._member = NULL;
+				option._member = nullptr;
 			}
 		}
 
@@ -80,18 +80,18 @@ private:
 		reflection::shared_member _member;
 	};
 
-	const option* findOption(int position, int /*argc*/, char** argv) const
+	inline const option* findOption(int position, int /*argc*/, char** argv) const
 	{
 		auto arg = find_if(begin(_arguments), end(_arguments), [=](const option& arg)
 		{
-			const bool isMapped = NULL != arg._member;
+			const bool isMapped = nullptr != arg._member;
 			const bool isShort = 0 == _strnicmp(&argv[position][0], arg._option, max_argument_length);
 			const bool isLong = 0 == _strnicmp(&argv[position][0], arg._name, max_argument_length);
 			const bool canTranslate = isMapped && (isShort || isLong);
 
 			return canTranslate;
 		});
-		return arg != _arguments.end() ? &(*arg) : NULL;
+		return arg != _arguments.end() ? &(*arg) : nullptr;
 	}
 	template<typename T> struct value
 	{
@@ -99,7 +99,7 @@ private:
 		{
 			const bool isType = reflection::type_of<T>() == obj.typeInfo();
 			const option* opt = self.findOption(position, argc, argv);
-			const bool readValue = NULL == opt && isType;
+			const bool readValue = nullptr == opt && isType;
 			if (readValue)
 			{
 				stringstream ss(argv[position]);
@@ -112,11 +112,11 @@ private:
 	};
 	template<> struct value<bool>
 	{
-		static bool translate(reflection::object& obj, argument& self, int& position, int argc, char** argv)
+		static inline bool translate(reflection::object& obj, argument& self, int& position, int argc, char** argv)
 		{
 			const bool isBoolean = reflection::type_of<bool>() == obj.typeInfo();
 			const option* opt = self.findOption(position, argc, argv);
-			const bool readValue = NULL == opt;
+			const bool readValue = nullptr == opt;
 			if (isBoolean)
 			{
 				if (readValue)
@@ -135,11 +135,11 @@ private:
 	};
 	template<> struct value<string>
 	{
-		static bool translate(reflection::object& obj, argument& self, int& position, int argc, char** argv)
+		static inline bool translate(reflection::object& obj, argument& self, int& position, int argc, char** argv)
 		{
 			const bool isType = reflection::type_of<string>() == obj.typeInfo();
 			const option* opt = self.findOption(position, argc, argv);
-			const bool readValue = NULL == opt && isType;
+			const bool readValue = nullptr == opt && isType;
 			if (readValue)
 			{
 				stringstream ss(argv[position]);
@@ -164,11 +164,11 @@ private:
 	};
 	template<size_t N> struct value<char[N]>
 	{
-		static bool translate(reflection::object& obj, argument& self, int& position, int argc, char** argv)
+		inline static bool translate(reflection::object& obj, argument& self, int& position, int argc, char** argv)
 		{
 			const bool isType = reflection::type_of<char>() == obj.typeInfo();
 			const option* opt = self.findOption(position, argc, argv);
-			const bool readValue = NULL == opt && isType;
+			const bool readValue = nullptr == opt && isType;
 			if (readValue)
 			{
 				stringstream ss(argv[position]);
@@ -191,6 +191,7 @@ private:
 			return isType;
 		}
 	};
+
 	template<typename T> bool translateArgument(T& out, int& position, int argc, char** argv)
 	{
 		bool consumed = false;
@@ -221,6 +222,7 @@ private:
 	stringstream _sstream;
 	vector<option> _arguments;
 };
+
 
 // --------------------------------------------------------------------------------------------------------------------
 } // namespace marbles

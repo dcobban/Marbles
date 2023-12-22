@@ -14,17 +14,17 @@
     <ProjectGuid>{B2377F9F-75AF-48FD-B3CA-99017BFD9CC0}</ProjectGuid>
     <RootNamespace>Behaviour</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -57,7 +57,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)external\glm;$(SolutionDir)external\glfw\include;C:\VulkanSDK\1.0.39.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)external\glm;$(SolutionDir)external\glfw\include;C:\VulkanSDK\1.3.261.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -72,11 +72,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;VKstatic.1.lib;Shlwapi.lib</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib</AdditionalDependencies>
       <LinkTimeCodeGeneration>false</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw\lib-vc2015;C:\VulkanSDK\1.0.39.1\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw\lib-vc2015;C:\VulkanSDK\1.3.261.1\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Lib>
     <ProjectReference />
@@ -91,7 +92,7 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)external\glm;$(SolutionDir)external\glfw\include;C:\VulkanSDK\1.0.39.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)external\glm;$(SolutionDir)external\glfw\include;C:\VulkanSDK\1.3.261.1\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -108,10 +109,11 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;Shlwapi.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw\lib-vc2015;C:\VulkanSDK\1.0.39.1\Bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw\lib-vc2015;C:\VulkanSDK\1.3.261.1\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Lib>
     <ProjectReference />
@@ -126,6 +128,7 @@
     <ClInclude Include="Common\Argument.h" />
     <ClInclude Include="Common\AtomicBuffer.h" />
     <ClInclude Include="Common\Allocator.h" />
+    <ClInclude Include="Common\AtomicQueue.h" />
     <ClInclude Include="Common\Common.h" />
     <ClInclude Include="Common\Concept.h" />
     <ClInclude Include="Common\Definitions.h" />

@@ -38,7 +38,7 @@ public:
 	typedef R (T::*signature_type)();
 
 	memberT(const std::string& name, signature_type method, const char* usage)
-	: memberT<typename return_type>(name, declarationT<typename return_type>(), usage)
+	: memberT<return_type>(name, declarationT<return_type>(), usage)
 	, mMethod(method)
 	{
 	}
@@ -48,7 +48,7 @@ public:
 
 	virtual object		dereference(const object& self) const
 	{
-		declaration info(this->shared_from_this(), declarationT<typename member_type>());
+		declaration info(this->shared_from_this(), declarationT<member_type>());
 		object value(info, self.address());
 		return value;
 	}
@@ -60,7 +60,7 @@ public:
 	{
 		object result;
 		// if (count == function_traits<
-		validateParameters(pObjs, count);
+		// validateParameters(pObjs, count);
 		// validate each parameter
 		// execute callback
 	}
@@ -84,7 +84,7 @@ public:
 	typedef R (T::*signature_type)() const;
 
 	memberT(const std::string& name, signature_type method, const char* usage)
-	: memberT<typename return_type>(name, declarationT<typename return_type>(), usage)
+	: memberT<return_type>(name, declarationT<return_type>(), usage)
 	, mMethod(method)
 	{
 	}
@@ -94,7 +94,7 @@ public:
 
 	virtual object		dereference(const object& self) const
 	{
-		declaration info(this->shared_from_this(), declarationT<typename member_type>());
+		declaration info(this->shared_from_this(), declarationT<member_type>());
 		object value(info, self.address());
 		return value;
 	}

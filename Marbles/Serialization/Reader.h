@@ -96,7 +96,7 @@ bool Reader<F>::Translate(istream& is, object& obj)
 	bool canRead = type_of<T>() == obj.typeInfo();
 	if (canRead)
 	{
-		mFormat.Read(os, obj.as<T>());
+		mFormat.Read(is, obj.as<T>());
 	}
 	return canRead;
 }
@@ -136,9 +136,9 @@ template<typename F>
 hash_t Reader<F>::hash(const path& route)
 {
 	hash_t hash = 0;
-	for(path::const_iterator i = path.begin(); i != path.end(); ++i)
+	for(path::const_iterator i = route.begin(); i != route.end(); ++i)
 	{
-		hash += i->memberInfo()->hashName();
+		hash += *i;
 	}
 	return hash;
 }

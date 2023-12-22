@@ -75,7 +75,7 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
 event<Args...>::handler::handler(callback_t fn, shared_service service)
-: _handler(move(fn))
+: _callback(move(fn))
 , _service(move(service))
 {
 }
@@ -119,7 +119,7 @@ inline void event<Args...>::clear()
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename void event<Args...>::clear(typename event<Args...>::handler* callback)
+inline void event<Args...>::clear(event<Args...>::handler* callback)
 {
     _handlers.remove(callback);
 
@@ -128,23 +128,23 @@ inline typename void event<Args...>::clear(typename event<Args...>::handler* cal
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event<Args...>::handler* event<Args...>::onRaise(typename event<Args...>::callback_t callback)
+inline typename event<Args...>::handler* event<Args...>::onRaise(event<Args...>::callback_t callback)
 {
     return onRaise(forward<callback_t>(callback), service::active());
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 template<typename... Args>
-inline typename event<Args...>::handler* event<Args...>::onRaise(typename event<Args...>::callback_t callback, shared_service service)
+inline typename event<Args...>::handler* event<Args...>::onRaise(event<Args...>::callback_t callback, shared_service service)
 {
     handler* result = nullptr;
-    handlers_t::node *node = new handlers_t::node();
-    if (node)
+    typename handlers_t::node* element = new handlers_t::node();
+    if (element)
     {
-        node->get()->callback(forward<callback_t>(callback));
-        node->get()->service(forward<shared_service>(service));
-        _handlers.insert_next(node);
-        result = node->get();
+        element->get()->callback(forward<callback_t>(callback));
+        element->get()->service(forward<shared_service>(service));
+        _handlers.insert_next(element);
+        result = element->get();
     }
     return result;
 }

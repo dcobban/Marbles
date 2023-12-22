@@ -45,9 +45,9 @@ public:
 
 	virtual object dereference(const object& self) const
 	{
-		ASSERT(self.typeInfo()->implements(type_of<typename member_type>()));
-		member_type* member = self.as<typename member_type*>();
-		return object(declare_info(), member ? &(member->*mField) : 0);
+		assert(self.typeInfo()->implements( type_of<member_type>() ));
+		member_type* member = self.as<member_type*>();
+		return object(memberT<T>::declare_info(), member ? &(member->*mField) : 0);
 	}
 
 private:

@@ -186,7 +186,7 @@ object object::at(const char* name) const
 // --------------------------------------------------------------------------------------------------------------------
 object object::at(const hash_t hashName) const
 {
-	object obj;
+	object out;
 	if (isValid())
 	{
 		const type_info::member_list& members = object::members();
@@ -194,7 +194,7 @@ object object::at(const hash_t hashName) const
 		if (index < members.size())
 		{
 			object member(at(members[index]));
-			obj.swap(member);
+			out.swap(member);
 		}
 		else if (isReference())
 		{
@@ -202,11 +202,11 @@ object object::at(const hash_t hashName) const
 			if (deref.isValid())
 			{
 				object member(deref.at(hashName));
-				obj.swap(member);
+				out.swap(member);
 			}
 		}
 	}
-	return obj;
+	return out;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

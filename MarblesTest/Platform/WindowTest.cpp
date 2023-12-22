@@ -23,8 +23,8 @@
 
 #include <platform/window.h>
 #include <platform/device.h>
-#include <chrono>
 
+// --------------------------------------------------------------------------------------------------------------------
 TEST(window, basic_operations)
 {
     int update = 1000;
@@ -64,12 +64,14 @@ TEST(window, basic_operations)
     win.close();
 }
 
+// --------------------------------------------------------------------------------------------------------------------
 marbles::device* idealDevice(marbles::device::manager* manager)
 {
     return manager->begin().get();
 }
 
 
+// --------------------------------------------------------------------------------------------------------------------
 TEST(window, application_windows)
 {
     int update = 1000;
@@ -93,3 +95,5 @@ TEST(window, application_windows)
         }
     }
 }
+
+// End of File --------------------------------------------------------------------------------------------------------
